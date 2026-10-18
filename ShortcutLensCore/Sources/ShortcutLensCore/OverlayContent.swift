@@ -13,7 +13,7 @@ public struct OverlayContent<Element> {
     public init(appName: String, groups: [MenuGroup<Element>]) {
         self.appName = appName
         sections = groups
-            .map { (title: $0.title, rows: Self.rows(for: $0.items)) }
+            .map { (title: $0.title, rows: Self.rows(for: $0.items.map { ($0.shortcut, $0.element) })) }
             .filter { !$0.rows.isEmpty }
             .enumerated()
             .map { OverlaySection(id: $0.offset, title: $0.element.title, rows: $0.element.rows) }
@@ -23,6 +23,18 @@ public struct OverlayContent<Element> {
     public init(appName: String, sections: [OverlaySection<Element>]) {
         self.appName = appName
         self.sections = sections
+    }
+
+    /// A copy with a section of display-only rows after the others, e.g. the
+    /// system shortcuts. Shortcuts without a displayable key are left out, and
+    /// no section is added when none is left.
+    public func appending(sectionTitle: String, shortcuts: [MenuShortcut]) -> Self {
+        let rows = Self.rows(for: shortcuts.map { ($0, nil) })
+        guard !rows.isEmpty else {
+            return self
+        }
+        let section = OverlaySection(id: sections.count, title: sectionTitle, rows: rows)
+        return Self(appName: appName, sections: sections + [section])
     }
 
     /// True when the app has no shortcut to show.
@@ -35,7 +47,7 @@ public struct OverlayContent<Element> {
         sections.reduce(0) { $0 + $1.rows.count }
     }
 
-    private static func rows(for entries: [MenuEntry<Element>]) -> [OverlayRow<Element>] {
+    private static func rows(for entries: [(shortcut: MenuShortcut, element: Element?)]) -> [OverlayRow<Element>] {
         entries
             .compactMap { entry in
                 ShortcutFormatter.string(for: entry.shortcut).map { (entry: entry, keys: $0) }
@@ -67,7 +79,8 @@ public struct OverlaySection<Element>: Identifiable {
     }
 }
 
-/// One shortcut in the overlay, with the element to press for it.
+/// One shortcut in the overlay, with the element to press for it. Rows without
+/// an element, such as system shortcuts, are display-only.
 public struct OverlayRow<Element>: Identifiable {
     /// Position within its section.
     public let id: Int
@@ -76,14 +89,20 @@ public struct OverlayRow<Element>: Identifiable {
     public let keys: String
     /// False for a disabled menu item, shown dimmed and not runnable.
     public let isEnabled: Bool
-    public let element: Element
+    /// The menu item to press; nil for a display-only row.
+    public let element: Element?
 
-    public init(id: Int, title: String, keys: String, isEnabled: Bool = true, element: Element) {
+    public init(id: Int, title: String, keys: String, isEnabled: Bool = true, element: Element?) {
         self.id = id
         self.title = title
         self.keys = keys
         self.isEnabled = isEnabled
         self.element = element
+    }
+
+    /// Whether clicking or choosing the row can run something.
+    public var isRunnable: Bool {
+        isEnabled && element != nil
     }
 }
 

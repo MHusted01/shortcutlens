@@ -19,6 +19,7 @@ public struct AppSettings: Equatable, Sendable {
         public static let triggerDelay = "triggerDelay"
         public static let maxMenuDepth = "maxMenuDepth"
         public static let showsDisabledItems = "showsDisabledItems"
+        public static let showsSystemShortcuts = "showsSystemShortcuts"
     }
 
     public static let triggerDelayRange: ClosedRange<Double> = 0.1 ... 1.5
@@ -35,16 +36,20 @@ public struct AppSettings: Equatable, Sendable {
     public let maxMenuDepth: Int
     /// Whether disabled menu items are listed (dimmed, not runnable).
     public let showsDisabledItems: Bool
+    /// Whether the overlay ends with a "System" section of macOS shortcuts.
+    public let showsSystemShortcuts: Bool
 
     /// Out-of-range values are clamped; a non-finite delay becomes the default.
     public init(
         triggerDelay: Double = TriggerStateMachine.defaultDelay,
         maxMenuDepth: Int = Self.maxMenuDepthRange.upperBound,
-        showsDisabledItems: Bool = false
+        showsDisabledItems: Bool = false,
+        showsSystemShortcuts: Bool = true
     ) {
         self.triggerDelay = Self.clampedDelay(triggerDelay)
         self.maxMenuDepth = maxMenuDepth.clamped(to: Self.maxMenuDepthRange)
         self.showsDisabledItems = showsDisabledItems
+        self.showsSystemShortcuts = showsSystemShortcuts
     }
 
     /// The settings in `store`; missing values or values of the wrong type
@@ -54,7 +59,9 @@ public struct AppSettings: Equatable, Sendable {
             triggerDelay: store.object(forKey: Key.triggerDelay) as? Double ?? Self.defaults.triggerDelay,
             maxMenuDepth: store.object(forKey: Key.maxMenuDepth) as? Int ?? Self.defaults.maxMenuDepth,
             showsDisabledItems: store.object(forKey: Key.showsDisabledItems) as? Bool
-                ?? Self.defaults.showsDisabledItems
+                ?? Self.defaults.showsDisabledItems,
+            showsSystemShortcuts: store.object(forKey: Key.showsSystemShortcuts) as? Bool
+                ?? Self.defaults.showsSystemShortcuts
         )
     }
 
@@ -62,24 +69,51 @@ public struct AppSettings: Equatable, Sendable {
         store.set(triggerDelay, forKey: Key.triggerDelay)
         store.set(maxMenuDepth, forKey: Key.maxMenuDepth)
         store.set(showsDisabledItems, forKey: Key.showsDisabledItems)
+        store.set(showsSystemShortcuts, forKey: Key.showsSystemShortcuts)
     }
 
     public func with(triggerDelay: Double) -> Self {
-        Self(triggerDelay: triggerDelay, maxMenuDepth: maxMenuDepth, showsDisabledItems: showsDisabledItems)
+        copy(triggerDelay: triggerDelay)
     }
 
     public func with(maxMenuDepth: Int) -> Self {
-        Self(triggerDelay: triggerDelay, maxMenuDepth: maxMenuDepth, showsDisabledItems: showsDisabledItems)
+        copy(maxMenuDepth: maxMenuDepth)
     }
 
     public func with(showsDisabledItems: Bool) -> Self {
-        Self(triggerDelay: triggerDelay, maxMenuDepth: maxMenuDepth, showsDisabledItems: showsDisabledItems)
+        copy(showsDisabledItems: showsDisabledItems)
+    }
+
+    public func with(showsSystemShortcuts: Bool) -> Self {
+        copy(showsSystemShortcuts: showsSystemShortcuts)
+    }
+
+    private func copy(
+        triggerDelay: Double? = nil,
+        maxMenuDepth: Int? = nil,
+        showsDisabledItems: Bool? = nil,
+        showsSystemShortcuts: Bool? = nil
+    ) -> Self {
+        Self(
+            triggerDelay: triggerDelay ?? self.triggerDelay,
+            maxMenuDepth: maxMenuDepth ?? self.maxMenuDepth,
+            showsDisabledItems: showsDisabledItems ?? self.showsDisabledItems,
+            showsSystemShortcuts: showsSystemShortcuts ?? self.showsSystemShortcuts
+        )
     }
 
     /// True when a menu read with these settings can differ from one with
-    /// `other`, so cached menu content must be dropped.
+    /// `other`, so cached menu content must be dropped. System shortcuts are
+    /// not part of a read; they are added when the overlay shows.
     public func changesMenuReads(comparedTo other: Self) -> Bool {
         maxMenuDepth != other.maxMenuDepth || showsDisabledItems != other.showsDisabledItems
+    }
+
+    /// True when a read already running with `other` must not be reused:
+    /// its menus differ, or it was started without system shortcuts that
+    /// these settings show.
+    public func restartsReads(comparedTo other: Self) -> Bool {
+        changesMenuReads(comparedTo: other) || (showsSystemShortcuts && !other.showsSystemShortcuts)
     }
 
     /// Rounds to whole steps by dividing integers, so 0.55 compares equal to

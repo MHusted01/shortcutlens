@@ -90,4 +90,47 @@ struct OverlayContentTests {
 
         #expect(OverlayContent(appName: "App", groups: groups).rowCount == 3)
     }
+
+    @Test func appendsADisplayOnlySectionLast() {
+        let groups = [MenuGroup(title: "File", items: [entry("Save", key: "s", element: 1)])]
+        let spotlight = MenuShortcut(title: "Show Spotlight search", keyCharacter: " ", modifiers: [])
+
+        let content = OverlayContent(appName: "App", groups: groups)
+            .appending(sectionTitle: "System", shortcuts: [spotlight])
+
+        #expect(content.sections.map(\.title) == ["File", "System"])
+        #expect(content.sections.map(\.id) == [0, 1])
+        #expect(content.sections[1].rows == [
+            OverlayRow(id: 0, title: "Show Spotlight search", keys: "⌘Space", element: nil),
+        ])
+        #expect(!content.sections[1].rows[0].isRunnable)
+        #expect(content.sections[0].rows[0].isRunnable)
+    }
+
+    /// An app without menu shortcuts shows the System section instead of the
+    /// empty state.
+    @Test func systemSectionMakesAnAppWithoutShortcutsNonEmpty() {
+        let spotlight = MenuShortcut(title: "Show Spotlight search", keyCharacter: " ", modifiers: [])
+
+        let content = OverlayContent<Int>(appName: "App", groups: [])
+            .appending(sectionTitle: "System", shortcuts: [spotlight])
+
+        #expect(!content.isEmpty)
+        #expect(content.sections.map(\.id) == [0])
+    }
+
+    @Test func appendingNoDisplayableShortcutsAddsNoSection() {
+        let noKey = MenuShortcut(title: "Show Launchpad", keyCharacter: nil, modifiers: .noCommand)
+
+        let content = OverlayContent<Int>(appName: "App", groups: [])
+            .appending(sectionTitle: "System", shortcuts: [noKey])
+
+        #expect(content.isEmpty)
+    }
+
+    @Test func disabledRowsAreNotRunnable() {
+        let row = OverlayRow(id: 0, title: "Revert", keys: "⌘R", isEnabled: false, element: 1)
+
+        #expect(!row.isRunnable)
+    }
 }
