@@ -8,12 +8,14 @@ import SwiftUI
 ///
 /// Uses `AXIsProcessTrusted`, which never shows the system prompt; the
 /// onboarding window is the only place the permission is asked for. macOS posts
-/// no public notification when the permission changes, so it is polled while
-/// missing and polling stops once it is granted.
+/// no public notification when the permission changes, so it is polled for the
+/// whole session: often while missing, less often once granted so a later
+/// revocation is still noticed.
 @MainActor
 @Observable
 final class PermissionController {
-    static let pollInterval: TimeInterval = 1
+    static let missingPollInterval: TimeInterval = 1
+    static let grantedPollInterval: TimeInterval = 5
     static let settingsURL = URL(
         string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
     )
@@ -62,16 +64,19 @@ final class PermissionController {
     }
 
     private func updatePolling() {
-        if permission.isGranted {
-            timer?.invalidate()
-            timer = nil
-        } else if timer == nil {
-            timer = Timer.scheduledTimer(withTimeInterval: Self.pollInterval, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated {
-                    self?.check()
-                }
+        let interval = permission.isGranted ? Self.grantedPollInterval : Self.missingPollInterval
+        guard timer?.timeInterval != interval else {
+            return
+        }
+        timer?.invalidate()
+        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.check()
             }
         }
+        // `.common` keeps the timer firing while the menu bar menu is open.
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
     }
 
     private func makeWindow() -> NSWindow {
