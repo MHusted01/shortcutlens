@@ -17,6 +17,11 @@ No telemetry, no network access, no third-party code. See [PRIVACY.md](PRIVACY.m
 - macOS 14 Sonoma or later
 - Accessibility permission (System Settings > Privacy & Security > Accessibility)
 
+Accessibility is the only permission ShortcutLens needs. It is used to read
+the frontmost app's menus and to notice key presses while you hold Command
+(so Cmd+C does not open the overlay). Input Monitoring is not needed: the app
+uses `NSEvent` monitors, not an event tap, and never sees which keys you type.
+
 ## Install
 
 Download the latest `ShortcutLens-x.y.z.zip` from
