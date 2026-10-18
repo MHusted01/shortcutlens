@@ -1,9 +1,9 @@
 import ShortcutLensCore
 
-/// An in-memory accessibility tree for `MenuReader` tests. Elements are
-/// integer ids; `menuBar` is element 0 and every other node is built with the
-/// helpers below.
-final class FakeAXClient: AXClient {
+/// An in-memory accessibility tree for `MenuReader` and `MenuItemRunner`
+/// tests. Elements are integer ids; `menuBar` is element 0 and every other
+/// node is built with the helpers below.
+final class FakeAXClient: AXActionClient {
     struct Node {
         let attributes: MenuItemAttributes?
         var children: [Int]
@@ -14,6 +14,10 @@ final class FakeAXClient: AXClient {
 
     private(set) var nodes: [Int: Node] = [menuBar: Node(attributes: nil, children: [])]
     private(set) var attributeReads = 0
+    /// Elements pressed, in order.
+    private(set) var presses: [Int] = []
+    /// The error `press` returns per element; absent elements press fine.
+    var pressErrors: [Int: AXPressError] = [:]
 
     func menuBar(forProcess pid: Int32) -> Int? {
         pid == Self.pid ? Self.menuBar : nil
@@ -26,6 +30,11 @@ final class FakeAXClient: AXClient {
     func attributes(of element: Int) -> MenuItemAttributes? {
         attributeReads += 1
         return nodes[element]?.attributes
+    }
+
+    func press(_ element: Int) -> AXPressError? {
+        presses.append(element)
+        return pressErrors[element]
     }
 
     // MARK: - Building the tree
@@ -72,6 +81,12 @@ final class FakeAXClient: AXClient {
     /// Adds a child whose attributes cannot be read.
     func addUnreadable(to parent: Int) {
         add(nil, to: parent)
+    }
+
+    /// Replaces the attributes of `element`, as when an app updates a menu
+    /// item between the read and the click.
+    func setAttributes(_ attributes: MenuItemAttributes?, of element: Int) {
+        nodes[element] = Node(attributes: attributes, children: nodes[element]?.children ?? [])
     }
 
     @discardableResult

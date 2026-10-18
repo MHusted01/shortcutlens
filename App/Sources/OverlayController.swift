@@ -3,7 +3,8 @@ import os
 import ShortcutLensCore
 import SwiftUI
 
-/// Reads the frontmost app's menus and shows them in `OverlayPanel`.
+/// Reads the frontmost app's menus and shows them in `OverlayPanel`; clicking
+/// an entry runs that menu item.
 ///
 /// `prepare()` runs when the hold-Command countdown starts and reads the menus
 /// off the main actor, so by the time `show()` runs a second later the content
@@ -78,6 +79,26 @@ final class OverlayController {
         panel.orderOut(nil)
     }
 
+    /// Hides the panel and presses the row's menu item in the target app.
+    ///
+    /// The press runs off the main actor because it can wait up to the AX
+    /// messaging timeout. The target app stays frontmost throughout: the panel
+    /// never activates ShortcutLens.
+    private func run(_ row: OverlayRow<AXUIElement>) {
+        hide()
+        let element = UncheckedSendable(value: row.element)
+        Task.detached(priority: .userInitiated) {
+            let outcome = MenuItemRunner(client: SystemAXClient()).run(element.value)
+            // A fixed outcome string only, never the menu title.
+            let description = outcome.logDescription
+            if outcome == .pressed {
+                Self.log.notice("menu item \(description, privacy: .public)")
+            } else {
+                Self.log.error("menu item not run: \(description, privacy: .public)")
+            }
+        }
+    }
+
     private func finishRead(_ content: OverlayContent<AXUIElement>, generation: Int, pid: pid_t) {
         if inFlight?.pid == pid {
             inFlight = nil
@@ -96,7 +117,9 @@ final class OverlayController {
             return
         }
         let (body, size) = Self.layout(content, in: visible)
-        let view = OverlayView(appName: target.name, icon: target.icon, content: body)
+        let view = OverlayView(appName: target.name, icon: target.icon, content: body) { [weak self] row in
+            self?.run(row)
+        }
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
     }
 
@@ -143,7 +166,7 @@ extension OverlayController {
     }
 }
 
-/// Carries AX elements from the reading task to the main actor.
+/// Carries AX elements between the main actor and background tasks.
 ///
 /// `AXUIElement` is an immutable reference to another process's element and
 /// the AX API may be called from any thread, but the type is not marked
