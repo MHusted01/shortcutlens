@@ -23,7 +23,8 @@ it twice quickly) to open the overlay as a command palette. It stays open
 without holding Command:
 
 - Type to filter the shortcuts by name; case and accents are ignored.
-- Up and Down select an entry, Return runs it.
+- Up and Down select an entry, Left and Right jump between columns, Return
+  runs the selected entry.
 - Escape clears the search; a second Escape closes the palette. Clicking
   outside it or switching apps closes it too.
 
