@@ -10,10 +10,14 @@ public struct OverlayContent<Element> {
     /// Non-empty sections in menu bar order.
     public let sections: [OverlaySection<Element>]
 
-    public init(appName: String, groups: [MenuGroup<Element>]) {
+    /// Rows whose item has an App Shortcut in `custom` are marked `isCustom`.
+    public init(appName: String, groups: [MenuGroup<Element>], custom: UserKeyEquivalents = .empty) {
         self.appName = appName
         sections = groups
-            .map { (title: $0.title, rows: Self.rows(for: $0.items.map { ($0.shortcut, $0.element) })) }
+            .map { group in
+                let entries = group.items.map { ($0.shortcut, $0.element) }
+                return (title: group.title, rows: Self.rows(for: entries, custom: custom))
+            }
             .filter { !$0.rows.isEmpty }
             .enumerated()
             .map { OverlaySection(id: $0.offset, title: $0.element.title, rows: $0.element.rows) }
@@ -29,7 +33,7 @@ public struct OverlayContent<Element> {
     /// system shortcuts. Shortcuts without a displayable key are left out, and
     /// no section is added when none is left.
     public func appending(sectionTitle: String, shortcuts: [MenuShortcut]) -> Self {
-        let rows = Self.rows(for: shortcuts.map { ($0, nil) })
+        let rows = Self.rows(for: shortcuts.map { ($0, nil) }, custom: .empty)
         guard !rows.isEmpty else {
             return self
         }
@@ -47,7 +51,10 @@ public struct OverlayContent<Element> {
         sections.reduce(0) { $0 + $1.rows.count }
     }
 
-    private static func rows(for entries: [(shortcut: MenuShortcut, element: Element?)]) -> [OverlayRow<Element>] {
+    private static func rows(
+        for entries: [(shortcut: MenuShortcut, element: Element?)],
+        custom: UserKeyEquivalents
+    ) -> [OverlayRow<Element>] {
         entries
             .compactMap { entry in
                 ShortcutFormatter.string(for: entry.shortcut).map { (entry: entry, keys: $0) }
@@ -59,6 +66,7 @@ public struct OverlayContent<Element> {
                     title: item.entry.shortcut.title,
                     keys: item.keys,
                     isEnabled: item.entry.shortcut.isEnabled,
+                    isCustom: custom.isCustom(item.entry.shortcut),
                     element: item.entry.element
                 )
             }
@@ -89,14 +97,19 @@ public struct OverlayRow<Element>: Identifiable {
     public let keys: String
     /// False for a disabled menu item, shown dimmed and not runnable.
     public let isEnabled: Bool
+    /// True when the user set this shortcut in App Shortcuts.
+    public let isCustom: Bool
     /// The menu item to press; nil for a display-only row.
     public let element: Element?
 
-    public init(id: Int, title: String, keys: String, isEnabled: Bool = true, element: Element?) {
+    public init(
+        id: Int, title: String, keys: String, isEnabled: Bool = true, isCustom: Bool = false, element: Element?
+    ) {
         self.id = id
         self.title = title
         self.keys = keys
         self.isEnabled = isEnabled
+        self.isCustom = isCustom
         self.element = element
     }
 

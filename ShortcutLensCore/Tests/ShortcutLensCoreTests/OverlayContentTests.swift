@@ -38,6 +38,29 @@ struct OverlayContentTests {
         #expect(rows.map(\.isEnabled) == [false, true])
     }
 
+    @Test func marksRowsWithAnAppShortcut() throws {
+        let save = try #require(UserKeyEquivalent(title: "Save", keys: "@s"))
+        let custom = UserKeyEquivalents(global: [], app: [save])
+        let group = MenuGroup(title: "File", items: [
+            entry("Save", key: "s", element: 1),
+            entry("Open", key: "o", element: 2),
+        ])
+
+        let rows = OverlayContent(appName: "App", groups: [group], custom: custom).sections[0].rows
+
+        #expect(rows.map(\.isCustom) == [true, false])
+    }
+
+    @Test func rowsAreNotMarkedWithoutAppShortcuts() {
+        let group = MenuGroup(title: "File", items: [entry("Save", key: "s", element: 1)])
+        let system = MenuShortcut(title: "Lock Screen", keyCharacter: "q", modifiers: .control)
+
+        let content = OverlayContent(appName: "App", groups: [group])
+            .appending(sectionTitle: "System", shortcuts: [system])
+
+        #expect(content.sections.flatMap(\.rows).map(\.isCustom) == [false, false])
+    }
+
     @Test func numbersRowsWithinEachSection() {
         let group = MenuGroup(title: "File", items: [
             entry("New", key: "n", element: 1),

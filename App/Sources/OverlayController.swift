@@ -23,9 +23,7 @@ import SwiftUI
 /// as a last, display-only section. The cache holds menu content only.
 @MainActor
 final class OverlayController {
-    private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
-    /// Seconds one menu read may take in total before it stops asking the app.
-    private nonisolated static let readBudget: TimeInterval = 3
+    nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
     /// Apps whose content stays cached.
     private static let cacheCapacity = 8
 
@@ -41,18 +39,11 @@ final class OverlayController {
         }
     }
 
-    /// What one read produced, and whether it ran out of budget.
-    private struct ReadResult {
-        let content: OverlayContent<AXUIElement>
-        let systemShortcuts: [MenuShortcut]
-        let budgetSpent: Bool
-        let settings: AppSettings
-    }
-
     /// The app a read was started for.
     private struct Target {
         let generation: Int
         let name: String
+        let bundleID: String?
         let icon: NSImage?
     }
 
@@ -135,14 +126,16 @@ final class OverlayController {
         }
         let key = AppKey(app)
         content = cache.value(for: key).map(withSystemShortcuts)
-        let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
+        let target = Target(
+            generation: generation, name: app.localizedName ?? "", bundleID: app.bundleIdentifier, icon: app.icon
+        )
         self.target = target
         read(key, for: target)
     }
 
     /// Reads `key`'s menus for `target`, reusing a running read.
     private func read(_ key: AppKey, for target: Target) {
-        let read = runningRead(for: key) ?? startRead(key: key, appName: target.name)
+        let read = runningRead(for: key) ?? startRead(key: key, target: target)
         Task { [weak self] in
             let result = await read.value
             self?.finishRead(result.value, generation: target.generation, key: key)
@@ -155,11 +148,11 @@ final class OverlayController {
         inFlight?.key == key ? inFlight?.task : nil
     }
 
-    private func startRead(key: AppKey, appName: String) -> ReadTask {
-        let pid = key.pid
+    private func startRead(key: AppKey, target: Target) -> ReadTask {
+        let (pid, bundleID, appName) = (key.pid, target.bundleID, target.name)
         let settings = readSettings
         let task = Task.detached(priority: .userInitiated) {
-            Self.readContent(pid: pid, appName: appName, settings: settings)
+            Self.readContent(pid: pid, bundleID: bundleID, appName: appName, settings: settings)
         }
         inFlight = (key, task)
         return task
@@ -310,31 +303,6 @@ final class OverlayController {
         let screens = NSScreen.screens
         let index = ScreenPicker.index(for: NSEvent.mouseLocation, in: screens.map(\.frame))
         return (index.map { screens[$0] } ?? NSScreen.main)?.visibleFrame
-    }
-
-    private nonisolated static func readContent(
-        pid: pid_t,
-        appName: String,
-        settings: AppSettings
-    ) -> UncheckedSendable<ReadResult> {
-        let start = ContinuousClock.now
-        let client = DeadlineAXClient(base: SystemAXClient(), budget: readBudget) {
-            ProcessInfo.processInfo.systemUptime
-        }
-        let reader = MenuReader(
-            client: client, maxDepth: settings.maxMenuDepth, includesDisabled: settings.showsDisabledItems
-        )
-        let groups = reader.read(processID: pid)
-        let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
-        let content = OverlayContent(appName: appName, groups: groups)
-        let elapsed = ContinuousClock.now - start
-        let rows = content.rowCount
-        let expired = client.hasExpired
-        // Counts and timing only, never app names or titles.
-        log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public), budget spent: \(expired, privacy: .public)")
-        return UncheckedSendable(value: ReadResult(
-            content: content, systemShortcuts: system, budgetSpent: expired, settings: settings
-        ))
     }
 }
 
