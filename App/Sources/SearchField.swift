@@ -5,13 +5,17 @@ import SwiftUI
 enum SearchCommand {
     case moveUp
     case moveDown
+    case moveLeft
+    case moveRight
     case submit
     case cancel
 }
 
 /// The palette's search field. It is an AppKit text field, so arrow keys,
 /// Return and Escape arrive as editing commands before the field acts on
-/// them, and it takes keyboard focus as soon as it is in a window.
+/// them, and it takes keyboard focus as soon as it is in a window. Plain
+/// Left/Right move the palette selection; Option and Command with them still
+/// move the cursor (they arrive as other commands, such as `moveWordLeft:`).
 struct SearchField: NSViewRepresentable {
     private static let fontSize: CGFloat = 15
 
@@ -71,6 +75,10 @@ struct SearchField: NSViewRepresentable {
                 .moveUp
             case #selector(NSResponder.moveDown(_:)):
                 .moveDown
+            case #selector(NSResponder.moveLeft(_:)):
+                .moveLeft
+            case #selector(NSResponder.moveRight(_:)):
+                .moveRight
             case #selector(NSResponder.insertNewline(_:)):
                 .submit
             case #selector(NSResponder.cancelOperation(_:)):

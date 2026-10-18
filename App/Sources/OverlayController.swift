@@ -156,6 +156,10 @@ final class OverlayController {
             updatePalette { $0.movingSelection(by: -1) }
         case .moveDown:
             updatePalette { $0.movingSelection(by: 1) }
+        case .moveLeft:
+            moveColumn(by: -1)
+        case .moveRight:
+            moveColumn(by: 1)
         case .submit:
             guard let row = palette.state.selectedRow else {
                 NSSound.beep()
@@ -170,6 +174,14 @@ final class OverlayController {
                 onClosePalette()
             }
         }
+    }
+
+    /// Moves the selection between the columns currently shown.
+    private func moveColumn(by offset: Int) {
+        guard case let .shortcuts(_, columns, _) = palette?.model.body else {
+            return
+        }
+        updatePalette { $0.movingSelection(columns: offset, in: columns, metrics: .standard) }
     }
 
     private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
