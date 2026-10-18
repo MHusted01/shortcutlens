@@ -49,6 +49,8 @@ final class OverlayController {
     private var generation = 0
     private var target: Target?
     private var content: OverlayContent<AXUIElement>?
+    /// The app `content` was read from.
+    private var contentPID: pid_t?
     private var isShown = false
     private var palette: OpenPalette?
 
@@ -57,14 +59,21 @@ final class OverlayController {
     }
 
     /// Starts reading the frontmost app's menus. ShortcutLens itself is skipped.
+    ///
+    /// Content already read for the same app is kept until the new read
+    /// replaces it, so the second tap of a double tap does not throw away
+    /// what the first tap read.
     func prepare() {
         generation += 1
-        content = nil
         guard let app = NSWorkspace.shared.frontmostApplication,
               app.processIdentifier != ProcessInfo.processInfo.processIdentifier
         else {
             target = nil
+            content = nil
             return
+        }
+        if app.processIdentifier != contentPID {
+            content = nil
         }
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
@@ -211,6 +220,7 @@ final class OverlayController {
             return
         }
         self.content = content
+        contentPID = pid
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
             let size = refreshPalette()

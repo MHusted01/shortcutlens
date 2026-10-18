@@ -106,14 +106,14 @@ final class TriggerController {
                 return
             }
             MainActor.assumeIsolated {
-                self?.handle(.interrupted)
+                self?.interrupt()
             }
         }
         let space = center.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.handle(.interrupted)
+                self?.interrupt()
             }
         }
         observers = [activation, space]
@@ -145,14 +145,28 @@ final class TriggerController {
         }
     }
 
+    /// Focus moved without a key event the monitors saw; this also breaks a
+    /// double tap in progress.
+    private func interrupt() {
+        handle(.interrupted)
+        detectDoubleTap(.otherInput)
+    }
+
     /// Runs after the state machine has seen the same event, so the second
     /// release has already ended the countdown when the double tap arrives.
+    /// A double tap with a key press the monitors missed (Cmd+Space twice)
+    /// is dropped.
     private func detectDoubleTap(_ event: DoubleTapDetector.Event) {
-        let (state, detected) = doubleTap.updated(with: event)
+        let (state, startedAt) = doubleTap.updated(with: event)
         doubleTap = state
-        if detected {
-            handle(.doubleTap)
+        guard let startedAt else {
+            return
         }
+        guard !Self.keyWentDown(since: MissedKeyDown(armedAt: startedAt)) else {
+            Self.log.notice("missed key press during double tap")
+            return
+        }
+        handle(.doubleTap)
     }
 
     private func startTimer(token: Int, delay: TimeInterval) {
@@ -202,7 +216,8 @@ final class TriggerController {
         shownPoll = nil
     }
 
-    /// Seconds on the same clock as the `CGEventSource` reading.
+    /// Seconds on the same clock as the `CGEventSource` reading and
+    /// `NSEvent.timestamp`.
     private static func now() -> Double {
         ProcessInfo.processInfo.systemUptime
     }

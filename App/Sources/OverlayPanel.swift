@@ -20,6 +20,7 @@ final class OverlayPanel: NSPanel {
         "c": #selector(NSText.copy(_:)),
         "v": #selector(NSText.paste(_:)),
         "x": #selector(NSText.cut(_:)),
+        "z": Selector(("undo:")),
     ]
 
     private let hostingView = FirstMouseHostingView(rootView: AnyView(EmptyView()))
@@ -86,9 +87,11 @@ final class OverlayPanel: NSPanel {
     /// While the panel is key, ShortcutLens counts as active, so Command
     /// shortcuts would reach its own menu (Cmd+Q would quit it). In palette
     /// mode the editing shortcuts go to the search field and all others are
-    /// swallowed; none reaches the frontmost app.
+    /// swallowed; none reaches the frontmost app. Command with arrows or
+    /// Delete is left to the field (line navigation and deletion); no menu
+    /// item uses those keys.
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        guard takesKeyboard, event.modifierFlags.contains(.command) else {
+        guard takesKeyboard, event.modifierFlags.contains(.command), event.specialKey == nil else {
             return super.performKeyEquivalent(with: event)
         }
         let isCommandAlone = event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command

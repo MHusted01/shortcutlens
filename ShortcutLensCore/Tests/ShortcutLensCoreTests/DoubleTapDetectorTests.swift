@@ -13,20 +13,41 @@ struct DoubleTapDetectorTests {
         .modifiersChanged([], time: time)
     }
 
-    /// Feeds `events` in order and returns whether each one completed a double tap.
-    private static func detections(_ events: [Event], from start: Detector = .initial) -> [Bool] {
-        var detector = start
+    /// Feeds `events` in order and returns when the double tap each one
+    /// completed started, or nil.
+    private static func starts(_ events: [Event]) -> [Double?] {
+        var detector = Detector.initial
         return events.map { event in
-            let (state, detected) = detector.updated(with: event)
+            let (state, startedAt) = detector.updated(with: event)
             detector = state
-            return detected
+            return startedAt
         }
+    }
+
+    /// Feeds `events` in order and returns whether each one completed a double tap.
+    private static func detections(_ events: [Event]) -> [Bool] {
+        starts(events).map { $0 != nil }
     }
 
     @Test func twoQuickTapsAreDetectedOnSecondRelease() {
         let result = Self.detections([Self.press(0), Self.release(0.1), Self.press(0.3), Self.release(0.4)])
 
         #expect(result == [false, false, false, true])
+    }
+
+    /// The start lets the caller check for key presses the monitors missed.
+    @Test func reportsWhenTheFirstPressStarted() {
+        let result = Self.starts([Self.press(5), Self.release(5.1), Self.press(5.3), Self.release(5.4)])
+
+        #expect(result == [nil, nil, nil, 5])
+    }
+
+    @Test func startOfLaterPairIsItsOwnFirstPress() {
+        let result = Self.starts([
+            Self.press(0), Self.release(0.1), Self.press(1), Self.release(1.1), Self.press(1.3), Self.release(1.4),
+        ])
+
+        #expect(result.last == 1)
     }
 
     @Test func tapsAtTheIntervalLimitStillCount() {
@@ -129,9 +150,9 @@ struct DoubleTapDetectorTests {
     }
 
     @Test func otherInputWhileIdleChangesNothing() {
-        let (state, detected) = Detector.initial.updated(with: .otherInput)
+        let (state, startedAt) = Detector.initial.updated(with: .otherInput)
 
         #expect(state == .initial)
-        #expect(!detected)
+        #expect(startedAt == nil)
     }
 }

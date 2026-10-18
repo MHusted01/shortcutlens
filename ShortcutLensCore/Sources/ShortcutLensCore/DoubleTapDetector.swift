@@ -8,6 +8,8 @@
 /// then Shift released) is not a tap: every modifier must be released first.
 ///
 /// Times are seconds on one monotonic clock, such as `NSEvent.timestamp`.
+/// The detection reports when the first press started, so the caller can
+/// check for key presses its event monitors never saw (system hotkeys).
 public struct DoubleTapDetector: Equatable, Sendable {
     public enum Event: Equatable, Sendable {
         case modifiersChanged(HeldModifiers, time: Double)
@@ -17,10 +19,11 @@ public struct DoubleTapDetector: Equatable, Sendable {
 
     private enum Phase: Equatable, Sendable {
         case idle
-        /// Command is down alone since `time`; `isSecond` when it follows a tap.
-        case pressed(time: Double, isSecond: Bool)
-        /// A tap ended at `time`.
-        case tapped(time: Double)
+        /// Command is down alone since `time`. `firstPress` is set when this
+        /// press follows a tap, to the time that tap started.
+        case pressed(time: Double, firstPress: Double?)
+        /// A tap that started at `pressedAt` ended at `time`.
+        case tapped(time: Double, pressedAt: Double)
         /// Other input was seen; waits until every modifier is released.
         case blocked
     }
@@ -32,35 +35,39 @@ public struct DoubleTapDetector: Equatable, Sendable {
 
     private let phase: Phase
 
-    /// The state after `event`, and whether it completed a double tap.
-    public func updated(with event: Event) -> (state: Self, detected: Bool) {
+    /// The state after `event`, and the time the first press started when
+    /// `event` completed a double tap.
+    public func updated(with event: Event) -> (state: Self, startedAt: Double?) {
         guard case let .modifiersChanged(modifiers, time) = event else {
-            return (Self(phase: phase == .idle ? .idle : .blocked), false)
+            return (Self(phase: phase == .idle ? .idle : .blocked), nil)
         }
         if modifiers.isEmpty {
             return released(at: time)
         }
         guard modifiers.isCommandAlone else {
-            return (Self(phase: .blocked), false)
+            return (Self(phase: .blocked), nil)
         }
-        return pressed(at: time)
+        return (pressed(at: time), nil)
     }
 
-    private func pressed(at time: Double) -> (state: Self, detected: Bool) {
+    private func pressed(at time: Double) -> Self {
         switch phase {
         case .idle:
-            (Self(phase: .pressed(time: time, isSecond: false)), false)
-        case let .tapped(tapTime):
-            (Self(phase: .pressed(time: time, isSecond: time - tapTime <= Self.interval)), false)
+            Self(phase: .pressed(time: time, firstPress: nil))
+        case let .tapped(tapTime, pressedAt):
+            Self(phase: .pressed(time: time, firstPress: time - tapTime <= Self.interval ? pressedAt : nil))
         case .pressed, .blocked:
-            (self, false)
+            self
         }
     }
 
-    private func released(at time: Double) -> (state: Self, detected: Bool) {
-        guard case let .pressed(pressTime, isSecond) = phase, time - pressTime <= Self.interval else {
-            return (Self(phase: .idle), false)
+    private func released(at time: Double) -> (state: Self, startedAt: Double?) {
+        guard case let .pressed(pressTime, firstPress) = phase, time - pressTime <= Self.interval else {
+            return (Self(phase: .idle), nil)
         }
-        return isSecond ? (Self(phase: .idle), true) : (Self(phase: .tapped(time: time)), false)
+        guard let firstPress else {
+            return (Self(phase: .tapped(time: time, pressedAt: pressTime)), nil)
+        }
+        return (Self(phase: .idle), firstPress)
     }
 }
