@@ -15,6 +15,11 @@ import ShortcutLensCore
 /// activating or a Space change also counts as an interruption, for changes
 /// that arrive without a key event.
 ///
+/// System hotkeys (Cmd+Space, screenshots, input-source switching) never
+/// reach the monitors. To catch them, the controller reads the time since the
+/// last hardware key press (`CGEventSource`, no extra permission) when the
+/// countdown ends and every 0.1 s while the overlay is shown.
+///
 /// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
 /// before dropping it, or the monitors stay installed.
 @MainActor
@@ -23,6 +28,8 @@ final class TriggerController {
     private static let monitoredEvents: NSEvent.EventTypeMask = [
         .flagsChanged, .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown,
     ]
+    /// Seconds between checks for missed key presses while the overlay is shown.
+    private static let shownPollInterval: TimeInterval = 0.1
 
     /// Called when a countdown starts, so the overlay can read the menus
     /// before it is shown. The countdown may still be cancelled.
@@ -35,6 +42,7 @@ final class TriggerController {
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
+    private var shownPoll: Timer?
 
     /// Installs or removes the event monitors.
     func setEnabled(_ enabled: Bool) {
@@ -97,6 +105,9 @@ final class TriggerController {
     private func handle(_ event: TriggerStateMachine.Event) {
         let (state, action) = machine.updated(with: event)
         machine = state
+        if state.phase != .shown {
+            stopShownPoll()
+        }
         switch action {
         case let .startTimer(token, delay):
             startTimer(token: token, delay: delay)
@@ -104,6 +115,7 @@ final class TriggerController {
         case .cancelTimer:
             cancelTimer()
         case .show:
+            startShownPoll()
             onShow()
         case .hide:
             // Event kinds only, never key characters.
@@ -116,10 +128,15 @@ final class TriggerController {
 
     private func startTimer(token: Int, delay: TimeInterval) {
         cancelTimer()
+        let watch = MissedKeyDown(armedAt: Self.now())
         let timer = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
                 // Re-read the keys in case a release was missed while counting down.
                 self?.handle(.modifiersChanged(Self.heldModifiers(NSEvent.modifierFlags)))
+                if Self.keyWentDown(since: watch) {
+                    Self.log.notice("missed key press during countdown")
+                    self?.handle(.keyDown)
+                }
                 self?.handle(.timerFired(token: token))
             }
         }
@@ -131,6 +148,39 @@ final class TriggerController {
     private func cancelTimer() {
         timer?.invalidate()
         timer = nil
+    }
+
+    /// Hides the overlay when a key goes down that the monitors did not see.
+    /// A click may already have hidden the panel; the extra hide is a no-op.
+    private func startShownPoll() {
+        stopShownPoll()
+        let watch = MissedKeyDown(armedAt: Self.now())
+        let poll = Timer(timeInterval: Self.shownPollInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard Self.keyWentDown(since: watch) else {
+                    return
+                }
+                Self.log.notice("missed key press while shown")
+                self?.handle(.keyDown)
+            }
+        }
+        RunLoop.main.add(poll, forMode: .common)
+        shownPoll = poll
+    }
+
+    private func stopShownPoll() {
+        shownPoll?.invalidate()
+        shownPoll = nil
+    }
+
+    /// Seconds on the same clock as the `CGEventSource` reading.
+    private static func now() -> Double {
+        ProcessInfo.processInfo.systemUptime
+    }
+
+    private static func keyWentDown(since watch: MissedKeyDown) -> Bool {
+        let seconds = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: .keyDown)
+        return watch.keyWentDown(now: now(), secondsSinceLastKeyDown: seconds)
     }
 
     private nonisolated static func triggerEvent(for event: NSEvent) -> TriggerStateMachine.Event {
