@@ -79,7 +79,8 @@ final class OverlayController {
         panel.orderOut(nil)
     }
 
-    /// Hides the panel and presses the row's menu item in the target app.
+    /// Hides the panel and presses the row's menu item in the target app. Beeps
+    /// when the item was not run (disabled, stale or an AX error).
     ///
     /// The press runs off the main actor because it can wait up to the AX
     /// messaging timeout. The target app stays frontmost throughout: the panel
@@ -91,11 +92,13 @@ final class OverlayController {
             let outcome = MenuItemRunner(client: SystemAXClient()).run(element.value)
             // A fixed outcome string only, never the menu title.
             let description = outcome.logDescription
-            if outcome == .pressed {
+            guard outcome != .pressed else {
                 Self.log.notice("menu item \(description, privacy: .public)")
-            } else {
-                Self.log.error("menu item not run: \(description, privacy: .public)")
+                return
             }
+            Self.log.error("menu item not run: \(description, privacy: .public)")
+            // The panel is already hidden, so the beep is the only sign the click did nothing.
+            await MainActor.run { NSSound.beep() }
         }
     }
 
