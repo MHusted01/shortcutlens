@@ -26,3 +26,9 @@ xcuserdata/
 
 # macOS
 .DS_Store
+
+# Local signing (scripts/create-dev-cert.sh); never commit keys or certificates
+Config/Local.xcconfig
+*.p12
+*.cer
+*.pem
