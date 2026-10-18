@@ -139,6 +139,8 @@ private struct RowView: View {
     private static let highlightInset: CGFloat = -4
     private static let highlightCornerRadius: CGFloat = 5
     private static let disabledOpacity = 0.4
+    /// Marks a shortcut the user set in App Shortcuts.
+    private static let customSymbol = "person.crop.circle"
 
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
@@ -152,6 +154,12 @@ private struct RowView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer(minLength: 8)
+                if row.isCustom {
+                    Image(systemName: Self.customSymbol)
+                        .foregroundStyle(.tint)
+                        .imageScale(.small)
+                        .help("Set in App Shortcuts")
+                }
                 Text(row.keys)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
@@ -168,7 +176,7 @@ private struct RowView: View {
                 .fill(highlight)
         }
         .onHover { isHovered = $0 }
-        .accessibilityLabel("\(row.title), \(row.keys)")
+        .accessibilityLabel(row.isCustom ? "\(row.title), \(row.keys), custom shortcut" : "\(row.title), \(row.keys)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
