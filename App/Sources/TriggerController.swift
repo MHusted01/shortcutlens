@@ -24,6 +24,9 @@ final class TriggerController {
         .flagsChanged, .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown,
     ]
 
+    /// Called when a countdown starts, so the overlay can read the menus
+    /// before it is shown. The countdown may still be cancelled.
+    var onArm: () -> Void = {}
     /// Called when the overlay should appear or disappear.
     var onShow: () -> Void = { TriggerController.log.notice("show overlay") }
     var onHide: () -> Void = { TriggerController.log.notice("hide overlay") }
@@ -97,6 +100,7 @@ final class TriggerController {
         switch action {
         case let .startTimer(token, delay):
             startTimer(token: token, delay: delay)
+            onArm()
         case .cancelTimer:
             cancelTimer()
         case .show:
