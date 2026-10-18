@@ -12,7 +12,7 @@ import SwiftUI
 final class OverlayPanel: NSPanel {
     private static let cornerRadius: CGFloat = 14
 
-    private let hostingView = NSHostingView(rootView: AnyView(EmptyView()))
+    private let hostingView = FirstMouseHostingView(rootView: AnyView(EmptyView()))
 
     init() {
         super.init(
@@ -67,5 +67,14 @@ final class OverlayPanel: NSPanel {
             hostingView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
         ])
         return background
+    }
+}
+
+/// The panel is never key and ShortcutLens is never active while it shows, so
+/// every click on it is a "first mouse" click. Accepting it lets a row's
+/// button fire on that click instead of the click being swallowed.
+private final class FirstMouseHostingView: NSHostingView<AnyView> {
+    override func acceptsFirstMouse(for _: NSEvent?) -> Bool {
+        true
     }
 }

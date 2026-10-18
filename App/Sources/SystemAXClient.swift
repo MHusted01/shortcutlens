@@ -1,14 +1,14 @@
 import ApplicationServices
 import ShortcutLensCore
 
-/// `AXClient` backed by the macOS Accessibility API.
+/// `AXActionClient` backed by the macOS Accessibility API.
 ///
 /// CF ownership: the `Copy*` functions return their values at +1. Swift imports
 /// those out-parameters as managed references (`CFTypeRef?`, `CFArray?`), so
 /// ARC releases them exactly once when they go out of scope. Nothing here calls
 /// `CFRelease`, and bridging to Swift types (`as? String`, `as? [AXUIElement]`)
 /// retains what it keeps. Adding a manual release would over-release.
-struct SystemAXClient: AXClient {
+struct SystemAXClient: AXActionClient {
     /// Seconds an app may take to answer one AX request before it fails, so a
     /// hung app cannot stall the overlay. The system default is about 6 seconds.
     static let defaultMessagingTimeout: Float = 0.25
@@ -43,6 +43,10 @@ struct SystemAXClient: AXClient {
             return nil
         }
         return MenuItemAttributes(axValues: values)
+    }
+
+    func press(_ element: AXUIElement) -> AXPressError? {
+        AXPressError(axErrorCode: AXUIElementPerformAction(element, kAXPressAction as CFString).rawValue)
     }
 
     /// The timeout only applies to the element it is set on, not to the app or
