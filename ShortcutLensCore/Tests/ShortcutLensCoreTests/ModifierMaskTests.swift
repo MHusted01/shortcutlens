@@ -31,5 +31,6 @@ struct ModifierMaskTests {
     @Test(arguments: [-1, -8, Int.min])
     func negativeValuesMeanCommandOnly(value: Int) {
         #expect(ModifierMask(axValue: value) == [])
+        #expect(ModifierMask(rawValue: value) == [])
     }
 }

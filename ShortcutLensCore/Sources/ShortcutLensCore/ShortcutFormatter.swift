@@ -35,6 +35,7 @@ public enum ShortcutFormatter {
     private static let specialCharacterGlyphs: [String: Int] = [
         " ": 0x09, // kMenuSpaceGlyph
         "\r": 0x0B, // kMenuReturnGlyph
+        "\n": 0x0B, // kMenuReturnGlyph (newline)
         "\u{3}": 0x04, // kMenuEnterGlyph
         "\t": 0x02, // kMenuTabRightGlyph
         "\u{1B}": 0x1B, // kMenuEscapeGlyph
@@ -44,12 +45,13 @@ public enum ShortcutFormatter {
 
     /// Uppercases printable characters, but keeps a character whose uppercase
     /// form is longer (e.g. "ß" -> "SS") so a key always renders as one key.
-    /// Whitespace, control and private-use characters cannot be shown: nil.
+    /// A key is exactly one character; whitespace, control and private-use
+    /// characters cannot be shown. Anything else yields nil.
     private static func characterSymbol(_ character: String) -> String? {
         if let glyph = specialCharacterGlyphs[character] {
             return MenuGlyph.symbol(for: glyph)
         }
-        guard !character.isEmpty, character.unicodeScalars.allSatisfy(isDisplayable) else {
+        guard character.count == 1, character.unicodeScalars.allSatisfy(isDisplayable) else {
             return nil
         }
         let uppercased = character.uppercased()

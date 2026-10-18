@@ -19,15 +19,15 @@ public struct ModifierMask: OptionSet, Hashable, Sendable {
     public let rawValue: Int
 
     /// Creates a mask from raw bits, dropping any bit above `noCommand`.
+    /// Negative values are not valid and are treated as Command alone.
     public init(rawValue: Int) {
-        self.rawValue = rawValue & Self.definedBits
+        self.rawValue = max(rawValue, 0) & Self.definedBits
     }
 
-    /// Decodes a raw accessibility value. Bits above `noCommand` are dropped,
-    /// so 24 behaves like 8. Negative values are not valid AX values and are
-    /// treated as Command alone.
+    /// Decodes a raw `AXMenuItemCmdModifiers` value with the same rules as
+    /// `init(rawValue:)`: 24 behaves like 8, negative values mean Command alone.
     public init(axValue: Int) {
-        self.init(rawValue: max(axValue, 0))
+        self.init(rawValue: axValue)
     }
 
     /// Whether Command is part of the shortcut.

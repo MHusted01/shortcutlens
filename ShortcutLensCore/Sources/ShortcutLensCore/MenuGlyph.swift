@@ -27,6 +27,7 @@ public enum MenuGlyph {
         0x0B: "↩", // kMenuReturnGlyph
         0x17: "⌫", // kMenuDeleteLeftGlyph
         0x1B: "⎋", // kMenuEscapeGlyph
+        0x1C: "⌧", // kMenuClearGlyph
         0x62: "⇞", // kMenuPageUpGlyph
         0x64: "←", // kMenuLeftArrowGlyph
         0x65: "→", // kMenuRightArrowGlyph

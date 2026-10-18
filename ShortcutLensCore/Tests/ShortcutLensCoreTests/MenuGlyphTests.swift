@@ -15,11 +15,18 @@ struct MenuGlyphTests {
     @Test(arguments: [
         (0x64, "←"), (0x65, "→"), (0x68, "↑"), (0x6A, "↓"),
         (0x17, "⌫"), (0x0A, "⌦"), (0x0B, "↩"), (0x04, "⌤"),
-        (0x02, "⇥"), (0x1B, "⎋"), (0x09, "Space"),
+        (0x02, "⇥"), (0x1B, "⎋"), (0x09, "Space"), (0x1C, "⌧"),
         (0x62, "⇞"), (0x6B, "⇟"), (0x66, "↖"), (0x69, "↘"), (0x67, "Help"),
     ])
     func mapsNamedKeys(code: Int, symbol: String) {
         #expect(MenuGlyph.symbol(for: code) == symbol)
+    }
+
+    /// 17 named keys + F1-F19. Guards against codes silently dropped or merged.
+    @Test func mapsExactlyTheExpectedNumberOfCodes() {
+        let mapped = (0 ... 0xFF).filter { MenuGlyph.symbol(for: $0) != nil }
+
+        #expect(mapped.count == 17 + 19)
     }
 
     @Test(arguments: [0x00, 0x01, 0x11, 0x7B, 0x86, 0x93, -1, 1000])

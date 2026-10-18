@@ -18,7 +18,7 @@ struct ShortcutFormatterTests {
     }
 
     @Test(arguments: [
-        (" ", "Space"), ("\r", "↩"), ("\u{3}", "⌤"), ("\t", "⇥"),
+        (" ", "Space"), ("\r", "↩"), ("\n", "↩"), ("\u{3}", "⌤"), ("\t", "⇥"),
         ("\u{1B}", "⎋"), ("\u{7F}", "⌫"), ("\u{8}", "⌫"),
     ])
     func rendersSpecialCharactersAsKeySymbols(keyCharacter: String, expected: String) {
@@ -65,6 +65,7 @@ struct ShortcutFormatterTests {
         (String?.some("\u{F704}"), Int?.none),
         (String?.some("\u{0}"), Int?.none),
         (String?.some("  "), Int?.none),
+        (String?.some("ab"), Int?.none),
     ])
     func returnsNilWithoutUsableKey(keyCharacter: String?, glyph: Int?) {
         let shortcut = makeShortcut(keyCharacter: keyCharacter, glyph: glyph, modifiers: 0)
