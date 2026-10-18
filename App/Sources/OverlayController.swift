@@ -244,8 +244,8 @@ final class OverlayController {
     }
 
     private func finishRead(_ result: ReadResult, generation: Int, key: AppKey) {
-        // A read made with older settings is neither the one in flight nor
-        // cacheable: `apply(_:)` already dropped both.
+        // A read made with older settings is not the one in flight
+        // (`apply(_:)` dropped it), and is neither cached nor shown.
         let isCurrent = !result.settings.changesMenuReads(comparedTo: readSettings)
         if isCurrent, inFlight?.key == key {
             inFlight = nil
@@ -254,7 +254,7 @@ final class OverlayController {
         if isCurrent, !Self.hasTerminated(key) {
             cache = cache.storing(read: result.content, for: key, budgetSpent: result.budgetSpent)
         }
-        guard generation == self.generation else {
+        guard isCurrent, generation == self.generation else {
             return
         }
         let content = cache.value(for: key) ?? result.content
