@@ -43,6 +43,20 @@ struct ShortcutMatcherTests {
         #expect(titles(original, query: "save as") == [["Save As…"]])
     }
 
+    @Test func subsequenceIgnoresSpacesInQuery() {
+        let original = content(section("Window", ["Close Window", "Minimize"]))
+
+        #expect(titles(original, query: "cl wi") == [["Close Window"]])
+        #expect(titles(original, query: "clwi") == [["Close Window"]])
+    }
+
+    @Test func trimsSurroundingWhitespaceAndNewlines() {
+        let original = content(section("File", ["Save", "Open"]))
+
+        #expect(titles(original, query: " save\n") == [["Save"]])
+        #expect(titles(original, query: "\n").first?.count == 2)
+    }
+
     @Test func ignoresCase() {
         let original = content(section("File", ["Save As…", "Open"]))
 
