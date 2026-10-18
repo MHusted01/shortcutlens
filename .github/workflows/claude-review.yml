@@ -2,7 +2,9 @@ name: claude-review
 
 # AI review on every PR, posted as inline comments plus one summary comment.
 # Authenticates with the owner's Claude subscription (CLAUDE_CODE_OAUTH_TOKEN,
-# created with `claude setup-token`). Fork PRs are skipped: they get no secrets.
+# created with `claude setup-token`). Only PRs opened by the repository owner
+# from this repository are reviewed: fork PRs get no secrets, and limiting the
+# author keeps untrusted PR content away from a job that holds the token.
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -17,18 +19,21 @@ concurrency:
 jobs:
   claude-review:
     name: claude-review
-    if: github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner &&
+      !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write
-      issues: write
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
         with:
@@ -63,6 +68,8 @@ jobs:
             labelled CRITICAL, HIGH, MEDIUM, LOW or NIT, with a suggested fix.
             Then post one summary comment with `gh pr comment`: counts per
             severity and an overall verdict. If you find nothing, say so in
-            the summary only. Do not approve or request changes.
+            the summary only. Do not approve or request changes. Only comment
+            on PR ${{ github.event.pull_request.number }}; never edit or delete
+            existing comments.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Read,Glob,Grep"
