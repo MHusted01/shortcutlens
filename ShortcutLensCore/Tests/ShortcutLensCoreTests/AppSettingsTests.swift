@@ -122,4 +122,14 @@ struct AppSettingsTests {
         // System shortcuts are added when the overlay shows, not read from menus.
         #expect(!settings.with(showsSystemShortcuts: false).changesMenuReads(comparedTo: settings))
     }
+
+    @Test func readerChangesAndTurningSystemShortcutsOnRestartReads() {
+        let off = AppSettings.defaults.with(showsSystemShortcuts: false)
+
+        #expect(!off.restartsReads(comparedTo: off))
+        #expect(off.with(maxMenuDepth: 2).restartsReads(comparedTo: off))
+        // A running read made with the toggle off has no system shortcuts.
+        #expect(AppSettings.defaults.restartsReads(comparedTo: off))
+        #expect(!off.restartsReads(comparedTo: .defaults))
+    }
 }

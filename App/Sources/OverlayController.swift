@@ -114,12 +114,12 @@ final class OverlayController {
     func apply(_ settings: AppSettings) {
         if settings.changesMenuReads(comparedTo: readSettings) {
             cache = MenuCache(capacity: Self.cacheCapacity)
+        }
+        if settings.restartsReads(comparedTo: readSettings) {
             inFlight = nil
         }
         readSettings = settings
-        if !settings.showsSystemShortcuts {
-            systemShortcuts = []
-        }
+        systemShortcuts = settings.showsSystemShortcuts ? systemShortcuts : []
     }
 
     /// Starts reading the frontmost app's menus and shows its cached content

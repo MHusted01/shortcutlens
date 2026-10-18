@@ -109,6 +109,13 @@ public struct AppSettings: Equatable, Sendable {
         maxMenuDepth != other.maxMenuDepth || showsDisabledItems != other.showsDisabledItems
     }
 
+    /// True when a read already running with `other` must not be reused:
+    /// its menus differ, or it was started without system shortcuts that
+    /// these settings show.
+    public func restartsReads(comparedTo other: Self) -> Bool {
+        changesMenuReads(comparedTo: other) || (showsSystemShortcuts && !other.showsSystemShortcuts)
+    }
+
     /// Rounds to whole steps by dividing integers, so 0.55 compares equal to
     /// the literal `0.55`.
     private static func clampedDelay(_ delay: Double) -> Double {
