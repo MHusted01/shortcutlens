@@ -11,6 +11,11 @@ import SwiftUI
 /// is usually ready. Otherwise the panel shows a loading state and fills in
 /// when the read finishes. Each `prepare()` starts a new generation; results of
 /// an older one are dropped.
+///
+/// `showPalette()` shows the same content as a command palette: typing
+/// filters, arrow keys select, Return runs. The panel keeps the size it has
+/// for all rows while filtering. Every way of closing the palette goes
+/// through `onClosePalette`, so the trigger state machine always knows.
 @MainActor
 final class OverlayController {
     private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
@@ -22,7 +27,22 @@ final class OverlayController {
         let icon: NSImage?
     }
 
+    /// The open palette and the screen area it was opened on.
+    private struct OpenPalette {
+        let state: PaletteState<AXUIElement>
+        let model: PaletteModel
+        let screen: CGRect
+
+        func with(_ state: PaletteState<AXUIElement>) -> Self {
+            Self(state: state, model: model, screen: screen)
+        }
+    }
+
     private typealias ReadTask = Task<UncheckedSendable<OverlayContent<AXUIElement>>, Never>
+
+    /// Called when the palette should close: Escape on an empty query, an
+    /// item was run, or the panel lost key status.
+    var onClosePalette: () -> Void = {}
 
     private let panel = OverlayPanel()
     private var inFlight: (pid: pid_t, task: ReadTask)?
@@ -30,6 +50,11 @@ final class OverlayController {
     private var target: Target?
     private var content: OverlayContent<AXUIElement>?
     private var isShown = false
+    private var palette: OpenPalette?
+
+    init() {
+        panel.onResignKey = { [weak self] in self?.onClosePalette() }
+    }
 
     /// Starts reading the frontmost app's menus. ShortcutLens itself is skipped.
     func prepare() {
@@ -74,9 +99,85 @@ final class OverlayController {
         render()
     }
 
+    /// Shows the panel as a palette that takes typed keys. Closes the palette
+    /// again when there is nothing to show it for.
+    func showPalette() {
+        guard let target, let screen = Self.visibleFrameUnderPointer() else {
+            onClosePalette()
+            return
+        }
+        let model = PaletteModel(
+            onQueryChange: { [weak self] query in self?.updatePalette { $0.with(query: query) } },
+            onCommand: { [weak self] command in self?.handle(command) }
+        )
+        let state = content.map { PaletteState().with(content: $0) } ?? PaletteState()
+        palette = OpenPalette(state: state, model: model, screen: screen)
+        isShown = true
+        let select: (OverlayRow<AXUIElement>) -> Void = { [weak self] row in self?.runFromPalette(row) }
+        let view = OverlayView(
+            appName: target.name, icon: target.icon, content: .loading, palette: model, onSelect: select
+        )
+        let size = refreshPalette()
+        panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
+        Self.log.notice("palette shown")
+    }
+
     func hide() {
         isShown = false
-        panel.orderOut(nil)
+        palette = nil
+        panel.dismiss()
+    }
+
+    private func handle(_ command: SearchCommand) {
+        guard let palette else {
+            return
+        }
+        switch command {
+        case .moveUp:
+            updatePalette { $0.movingSelection(by: -1) }
+        case .moveDown:
+            updatePalette { $0.movingSelection(by: 1) }
+        case .submit:
+            guard let row = palette.state.selectedRow else {
+                NSSound.beep()
+                return
+            }
+            runFromPalette(row)
+        case .cancel:
+            switch palette.state.escaped() {
+            case let .cleared(state):
+                updatePalette { _ in state }
+            case .close:
+                onClosePalette()
+            }
+        }
+    }
+
+    private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
+        guard let palette else {
+            return
+        }
+        self.palette = palette.with(change(palette.state))
+        refreshPalette()
+    }
+
+    /// Copies the palette state into the view model. Returns the panel size
+    /// for all rows, which filtering does not change.
+    @discardableResult
+    private func refreshPalette() -> CGSize {
+        guard let palette else {
+            return .zero
+        }
+        let (body, size) = Self.layout(palette.state.content, in: palette.screen)
+        palette.model.query = palette.state.query
+        palette.model.selection = palette.state.selection
+        palette.model.body = Self.paletteBody(palette.state, unfiltered: body, size: size)
+        return size
+    }
+
+    private func runFromPalette(_ row: OverlayRow<AXUIElement>) {
+        onClosePalette()
+        run(row)
     }
 
     /// Hides the panel and presses the row's menu item in the target app. Beeps
@@ -110,7 +211,11 @@ final class OverlayController {
             return
         }
         self.content = content
-        if isShown {
+        if let palette {
+            self.palette = palette.with(palette.state.with(content: content))
+            let size = refreshPalette()
+            panel.setFrame(ScreenPicker.centeredFrame(size: size, in: palette.screen), display: true)
+        } else if isShown {
             render()
         }
     }
@@ -166,6 +271,23 @@ extension OverlayController {
             visible: visible.size
         )
         return (.shortcuts(sections: content.sections, columns: result.columns, scrolls: result.scrolls), result.size)
+    }
+
+    /// The palette's visible rows laid out inside the panel `size` that the
+    /// `unfiltered` body needs. Loading and empty states are kept as they are.
+    static func paletteBody(_ state: PaletteState<AXUIElement>, unfiltered: OverlayBody, size: CGSize) -> OverlayBody {
+        guard case .shortcuts = unfiltered, let visible = state.visible else {
+            return unfiltered
+        }
+        guard !visible.isEmpty else {
+            return .noMatches
+        }
+        let result = PanelLayout.layout(
+            rowCounts: visible.sections.map(\.rows.count),
+            metrics: .standard,
+            fitting: size
+        )
+        return .shortcuts(sections: visible.sections, columns: result.columns, scrolls: result.scrolls)
     }
 }
 

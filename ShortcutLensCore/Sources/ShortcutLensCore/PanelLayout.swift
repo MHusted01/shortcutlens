@@ -95,4 +95,17 @@ public enum PanelLayout {
         )
         return Result(columns: columns, size: size, scrolls: tallest > maxHeight)
     }
+
+    /// The layout for sections with `rowCounts` rows inside a panel of
+    /// `size`, such as filtered rows in the panel sized for all rows.
+    public static func layout(rowCounts: [Int], metrics: Metrics, fitting size: CGSize) -> Result {
+        // Undo the screen fraction; the half point keeps rounding from
+        // dropping a column or a row that fits exactly.
+        let tolerance = 0.5
+        let visible = CGSize(
+            width: (size.width + tolerance) / metrics.screenFraction,
+            height: (size.height + tolerance) / metrics.screenFraction
+        )
+        return layout(rowCounts: rowCounts, metrics: metrics, visible: visible)
+    }
 }

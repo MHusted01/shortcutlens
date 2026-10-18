@@ -7,6 +7,11 @@
 ///
 /// Each countdown gets a token; a timer that fires with an older token is
 /// ignored, so a late timer from a cancelled countdown cannot show the overlay.
+///
+/// A double tap of Command (see `DoubleTapDetector`) opens palette mode: the
+/// overlay stays open without Command held and takes typed keys. Only an
+/// explicit close, a click outside the panel, an interruption or a reset
+/// closes it.
 public struct TriggerStateMachine: Equatable, Sendable {
     public enum Phase: Equatable, Sendable {
         case idle
@@ -14,18 +19,27 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case shown
         /// A chord or other input was seen; waits for all modifiers to be released.
         case suppressed
+        /// The overlay is open as a command palette and takes typed keys.
+        case palette
     }
 
     public enum Event: Equatable, Sendable {
         case modifiersChanged(HeldModifiers)
         case keyDown
         case mouseDown
+        /// A click outside the panel. Like `mouseDown`, but closes the palette.
+        case mouseDownOutside
         case timerFired(token: Int)
         /// Focus moved without a key event the monitors saw, such as another
         /// app activating or a Space change. Treated like a key press.
         case interrupted
         /// Monitoring stopped (for example the permission was revoked).
         case reset
+        /// Command was double-tapped.
+        case doubleTap
+        /// The palette asked to close: Escape on an empty query, an item was
+        /// run, or the panel lost key status.
+        case close
     }
 
     /// What the app should do after an event.
@@ -35,6 +49,8 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case startTimer(token: Int, delay: Double)
         case cancelTimer
         case show
+        /// Show the overlay as a palette that takes keyboard focus.
+        case showPalette
         case hide
     }
 
@@ -69,6 +85,8 @@ public struct TriggerStateMachine: Equatable, Sendable {
             fromShown(event)
         case .suppressed:
             fromSuppressed(event)
+        case .palette:
+            fromPalette(event)
         }
     }
 
@@ -77,6 +95,9 @@ public struct TriggerStateMachine: Equatable, Sendable {
     }
 
     private func fromIdle(_ event: Event) -> (state: Self, action: Action) {
+        if event == .doubleTap {
+            return (with(.palette), .showPalette)
+        }
         guard case let .modifiersChanged(modifiers) = event, !modifiers.isEmpty else {
             return (self, .none)
         }
@@ -95,12 +116,14 @@ public struct TriggerStateMachine: Equatable, Sendable {
                 return (self, .none)
             }
             return (with(modifiers.isEmpty ? .idle : .suppressed), .cancelTimer)
-        case .keyDown, .mouseDown, .interrupted:
+        case .keyDown, .mouseDown, .mouseDownOutside, .interrupted:
             return (with(.suppressed), .cancelTimer)
         case let .timerFired(firedToken):
             return firedToken == token ? (with(.shown), .show) : (self, .none)
         case .reset:
             return (with(.idle), .cancelTimer)
+        case .doubleTap, .close:
+            return (self, .none)
         }
     }
 
@@ -113,7 +136,7 @@ public struct TriggerStateMachine: Equatable, Sendable {
             return (with(modifiers.isEmpty ? .idle : .suppressed), .hide)
         case .keyDown, .interrupted:
             return (with(.suppressed), .hide)
-        case .mouseDown, .timerFired:
+        case .mouseDown, .mouseDownOutside, .timerFired, .doubleTap, .close:
             // Clicks belong to the overlay (pressing an entry).
             return (self, .none)
         case .reset:
@@ -126,6 +149,16 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case .reset, .modifiersChanged([]):
             (with(.idle), .none)
         default:
+            (self, .none)
+        }
+    }
+
+    private func fromPalette(_ event: Event) -> (state: Self, action: Action) {
+        switch event {
+        case .mouseDownOutside, .interrupted, .close, .reset:
+            (with(.idle), .hide)
+        case .modifiersChanged, .keyDown, .mouseDown, .timerFired, .doubleTap:
+            // Keys and clicks on the panel belong to the palette.
             (self, .none)
         }
     }
