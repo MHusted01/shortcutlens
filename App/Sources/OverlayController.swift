@@ -337,7 +337,11 @@ extension OverlayController {
         guard let app = NSRunningApplication(processIdentifier: key.pid) else {
             return true
         }
-        return app.isTerminated || app.launchDate != key.launchDate
+        // `launchDate` is nil for some processes; only two different dates mean a reused pid.
+        if let then = key.launchDate, let now = app.launchDate, then != now {
+            return true
+        }
+        return app.isTerminated
     }
 
     /// The body to show and the panel size it needs on a screen whose visible
