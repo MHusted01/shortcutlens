@@ -88,6 +88,14 @@ public struct PaletteState<Element> {
         return Self(query: query, content: content, visible: visible, order: order, index: moved)
     }
 
+    /// The state with `id` selected; unchanged when `id` is not visible.
+    func selecting(_ id: RowID) -> Self {
+        guard let position = order.firstIndex(of: id) else {
+            return self
+        }
+        return Self(query: query, content: content, visible: visible, order: order, index: position)
+    }
+
     public func escaped() -> EscapeOutcome {
         query.isEmpty ? .close : .cleared(with(query: ""))
     }

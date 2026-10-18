@@ -26,9 +26,10 @@ final class PaletteModel {
     var body = OverlayBody.loading
     var selection: RowID?
     @ObservationIgnored let onQueryChange: (String) -> Void
-    @ObservationIgnored let onCommand: (SearchCommand) -> Void
+    /// Returns whether the command was handled; see `SearchField`.
+    @ObservationIgnored let onCommand: (SearchCommand) -> Bool
 
-    init(onQueryChange: @escaping (String) -> Void, onCommand: @escaping (SearchCommand) -> Void) {
+    init(onQueryChange: @escaping (String) -> Void, onCommand: @escaping (SearchCommand) -> Bool) {
         self.onQueryChange = onQueryChange
         self.onCommand = onCommand
     }
