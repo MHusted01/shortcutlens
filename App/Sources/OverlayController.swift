@@ -8,9 +8,11 @@ import SwiftUI
 ///
 /// `prepare()` runs when the hold-Command countdown starts and reads the menus
 /// off the main actor, so by the time `show()` runs a second later the content
-/// is usually ready. Otherwise the panel shows a loading state and fills in
-/// when the read finishes. Each `prepare()` starts a new generation; results of
-/// an older one are dropped.
+/// is usually ready. The last read of each running app is cached, so a
+/// reopened app shows it at once while the fresh read runs. Without cached
+/// content the panel shows a loading state and fills in when the read
+/// finishes. Each `prepare()` starts a new generation; an older generation's
+/// result is cached but not shown.
 ///
 /// `showPalette()` shows the same content as a command palette: typing
 /// filters, arrow keys select, Return runs. The panel keeps the size it has
@@ -19,9 +21,28 @@ import SwiftUI
 @MainActor
 final class OverlayController {
     private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
-    /// Seconds a read stays usable for the next `prepare()` of the same app;
-    /// long enough for the second tap of a double tap.
-    private static let contentReuseWindow: TimeInterval = 2
+    /// Seconds one menu read may take in total before it stops asking the app.
+    private nonisolated static let readBudget: TimeInterval = 3
+    /// Apps whose content stays cached.
+    private static let cacheCapacity = 8
+
+    /// One running instance of an app. A relaunched app gets a new key even
+    /// if the system reuses its pid.
+    private struct AppKey: Hashable {
+        let pid: pid_t
+        let launchDate: Date?
+
+        init(_ app: NSRunningApplication) {
+            pid = app.processIdentifier
+            launchDate = app.launchDate
+        }
+    }
+
+    /// What one read produced, and whether it ran out of budget.
+    private struct ReadResult {
+        let content: OverlayContent<AXUIElement>
+        let budgetSpent: Bool
+    }
 
     /// The app a read was started for.
     private struct Target {
@@ -41,31 +62,48 @@ final class OverlayController {
         }
     }
 
-    private typealias ReadTask = Task<UncheckedSendable<OverlayContent<AXUIElement>>, Never>
+    private typealias ReadTask = Task<UncheckedSendable<ReadResult>, Never>
 
     /// Called when the palette should close: Escape on an empty query, an
     /// item was run, or the panel lost key status.
     var onClosePalette: () -> Void = {}
 
     private let panel = OverlayPanel()
-    private var inFlight: (pid: pid_t, task: ReadTask)?
+    private var inFlight: (key: AppKey, task: ReadTask)?
     private var generation = 0
     private var target: Target?
     private var content: OverlayContent<AXUIElement>?
-    /// The app `content` was read from, and when (system uptime).
-    private var contentSource: (pid: pid_t, readAt: TimeInterval)?
+    private var cache = MenuCache<AppKey, OverlayContent<AXUIElement>>(capacity: cacheCapacity)
+    private var terminationObserver: NSObjectProtocol?
     private var isShown = false
     private var palette: OpenPalette?
 
     init() {
         panel.onResignKey = { [weak self] in self?.onClosePalette() }
+        observeTerminations()
     }
 
-    /// Starts reading the frontmost app's menus. ShortcutLens itself is skipped.
-    ///
-    /// Content read for the same app within `contentReuseWindow` is kept until
-    /// the new read replaces it, so the second tap of a double tap does not
-    /// throw away what the first tap read.
+    /// Drops the cached content of apps that quit.
+    private func observeTerminations() {
+        terminationObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main
+        ) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+                return
+            }
+            let key = AppKey(app)
+            MainActor.assumeIsolated {
+                self?.forget(key)
+            }
+        }
+    }
+
+    private func forget(_ key: AppKey) {
+        cache = cache.removing(key)
+    }
+
+    /// Starts reading the frontmost app's menus and shows its cached content
+    /// until the read finishes. ShortcutLens itself is skipped.
     func prepare() {
         generation += 1
         guard let app = NSWorkspace.shared.frontmostApplication,
@@ -75,37 +113,29 @@ final class OverlayController {
             content = nil
             return
         }
-        if !canReuseContent(for: app.processIdentifier) {
-            content = nil
-        }
+        let key = AppKey(app)
+        content = cache.value(for: key)
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
-        let pid = app.processIdentifier
-        let read = runningRead(for: pid) ?? startRead(pid: pid, appName: target.name)
+        let read = runningRead(for: key) ?? startRead(key: key, appName: target.name)
         Task { [weak self] in
             let result = await read.value
-            self?.finishRead(result.value, generation: target.generation, pid: pid)
+            self?.finishRead(result.value, generation: target.generation, key: key)
         }
     }
 
-    private func canReuseContent(for pid: pid_t) -> Bool {
-        guard let source = contentSource, source.pid == pid else {
-            return false
-        }
-        return ProcessInfo.processInfo.systemUptime - source.readAt <= Self.contentReuseWindow
-    }
-
-    /// The read already running for `pid`, if any. Reusing it keeps repeated
+    /// The read already running for `key`, if any. Reusing it keeps repeated
     /// Command holds on a slow app from piling up concurrent menu walks.
-    private func runningRead(for pid: pid_t) -> ReadTask? {
-        inFlight?.pid == pid ? inFlight?.task : nil
+    private func runningRead(for key: AppKey) -> ReadTask? {
+        inFlight?.key == key ? inFlight?.task : nil
     }
 
-    private func startRead(pid: pid_t, appName: String) -> ReadTask {
+    private func startRead(key: AppKey, appName: String) -> ReadTask {
+        let pid = key.pid
         let task = Task.detached(priority: .userInitiated) {
             Self.readContent(pid: pid, appName: appName)
         }
-        inFlight = (pid, task)
+        inFlight = (key, task)
         return task
     }
 
@@ -240,15 +270,19 @@ final class OverlayController {
         }
     }
 
-    private func finishRead(_ content: OverlayContent<AXUIElement>, generation: Int, pid: pid_t) {
-        if inFlight?.pid == pid {
+    private func finishRead(_ result: ReadResult, generation: Int, key: AppKey) {
+        if inFlight?.key == key {
             inFlight = nil
+        }
+        // A read that outlived its app would re-add an entry nothing removes.
+        if !Self.hasTerminated(key) {
+            cache = cache.storing(read: result.content, for: key, budgetSpent: result.budgetSpent)
         }
         guard generation == self.generation else {
             return
         }
+        let content = cache.value(for: key) ?? result.content
         self.content = content
-        contentSource = (pid, ProcessInfo.processInfo.systemUptime)
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
             let size = refreshPalette()
@@ -279,20 +313,36 @@ final class OverlayController {
     private nonisolated static func readContent(
         pid: pid_t,
         appName: String
-    ) -> UncheckedSendable<OverlayContent<AXUIElement>> {
+    ) -> UncheckedSendable<ReadResult> {
         let start = ContinuousClock.now
-        let groups = MenuReader(client: SystemAXClient()).read(processID: pid)
+        let client = DeadlineAXClient(base: SystemAXClient(), budget: readBudget) {
+            ProcessInfo.processInfo.systemUptime
+        }
+        let groups = MenuReader(client: client).read(processID: pid)
         let content = OverlayContent(appName: appName, groups: groups)
         let elapsed = ContinuousClock.now - start
         let rows = content.rowCount
+        let expired = client.hasExpired
         // Counts and timing only, never app names or titles.
-        log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public)")
-        return UncheckedSendable(value: content)
+        log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public), budget spent: \(expired, privacy: .public)")
+        return UncheckedSendable(value: ReadResult(content: content, budgetSpent: expired))
     }
 }
 
 extension OverlayController {
     private static let placeholderSize = CGSize(width: 360, height: 150)
+
+    /// True when the app `key` names is gone, also when its pid now belongs to another app.
+    private static func hasTerminated(_ key: AppKey) -> Bool {
+        guard let app = NSRunningApplication(processIdentifier: key.pid) else {
+            return true
+        }
+        // `launchDate` is nil for some processes; only two different dates mean a reused pid.
+        if let then = key.launchDate, let now = app.launchDate, then != now {
+            return true
+        }
+        return app.isTerminated
+    }
 
     /// The body to show and the panel size it needs on a screen whose visible
     /// area is `visible`. Nil `content` means the read is still running.
