@@ -1,0 +1,68 @@
+name: claude-review
+
+# AI review on every PR, posted as inline comments plus one summary comment.
+# Authenticates with the owner's Claude subscription (CLAUDE_CODE_OAUTH_TOKEN,
+# created with `claude setup-token`). Fork PRs are skipped: they get no secrets.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    name: claude-review
+    if: github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request for ShortcutLens, a native macOS app (Swift 6,
+            AppKit + SwiftUI, macOS 14+) that reads the frontmost app's menu bar
+            shortcuts through the Accessibility (AX) API and shows them in an overlay.
+            Read the diff (`gh pr diff`) and open the surrounding files when you
+            need context.
+
+            Project rules to enforce:
+            - No network code in the app: no URLSession, Network, CFNetwork,
+              sockets, web views, analytics, crash reporters or auto-updaters.
+            - No third-party runtime dependencies. ShortcutLensCore must not
+              import AppKit and must not declare package dependencies.
+            - Testable logic lives in ShortcutLensCore with Swift Testing tests;
+              new Core behaviour needs tests (TDD), Core line coverage >= 80%.
+            - Files under 400 lines, small functions, no force unwraps.
+            - AX/CF: values from Copy* functions are +1 and must be released
+              exactly once; AX calls need a messaging timeout.
+            - Clean-room: nothing copied from the commercial app "CheatSheet".
+
+            Focus on correctness, edge cases, concurrency, memory ownership,
+            API design and missing tests. Skip pure style that SwiftLint or
+            SwiftFormat already enforce.
+
+            Post each concrete issue as an inline comment on the relevant line,
+            labelled CRITICAL, HIGH, MEDIUM, LOW or NIT, with a suggested fix.
+            Then post one summary comment with `gh pr comment`: counts per
+            severity and an overall verdict. If you find nothing, say so in
+            the summary only. Do not approve or request changes.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Read,Glob,Grep"
