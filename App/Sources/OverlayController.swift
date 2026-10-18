@@ -38,11 +38,10 @@ final class OverlayController {
         }
     }
 
-    /// What one read produced; `isComplete` is false when it ran out of
-    /// budget or found nothing, so it does not replace cached content.
+    /// What one read produced, and whether it ran out of budget.
     private struct ReadResult {
         let content: OverlayContent<AXUIElement>
-        let isComplete: Bool
+        let budgetSpent: Bool
     }
 
     /// The app a read was started for.
@@ -275,7 +274,10 @@ final class OverlayController {
         if inFlight?.key == key {
             inFlight = nil
         }
-        cache = cache.storing(result.content, for: key, isComplete: result.isComplete)
+        // A read that outlived its app would re-add an entry nothing removes.
+        if !Self.hasTerminated(key) {
+            cache = cache.storing(read: result.content, for: key, budgetSpent: result.budgetSpent)
+        }
         guard generation == self.generation else {
             return
         }
@@ -323,12 +325,20 @@ final class OverlayController {
         let expired = client.hasExpired
         // Counts and timing only, never app names or titles.
         log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public), budget spent: \(expired, privacy: .public)")
-        return UncheckedSendable(value: ReadResult(content: content, isComplete: !expired && !content.isEmpty))
+        return UncheckedSendable(value: ReadResult(content: content, budgetSpent: expired))
     }
 }
 
 extension OverlayController {
     private static let placeholderSize = CGSize(width: 360, height: 150)
+
+    /// True when the app `key` names is gone, also when its pid now belongs to another app.
+    private static func hasTerminated(_ key: AppKey) -> Bool {
+        guard let app = NSRunningApplication(processIdentifier: key.pid) else {
+            return true
+        }
+        return app.isTerminated || app.launchDate != key.launchDate
+    }
 
     /// The body to show and the panel size it needs on a screen whose visible
     /// area is `visible`. Nil `content` means the read is still running.

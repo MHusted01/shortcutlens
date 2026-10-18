@@ -76,20 +76,31 @@ struct DeadlineAXClientTests {
         #expect(client.menuBar(forProcess: FakeAXClient.pid) == FakeAXClient.menuBar)
     }
 
+    @Test func expiresExactlyAtTheDeadline() {
+        let (base, _) = makeTree()
+        let clock = TestClock()
+        let client = client(base, budget: 2, clock: clock)
+
+        clock.time = 1.999
+        #expect(!client.hasExpired)
+        clock.time = 2
+        #expect(client.hasExpired)
+    }
+
     @Test func readerReturnsWhatWasReadBeforeTheBudgetRanOut() {
         let (base, _) = makeTree()
+        let clock = TestClock()
+        // One second per call, so the clock ends at the number of calls the File menu needs.
+        let fileOnly = MenuReader(client: client(base, budget: 1000, clock: clock)).read(processID: FakeAXClient.pid)
+        let callsForFile = clock.time
         let edit = base.addTopLevelMenu("Edit")
         base.addItem("Copy", key: "C", to: edit)
-        let clock = TestClock()
-        let unlimited = MenuReader(client: client(base, budget: 1000, clock: clock)).read(processID: FakeAXClient.pid)
-        let callsForFile = 10
 
         clock.time = 0
-        let limited = client(base, budget: Double(callsForFile), clock: clock)
+        let limited = client(base, budget: callsForFile, clock: clock)
         let groups = MenuReader(client: limited).read(processID: FakeAXClient.pid)
 
-        #expect(unlimited.map(\.title) == ["File", "Edit"])
-        #expect(groups.map(\.title) == ["File"])
+        #expect(groups.map(\.title) == fileOnly.map(\.title))
         #expect(groups[0].items.map(\.shortcut.title) == ["Save", "Open"])
         #expect(limited.hasExpired)
     }
