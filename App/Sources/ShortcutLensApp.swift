@@ -32,8 +32,12 @@ struct ShortcutLensApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let permission = PermissionController()
     private let trigger = TriggerController()
+    private let overlay = OverlayController()
 
     func applicationDidFinishLaunching(_: Notification) {
+        trigger.onArm = { [overlay] in overlay.prepare() }
+        trigger.onShow = { [overlay] in overlay.show() }
+        trigger.onHide = { [overlay] in overlay.hide() }
         permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
     }
