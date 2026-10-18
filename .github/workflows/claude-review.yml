@@ -30,10 +30,70 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      # Full history so the previous head of a synchronize event can be diffed.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
+
+      # Collects earlier review threads and the diff of the latest push into
+      # files Claude reads with its Read tool, so the review needs no extra
+      # (writable) gh api access. Kept inline: a script from the checkout
+      # would be PR-controlled code running with the token.
+      - name: Collect review context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_ACTION: ${{ github.event.action }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+          threads="$RUNNER_TEMP/review-threads.md"
+          incremental="$RUNNER_TEMP/incremental.diff"
+
+          # $owner/$name/$number are GraphQL variables, not shell ones.
+          # shellcheck disable=SC2016
+          gh api graphql \
+            -F owner="${REPO%%/*}" -F name="${REPO#*/}" -F number="$PR_NUMBER" \
+            -f query='
+              query($owner: String!, $name: String!, $number: Int!) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $number) {
+                    reviewThreads(first: 100) {
+                      nodes {
+                        isResolved
+                        isOutdated
+                        path
+                        line
+                        comments(first: 50) {
+                          nodes { author { login } body }
+                        }
+                      }
+                    }
+                  }
+                }
+              }' \
+            --jq '.data.repository.pullRequest.reviewThreads.nodes[]
+              | "## \(.path):\(.line // "outdated")"
+                + " | resolved: \(.isResolved) | outdated: \(.isOutdated)\n"
+                + ([.comments.nodes[] | "- @\(.author.login // "ghost"): \(.body)"]
+                   | join("\n"))
+                + "\n"' > "$threads"
+          if [ ! -s "$threads" ]; then
+            echo "No earlier review threads." > "$threads"
+          fi
+
+          if [ "$EVENT_ACTION" = "synchronize" ] \
+            && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null \
+            && git cat-file -e "$AFTER_SHA^{commit}" 2>/dev/null; then
+            git diff "$BEFORE_SHA" "$AFTER_SHA" > "$incremental"
+          else
+            echo "No incremental diff (first review, or the previous head is gone after a force-push). Review the full PR diff." > "$incremental"
+          fi
+          echo "THREADS_FILE=$threads" >> "$GITHUB_ENV"
+          echo "INCREMENTAL_FILE=$incremental" >> "$GITHUB_ENV"
 
       - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
         with:
@@ -47,6 +107,16 @@ jobs:
             shortcuts through the Accessibility (AX) API and shows them in an overlay.
             Read the diff (`gh pr diff`) and open the surrounding files when you
             need context.
+
+            Before reviewing, read these two files:
+            - ${{ env.THREADS_FILE }}: earlier review threads on this PR with
+              their replies and resolved state. Do not raise a point again if
+              its thread is resolved or the author answered it, unless the new
+              changes touch those lines in a way that reopens it; then say why.
+            - ${{ env.INCREMENTAL_FILE }}: the diff of the latest push. If it
+              contains a diff, review only those changes and use the full PR
+              diff for context. Otherwise review the full PR diff.
+            State in the summary which mode you used (full or incremental).
 
             Project rules to enforce:
             - No network code in the app: no URLSession, Network, CFNetwork,
