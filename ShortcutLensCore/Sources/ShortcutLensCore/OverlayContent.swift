@@ -19,6 +19,12 @@ public struct OverlayContent<Element> {
             .map { OverlaySection(id: $0.offset, title: $0.element.title, rows: $0.element.rows) }
     }
 
+    /// Content from sections that are already built, e.g. a filtered copy.
+    public init(appName: String, sections: [OverlaySection<Element>]) {
+        self.appName = appName
+        self.sections = sections
+    }
+
     /// True when the app has no shortcut to show.
     public var isEmpty: Bool {
         sections.isEmpty
