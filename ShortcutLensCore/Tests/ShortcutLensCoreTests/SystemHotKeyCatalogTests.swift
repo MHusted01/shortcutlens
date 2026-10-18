@@ -124,6 +124,11 @@ struct SymbolicHotKeyBindingLabelTests {
         #expect(label(nil, 44) == "/")
     }
 
+    @Test func storedControlCharacterFallsBackToTheUSLayout() {
+        #expect(label("\r", 0) == "A")
+        #expect(label("\u{3}", 18) == "1")
+    }
+
     @Test func noKeyGivesNoLabel() {
         #expect(label(nil, nil) == nil)
         #expect(label(nil, 9999) == nil)

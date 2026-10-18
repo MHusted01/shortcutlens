@@ -51,10 +51,14 @@ enum KeyCodes {
 public extension SymbolicHotKeyBinding {
     /// The binding as a shortcut `ShortcutFormatter` can render. A non-character
     /// key's glyph wins over the stored character, which is a control code for
-    /// keys such as Return.
+    /// keys such as Return. A stored control code is ignored, so a key without
+    /// a glyph still gets its US-layout label.
     func shortcut(title: String, menuPath: [String] = []) -> MenuShortcut {
         let glyph = keyCode.flatMap(KeyCodes.glyph)
-        let character = character ?? keyCode.flatMap(KeyCodes.usCharacter)
+        let printable = character.flatMap { character in
+            character.unicodeScalars.contains { $0.properties.generalCategory == .control } ? nil : character
+        }
+        let character = printable ?? keyCode.flatMap(KeyCodes.usCharacter)
         return MenuShortcut(
             title: title,
             keyCharacter: character.map(String.init),

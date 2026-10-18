@@ -48,15 +48,15 @@ public struct SymbolicHotKeyBinding: Hashable, Sendable {
     }
 }
 
-public extension ModifierMask {
-    /// `NSEvent.ModifierFlags` raw values as the store keeps them.
-    private enum EventFlag {
-        static let shift = 0x20000
-        static let control = 0x40000
-        static let option = 0x80000
-        static let command = 0x100000
-    }
+/// `NSEvent.ModifierFlags` raw values as the store keeps them.
+enum EventFlag {
+    static let shift = 0x20000
+    static let control = 0x40000
+    static let option = 0x80000
+    static let command = 0x100000
+}
 
+public extension ModifierMask {
     /// Decodes `NSEvent.ModifierFlags` bits. Other bits, such as the
     /// function-key flag macOS adds for arrow keys, are ignored.
     init(eventFlags: Int) {

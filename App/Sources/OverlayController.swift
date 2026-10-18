@@ -19,8 +19,8 @@ import SwiftUI
 /// for all rows while filtering. Every way of closing the palette goes
 /// through `onClosePalette`, so the trigger state machine always knows.
 ///
-/// System shortcuts are read at each `prepare()` and appended as a last,
-/// display-only section; the cache holds menu content only.
+/// System shortcuts are read with the menus, off the main actor, and appended
+/// as a last, display-only section. The cache holds menu content only.
 @MainActor
 final class OverlayController {
     private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
@@ -44,6 +44,7 @@ final class OverlayController {
     /// What one read produced, and whether it ran out of budget.
     private struct ReadResult {
         let content: OverlayContent<AXUIElement>
+        let systemShortcuts: [MenuShortcut]
         let budgetSpent: Bool
         let settings: AppSettings
     }
@@ -116,6 +117,9 @@ final class OverlayController {
             inFlight = nil
         }
         readSettings = settings
+        if !settings.showsSystemShortcuts {
+            systemShortcuts = []
+        }
     }
 
     /// Starts reading the frontmost app's menus and shows its cached content
@@ -130,7 +134,6 @@ final class OverlayController {
             return
         }
         let key = AppKey(app)
-        systemShortcuts = readSettings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
         content = cache.value(for: key).map(withSystemShortcuts)
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
@@ -274,6 +277,8 @@ final class OverlayController {
             }
             return
         }
+        // A read started before the toggle was turned off must not bring them back.
+        systemShortcuts = readSettings.showsSystemShortcuts ? result.systemShortcuts : []
         let content = withSystemShortcuts(cache.value(for: key) ?? result.content)
         self.content = content
         if let palette {
@@ -320,13 +325,16 @@ final class OverlayController {
             client: client, maxDepth: settings.maxMenuDepth, includesDisabled: settings.showsDisabledItems
         )
         let groups = reader.read(processID: pid)
+        let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
         let content = OverlayContent(appName: appName, groups: groups)
         let elapsed = ContinuousClock.now - start
         let rows = content.rowCount
         let expired = client.hasExpired
         // Counts and timing only, never app names or titles.
         log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public), budget spent: \(expired, privacy: .public)")
-        return UncheckedSendable(value: ReadResult(content: content, budgetSpent: expired, settings: settings))
+        return UncheckedSendable(value: ReadResult(
+            content: content, systemShortcuts: system, budgetSpent: expired, settings: settings
+        ))
     }
 }
 

@@ -32,11 +32,10 @@ public enum SystemHotKeyCatalog {
         }
     }
 
-    // Event flags as the store writes them.
-    private static let shift = 0x20000
-    private static let control = 0x40000
-    private static let option = 0x80000
-    private static let command = 0x100000
+    private static let shift = EventFlag.shift
+    private static let control = EventFlag.control
+    private static let option = EventFlag.option
+    private static let command = EventFlag.command
 
     private static func entry(
         _ id: Int, _ title: String, _ character: Character?, _ keyCode: Int, _ flags: Int, enabled: Bool = true

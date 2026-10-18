@@ -5,7 +5,8 @@ import ShortcutLensCore
 ///
 /// This is a local preferences read: no file access outside the preferences
 /// system and nothing leaves the machine. The app is not sandboxed, so another
-/// domain's preferences are readable.
+/// domain's preferences are readable. Synchronizing can wait on cfprefsd, so
+/// this runs in the background menu read, never on the main actor.
 enum SystemHotKeySource {
     // Strings, not `CFString`: a `CFString` static is not `Sendable`.
     private static let domain = "com.apple.symbolichotkeys"
