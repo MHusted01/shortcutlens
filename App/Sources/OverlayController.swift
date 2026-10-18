@@ -129,6 +129,11 @@ final class OverlayController {
         content = cache.value(for: key)
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
+        read(key, for: target)
+    }
+
+    /// Reads `key`'s menus for `target`, reusing a running read.
+    private func read(_ key: AppKey, for target: Target) {
         let read = runningRead(for: key) ?? startRead(key: key, appName: target.name)
         Task { [weak self] in
             let result = await read.value
@@ -254,7 +259,15 @@ final class OverlayController {
         if isCurrent, !Self.hasTerminated(key) {
             cache = cache.storing(read: result.content, for: key, budgetSpent: result.budgetSpent)
         }
-        guard isCurrent, generation == self.generation else {
+        guard generation == self.generation else {
+            return
+        }
+        guard isCurrent else {
+            // Settings changed during this read; read again so an open panel
+            // does not stay on the loading state.
+            if let target {
+                read(key, for: target)
+            }
             return
         }
         let content = cache.value(for: key) ?? result.content
