@@ -66,6 +66,8 @@ struct ShortcutFormatterTests {
         (String?.some("\u{0}"), Int?.none),
         (String?.some("  "), Int?.none),
         (String?.some("ab"), Int?.none),
+        (String?.some("\u{200B}"), Int?.none),
+        (String?.some("\u{FEFF}"), Int?.none),
     ])
     func returnsNilWithoutUsableKey(keyCharacter: String?, glyph: Int?) {
         let shortcut = makeShortcut(keyCharacter: keyCharacter, glyph: glyph, modifiers: 0)

@@ -43,10 +43,11 @@ public enum ShortcutFormatter {
         "\u{8}": 0x17, // kMenuDeleteLeftGlyph (backspace)
     ]
 
-    /// Uppercases printable characters, but keeps a character whose uppercase
-    /// form is longer (e.g. "ß" -> "SS") so a key always renders as one key.
-    /// A key is exactly one character; whitespace, control and private-use
-    /// characters cannot be shown. Anything else yields nil.
+    /// 1. Special keys (space, return, tab, ...) render as their glyph symbol.
+    /// 2. Otherwise the key must be exactly one grapheme whose scalars are all
+    ///    visible; a combining sequence such as "e\u{301}" counts as one key.
+    /// 3. It is uppercased, unless that lengthens it (e.g. "ß" -> "SS").
+    /// Anything else yields nil.
     private static func characterSymbol(_ character: String) -> String? {
         if let glyph = specialCharacterGlyphs[character] {
             return MenuGlyph.symbol(for: glyph)
@@ -58,10 +59,13 @@ public enum ShortcutFormatter {
         return uppercased.count == character.count ? uppercased : character
     }
 
+    /// Scalar categories that render as nothing or as a placeholder box.
+    private static let invisibleCategories: Set<Unicode.GeneralCategory> = [
+        .control, .format, .privateUse, .surrogate, .unassigned,
+    ]
+
     private static func isDisplayable(_ scalar: Unicode.Scalar) -> Bool {
         let properties = scalar.properties
-        return !properties.isWhitespace
-            && properties.generalCategory != .control
-            && properties.generalCategory != .privateUse
+        return !properties.isWhitespace && !invisibleCategories.contains(properties.generalCategory)
     }
 }
