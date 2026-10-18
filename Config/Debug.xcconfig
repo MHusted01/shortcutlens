@@ -1,0 +1,7 @@
+// Debug signing. Ad-hoc by default, so CI needs no certificate.
+// For local development, scripts/create-dev-cert.sh creates a stable
+// self-signed identity and writes the gitignored Local.xcconfig, which
+// keeps the Accessibility permission across rebuilds.
+CODE_SIGN_IDENTITY = -
+
+#include? "Local.xcconfig"

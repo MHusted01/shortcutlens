@@ -1,0 +1,3 @@
+// Release builds are always ad-hoc signed (no Apple Developer account) and
+// never pick up the local development identity.
+CODE_SIGN_IDENTITY = -

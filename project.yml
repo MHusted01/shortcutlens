@@ -25,6 +25,9 @@ targets:
     platform: macOS
     sources:
       - App/Sources
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
     dependencies:
       - package: ShortcutLensCore
     info:
@@ -41,8 +44,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.mhusted01.shortcutlens
         MARKETING_VERSION: "0.0.1"
         CURRENT_PROJECT_VERSION: "1"
-        # Ad-hoc signing; no Apple Developer account required.
-        CODE_SIGN_IDENTITY: "-"
+        # CODE_SIGN_IDENTITY comes from Config/*.xcconfig (ad-hoc unless a
+        # local development identity is set up); no Apple Developer account.
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""
         # Xcode disables the hardened runtime for ad-hoc signatures; enable it
