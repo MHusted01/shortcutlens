@@ -1,0 +1,8 @@
+--swiftversion 6.0
+--exclude ShortcutLensCore/.build,build,DerivedData
+--indent 4
+--maxwidth 120
+--wraparguments before-first
+--wrapcollections before-first
+--commas always
+--self remove
