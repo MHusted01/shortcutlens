@@ -1,6 +1,6 @@
 /// Decides when the overlay shows: Command held alone for `delay` seconds.
 ///
-/// Any other modifier, key press or click during the countdown cancels it, so
+/// Any other modifier, key press, click or interruption during the countdown cancels it, so
 /// normal shortcuts such as Cmd+C never show the overlay. After a cancel the
 /// trigger stays suppressed until every modifier is released; going from
 /// Cmd+Shift back to Cmd does not start a new countdown.
@@ -21,6 +21,9 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case keyDown
         case mouseDown
         case timerFired(token: Int)
+        /// Something the monitors cannot see took over, such as the app
+        /// switcher (Cmd+Tab) or a Space change. Treated like a key press.
+        case interrupted
         /// Monitoring stopped (for example the permission was revoked).
         case reset
     }
@@ -92,7 +95,7 @@ public struct TriggerStateMachine: Equatable, Sendable {
                 return (self, .none)
             }
             return (with(modifiers.isEmpty ? .idle : .suppressed), .cancelTimer)
-        case .keyDown, .mouseDown:
+        case .keyDown, .mouseDown, .interrupted:
             return (with(.suppressed), .cancelTimer)
         case let .timerFired(firedToken):
             return firedToken == token ? (with(.shown), .show) : (self, .none)
@@ -108,7 +111,7 @@ public struct TriggerStateMachine: Equatable, Sendable {
                 return (self, .none)
             }
             return (with(modifiers.isEmpty ? .idle : .suppressed), .hide)
-        case .keyDown:
+        case .keyDown, .interrupted:
             return (with(.suppressed), .hide)
         case .mouseDown, .timerFired:
             // Clicks belong to the overlay (pressing an entry).

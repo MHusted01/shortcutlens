@@ -68,7 +68,7 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0), .reset])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0), .reset, .interrupted])
     func idleIgnoresOtherEvents(event: Machine.Event) {
         let (state, action) = Machine.initial.updated(with: event)
 
@@ -130,7 +130,7 @@ struct TriggerStateMachineTests {
         #expect(action == .cancelTimer)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .interrupted])
     func inputCancelsCountdown(event: Machine.Event) {
         let (counting, _) = Self.counting()
         let (state, action) = counting.updated(with: event)
@@ -195,8 +195,9 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test func keyPressHidesOverlay() {
-        let (state, action) = Self.shown().updated(with: .keyDown)
+    @Test(arguments: [Machine.Event.keyDown, .interrupted])
+    func keyPressOrInterruptionHidesOverlay(event: Machine.Event) {
+        let (state, action) = Self.shown().updated(with: event)
 
         #expect(state.phase == .suppressed)
         #expect(action == .hide)
@@ -236,7 +237,7 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0)])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0), .interrupted])
     func suppressedIgnoresInput(event: Machine.Event) {
         let suppressed = Self.suppressed()
         let (state, action) = suppressed.updated(with: event)
@@ -262,6 +263,17 @@ struct TriggerStateMachineTests {
 
         #expect(!actions.contains(.show))
         #expect(actions.last == Machine.Action.none)
+    }
+
+    @Test func appSwitcherNeverShowsOverlay() {
+        // Cmd+Tab: the system consumes Tab, so only the app activation is seen.
+        let events: [Machine.Event] = [
+            .modifiersChanged(.command), .interrupted, .modifiersChanged([]),
+        ]
+        let actions = Self.run(events)
+
+        #expect(!actions.contains(.show))
+        #expect(actions == [.startTimer(token: 0, delay: Machine.defaultDelay), .cancelTimer, .none])
     }
 
     @Test func commandShiftThenShiftReleasedDoesNotRestart() {

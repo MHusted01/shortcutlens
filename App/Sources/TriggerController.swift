@@ -9,6 +9,13 @@ import ShortcutLensCore
 /// sent to other apps (key events only with the Accessibility permission), a
 /// local monitor sees events sent to this app. Monitors are installed only
 /// while the permission is granted.
+///
+/// The system consumes some chords (Cmd+Tab, Cmd+Space) before any monitor
+/// sees the key, so another app activating or a Space change counts as an
+/// interruption.
+///
+/// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
+/// before dropping it, or the monitors stay installed.
 @MainActor
 final class TriggerController {
     private static let log = Logger(subsystem: "dev.shortcutlens", category: "trigger")
@@ -22,37 +29,65 @@ final class TriggerController {
 
     private var machine = TriggerStateMachine.initial
     private var monitors: [Any] = []
+    private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
 
     /// Installs or removes the event monitors.
     func setEnabled(_ enabled: Bool) {
         if enabled, monitors.isEmpty {
             installMonitors()
+            observeInterruptions()
             let count = monitors.count
             Self.log.notice("monitors installed: \(count)")
         } else if !enabled, !monitors.isEmpty {
             Self.log.notice("monitors removed")
             monitors.forEach(NSEvent.removeMonitor)
             monitors = []
+            observers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
+            observers = []
             handle(.reset)
         }
     }
 
     private func installMonitors() {
-        let global = NSEvent.addGlobalMonitorForEvents(matching: Self.monitoredEvents) { [weak self] event in
+        // AppKit calls both monitors on the main thread.
+        let deliver: (NSEvent) -> Void = { [weak self] event in
             let triggerEvent = Self.triggerEvent(for: event)
             MainActor.assumeIsolated {
                 self?.handle(triggerEvent)
             }
         }
-        let local = NSEvent.addLocalMonitorForEvents(matching: Self.monitoredEvents) { [weak self] event in
-            let triggerEvent = Self.triggerEvent(for: event)
-            MainActor.assumeIsolated {
-                self?.handle(triggerEvent)
-            }
+        let global = NSEvent.addGlobalMonitorForEvents(matching: Self.monitoredEvents, handler: deliver)
+        let local = NSEvent.addLocalMonitorForEvents(matching: Self.monitoredEvents) { event in
+            deliver(event)
             return event
         }
         monitors = [global, local].compactMap(\.self)
+    }
+
+    private func observeInterruptions() {
+        let center = NSWorkspace.shared.notificationCenter
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        let activation = center.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            // The overlay itself may activate this app; that is not an interruption.
+            guard app?.processIdentifier != ownPID else {
+                return
+            }
+            MainActor.assumeIsolated {
+                self?.handle(.interrupted)
+            }
+        }
+        let space = center.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.handle(.interrupted)
+            }
+        }
+        observers = [activation, space]
     }
 
     private func handle(_ event: TriggerStateMachine.Event) {
@@ -78,6 +113,8 @@ final class TriggerController {
         cancelTimer()
         let timer = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
+                // Re-read the keys in case a release was missed while counting down.
+                self?.handle(.modifiersChanged(Self.heldModifiers(NSEvent.modifierFlags)))
                 self?.handle(.timerFired(token: token))
             }
         }
