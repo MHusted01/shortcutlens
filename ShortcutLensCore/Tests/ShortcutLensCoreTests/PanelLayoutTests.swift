@@ -82,4 +82,30 @@ struct PanelLayoutTests {
         #expect(result.columns.isEmpty)
         #expect(!result.scrolls)
     }
+
+    // MARK: - Fitting a panel that is already sized
+
+    /// Laying out the same rows inside the panel they produced gives the same
+    /// layout, also with a screen fraction that does not divide evenly.
+    @Test(arguments: [1.0, 0.9])
+    func sameRowsFitTheirOwnPanel(fraction: Double) {
+        let metrics = metrics(screenFraction: fraction)
+        let full = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics, visible: CGSize(width: 1000, height: 200))
+
+        let refit = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics, fitting: full.size)
+
+        #expect(full.columns.count > 1)
+        #expect(refit == full)
+    }
+
+    @Test func fewerRowsStayWithinThePanel() {
+        let visible = CGSize(width: 1000, height: 200)
+        let full = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics(), visible: visible)
+
+        let filtered = PanelLayout.layout(rowCounts: [8, 1], metrics: metrics(), fitting: full.size)
+
+        #expect(filtered.size.width <= full.size.width)
+        #expect(filtered.size.height <= full.size.height)
+        #expect(!filtered.scrolls)
+    }
 }

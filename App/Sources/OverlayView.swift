@@ -5,36 +5,66 @@ import SwiftUI
 /// The sizes `PanelLayout` computes with; the view must render exactly these.
 private let metrics = PanelLayout.Metrics.standard
 
+typealias RowID = PaletteState<AXUIElement>.RowID
+
 /// What the panel shows below its header.
 enum OverlayBody {
     case loading
     case empty
+    /// The palette's query matches no row.
+    case noMatches
     /// `scrolls` is true when the columns are taller than the panel can be.
     case shortcuts(sections: [OverlaySection<AXUIElement>], columns: [[Int]], scrolls: Bool)
 }
 
+/// What the palette shows and reports, updated in place while the user types
+/// so the search field keeps its focus and caret.
+@MainActor
+@Observable
+final class PaletteModel {
+    var query = ""
+    var body = OverlayBody.loading
+    var selection: RowID?
+    @ObservationIgnored let onQueryChange: (String) -> Void
+    @ObservationIgnored let onCommand: (SearchCommand) -> Void
+
+    init(onQueryChange: @escaping (String) -> Void, onCommand: @escaping (SearchCommand) -> Void) {
+        self.onQueryChange = onQueryChange
+        self.onCommand = onCommand
+    }
+}
+
 /// The overlay: the app's icon and name, then its shortcuts in columns.
-/// Clicking a row calls `onSelect` with it.
+/// Clicking a row calls `onSelect` with it. With a `palette`, the header has
+/// a search field and the body and selection come from the palette.
 struct OverlayView: View {
     let appName: String
     let icon: NSImage?
     let content: OverlayBody
+    var palette: PaletteModel?
     let onSelect: (OverlayRow<AXUIElement>) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
             Divider()
-            switch content {
+            switch palette?.body ?? content {
             case .loading:
                 placeholder { ProgressView().controlSize(.small) }
             case .empty:
                 placeholder { Text("No keyboard shortcuts").foregroundStyle(.secondary) }
+            case .noMatches:
+                placeholder { Text("No matching shortcuts").foregroundStyle(.secondary) }
             case let .shortcuts(sections, columns, scrolls):
                 let stack = columnStack(sections: sections, columns: columns)
                     .padding(.top, metrics.sectionSpacing)
                 if scrolls {
-                    ScrollView(.vertical) { stack }
+                    ScrollViewReader { proxy in
+                        ScrollView(.vertical) { stack }
+                            .onChange(of: palette?.selection) { _, selection in
+                                selection.map { proxy.scrollTo($0) }
+                            }
+                    }
                 } else {
                     stack
                 }
@@ -55,6 +85,10 @@ struct OverlayView: View {
             Text(appName)
                 .font(.title3.weight(.semibold))
                 .lineLimit(1)
+            if let palette {
+                SearchField(text: palette.query, onChange: palette.onQueryChange, onCommand: palette.onCommand)
+                    .frame(minWidth: metrics.columnWidth / 2)
+            }
         }
         .frame(height: metrics.headerHeight, alignment: .top)
     }
@@ -68,7 +102,7 @@ struct OverlayView: View {
             ForEach(columns.indices, id: \.self) { column in
                 VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
                     ForEach(columns[column], id: \.self) { index in
-                        SectionView(section: sections[index], onSelect: onSelect)
+                        SectionView(section: sections[index], selection: palette?.selection, onSelect: onSelect)
                     }
                 }
                 .frame(width: metrics.columnWidth, alignment: .leading)
@@ -79,6 +113,7 @@ struct OverlayView: View {
 
 private struct SectionView: View {
     let section: OverlaySection<AXUIElement>
+    let selection: RowID?
     let onSelect: (OverlayRow<AXUIElement>) -> Void
 
     var body: some View {
@@ -88,18 +123,22 @@ private struct SectionView: View {
                 .lineLimit(1)
                 .frame(height: metrics.sectionTitleHeight, alignment: .topLeading)
             ForEach(section.rows) { row in
-                RowView(row: row) { onSelect(row) }
+                let id = RowID(section: section.id, row: row.id)
+                RowView(row: row, isSelected: id == selection) { onSelect(row) }
+                    .id(id)
             }
         }
     }
 }
 
-/// One shortcut. The whole row is the click target and highlights on hover.
+/// One shortcut. The whole row is the click target and highlights on hover;
+/// the palette's selected row has a stronger highlight.
 private struct RowView: View {
     private static let highlightInset: CGFloat = -4
     private static let highlightCornerRadius: CGFloat = 5
 
     let row: OverlayRow<AXUIElement>
+    let isSelected: Bool
     let action: () -> Void
     @State private var isHovered = false
 
@@ -121,9 +160,17 @@ private struct RowView: View {
         .background {
             RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
                 .inset(by: Self.highlightInset)
-                .fill(isHovered ? Color.primary.opacity(0.1) : .clear)
+                .fill(highlight)
         }
         .onHover { isHovered = $0 }
         .accessibilityLabel("\(row.title), \(row.keys)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var highlight: Color {
+        if isSelected {
+            return Color.accentColor.opacity(0.35)
+        }
+        return isHovered ? Color.primary.opacity(0.1) : .clear
     }
 }
