@@ -93,4 +93,26 @@ struct PaletteColumnNavigationTests {
         let back = right.movingSelection(by: 1).movingSelection(columns: -1, in: columns, metrics: Self.metrics)
         #expect(back.selectedRow?.title == "d")
     }
+
+    // MARK: - Defensive cases
+
+    @Test func offsetsBeyondTheColumnCountWrap() {
+        let columns = [[0], [1], [2]]
+
+        #expect(Self.move("a", by: 3, columns: columns) == "a")
+        #expect(Self.move("a", by: 4, columns: columns) == "d")
+        #expect(Self.move("a", by: -4, columns: columns) == "f")
+    }
+
+    @Test func outOfRangeSectionIndicesAreSkipped() {
+        #expect(Self.move("b", by: 1, columns: [[0, 7], [-1, 2]]) == "g")
+    }
+
+    @Test func selectionOutsideEveryColumnChangesNothing() {
+        #expect(Self.move("b", by: 1, columns: [[1], [2]]) == "b")
+    }
+
+    @Test func emptyTargetColumnChangesNothing() {
+        #expect(Self.move("b", by: 1, columns: [[0], []]) == "b")
+    }
 }

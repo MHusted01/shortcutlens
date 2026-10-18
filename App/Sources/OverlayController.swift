@@ -127,7 +127,7 @@ final class OverlayController {
         }
         let model = PaletteModel(
             onQueryChange: { [weak self] query in self?.updatePalette { $0.with(query: query) } },
-            onCommand: { [weak self] command in self?.handle(command) }
+            onCommand: { [weak self] command in self?.handle(command) ?? false }
         )
         let state = content.map { PaletteState().with(content: $0) } ?? PaletteState()
         palette = OpenPalette(state: state, model: model, screen: screen)
@@ -147,9 +147,11 @@ final class OverlayController {
         panel.dismiss()
     }
 
-    private func handle(_ command: SearchCommand) {
+    /// Returns false only for Left/Right without another column to move to,
+    /// so the search field moves its cursor instead.
+    private func handle(_ command: SearchCommand) -> Bool {
         guard let palette else {
-            return
+            return false
         }
         switch command {
         case .moveUp:
@@ -157,13 +159,13 @@ final class OverlayController {
         case .moveDown:
             updatePalette { $0.movingSelection(by: 1) }
         case .moveLeft:
-            moveColumn(by: -1)
+            return moveColumn(by: -1)
         case .moveRight:
-            moveColumn(by: 1)
+            return moveColumn(by: 1)
         case .submit:
             guard let row = palette.state.selectedRow else {
                 NSSound.beep()
-                return
+                return true
             }
             runFromPalette(row)
         case .cancel:
@@ -174,14 +176,19 @@ final class OverlayController {
                 onClosePalette()
             }
         }
+        return true
     }
 
-    /// Moves the selection between the columns currently shown.
-    private func moveColumn(by offset: Int) {
-        guard case let .shortcuts(_, columns, _) = palette?.model.body else {
-            return
+    /// Moves the selection between the columns currently shown. Returns
+    /// false when there is no selection or only one column.
+    private func moveColumn(by offset: Int) -> Bool {
+        guard case let .shortcuts(_, columns, _) = palette?.model.body,
+              columns.count > 1, palette?.state.selection != nil
+        else {
+            return false
         }
         updatePalette { $0.movingSelection(columns: offset, in: columns, metrics: .standard) }
+        return true
     }
 
     private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
