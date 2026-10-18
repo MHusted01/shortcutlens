@@ -3,6 +3,7 @@
 /// The codes are Apple's legacy HIToolbox `kMenu*Glyph` constants, which are
 /// no longer shipped in current SDK headers. Only keys that appear as menu
 /// shortcuts are mapped; modifier and decorative glyphs are left out.
+/// Space and Help render as words because that is how macOS menus show them.
 public enum MenuGlyph {
     /// The symbol for `code`, or nil when the code is not mapped.
     public static func symbol(for code: Int) -> String? {

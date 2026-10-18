@@ -12,9 +12,25 @@ struct ShortcutFormatterTests {
         #expect(ShortcutFormatter.modifierSymbols(for: ModifierMask(axValue: value)) == expected)
     }
 
-    @Test func rendersOutOfRangeValueLikeItsLowBits() {
-        #expect(ShortcutFormatter.modifierSymbols(for: ModifierMask(axValue: 24)) == "")
-        #expect(ShortcutFormatter.modifierSymbols(for: ModifierMask(axValue: 19)) == "⌥⇧⌘")
+    @Test(arguments: [(24, ""), (19, "⌥⇧⌘")])
+    func rendersOutOfRangeValueLikeItsLowBits(value: Int, expected: String) {
+        #expect(ShortcutFormatter.modifierSymbols(for: ModifierMask(axValue: value)) == expected)
+    }
+
+    @Test(arguments: [
+        (" ", "Space"), ("\r", "↩"), ("\u{3}", "⌤"), ("\t", "⇥"),
+        ("\u{1B}", "⎋"), ("\u{7F}", "⌫"), ("\u{8}", "⌫"),
+    ])
+    func rendersSpecialCharactersAsKeySymbols(keyCharacter: String, expected: String) {
+        let shortcut = makeShortcut(keyCharacter: keyCharacter, modifiers: 8)
+
+        #expect(ShortcutFormatter.keySymbol(for: shortcut) == expected)
+    }
+
+    @Test func keepsCharacterWhoseUppercaseIsLonger() {
+        let shortcut = makeShortcut(keyCharacter: "ß", modifiers: 0)
+
+        #expect(ShortcutFormatter.string(for: shortcut) == "⌘ß")
     }
 
     @Test func rendersCharacterShortcut() {
@@ -45,6 +61,10 @@ struct ShortcutFormatterTests {
         (String?.none, Int?.none),
         (String?.some(""), Int?.none),
         (String?.none, Int?.some(0x7B)),
+        (String?.some("\u{F704}"), Int?.some(0x7B)),
+        (String?.some("\u{F704}"), Int?.none),
+        (String?.some("\u{0}"), Int?.none),
+        (String?.some("  "), Int?.none),
     ])
     func returnsNilWithoutUsableKey(keyCharacter: String?, glyph: Int?) {
         let shortcut = makeShortcut(keyCharacter: keyCharacter, glyph: glyph, modifiers: 0)
