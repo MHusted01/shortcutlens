@@ -304,6 +304,22 @@ struct TriggerStateMachineTests {
         #expect(machine.phase == .idle)
     }
 
+    @Test func newDelayKeepsTheRunningCountdown() {
+        let (counting, _) = Machine.initial.updated(with: .modifiersChanged(.command))
+
+        let changed = counting.with(delay: 0.3)
+
+        #expect(changed.delay == 0.3)
+        #expect(changed.phase == counting.phase)
+        #expect(changed.updated(with: .timerFired(token: 0)).action == .show)
+    }
+
+    @Test func newDelayAppliesToTheNextCountdown() {
+        let (_, action) = Machine.initial.with(delay: 0.3).updated(with: .modifiersChanged(.command))
+
+        #expect(action == .startTimer(token: 0, delay: 0.3))
+    }
+
     private static func run(_ events: [Machine.Event]) -> [Machine.Action] {
         var machine = Machine.initial
         var actions: [Machine.Action] = []

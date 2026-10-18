@@ -90,6 +90,12 @@ public struct TriggerStateMachine: Equatable, Sendable {
         }
     }
 
+    /// A copy with another delay. A countdown already running keeps its
+    /// timer; the new delay applies from the next countdown.
+    public func with(delay: Double) -> Self {
+        Self(phase: phase, delay: delay, nextToken: nextToken)
+    }
+
     private func with(_ phase: Phase) -> Self {
         Self(phase: phase, delay: delay, nextToken: nextToken)
     }
