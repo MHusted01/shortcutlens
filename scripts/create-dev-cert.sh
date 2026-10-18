@@ -14,12 +14,18 @@ keychain="${SHORTCUTLENS_KEYCHAIN:-$HOME/Library/Keychains/login.keychain-db}"
 local_config="Config/Local.xcconfig"
 valid_days=3650
 
-if security find-certificate -c "$identity" "$keychain" >/dev/null 2>&1; then
+# find-identity (not find-certificate): the private key must be there too.
+# No -v: an untrusted self-signed identity is fine for codesign and Xcode.
+if security find-identity -p codesigning "$keychain" 2>/dev/null |
+    grep -qF "\"$identity\""; then
     echo "Identity \"$identity\" already exists in $(basename "$keychain")."
 else
     workdir="$(mktemp -d)"
     trap 'rm -rf "$workdir"' EXIT
-    p12_phrase="$(openssl rand -hex 16)"  # throwaway, wraps the temp .p12 only
+    # Throwaway passphrase that only wraps the temp .p12; passed to openssl
+    # via the environment so it does not show up in ps.
+    P12_PHRASE="$(openssl rand -hex 16)"
+    export P12_PHRASE
 
     openssl req -x509 -newkey rsa:2048 -nodes -days "$valid_days" \
         -subj "/CN=$identity" \
@@ -30,9 +36,9 @@ else
     # 3DES/SHA-1 PKCS#12: the encryption `security import` understands.
     openssl pkcs12 -export -inkey "$workdir/key.pem" -in "$workdir/cert.pem" \
         -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES -macalg sha1 \
-        -passout "pass:$p12_phrase" -out "$workdir/identity.p12"
+        -passout env:P12_PHRASE -out "$workdir/identity.p12"
     security import "$workdir/identity.p12" -k "$keychain" \
-        -P "$p12_phrase" -T /usr/bin/codesign >/dev/null
+        -P "$P12_PHRASE" -T /usr/bin/codesign >/dev/null
     echo "Created \"$identity\" in $(basename "$keychain")."
 fi
 
