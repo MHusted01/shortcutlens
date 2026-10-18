@@ -1,5 +1,7 @@
 included:
   - App
+  - Fixtures
+  - IntegrationTests
   - ShortcutLensCore/Sources
   - ShortcutLensCore/Tests
 excluded:

@@ -53,8 +53,56 @@ targets:
         # The Accessibility API is unavailable inside the App Sandbox.
         ENABLE_APP_SANDBOX: NO
 
+  # Local integration testing only (`make integration`); never shipped.
+  MenuFixture:
+    type: application
+    platform: macOS
+    sources:
+      - Fixtures/MenuFixture/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.mhusted01.shortcutlens.menufixture
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+
+  # Hosted in ShortcutLens.app so the AX calls run under its Accessibility
+  # permission. Signed like the app (Config/Debug.xcconfig).
+  ShortcutLensIntegrationTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - IntegrationTests
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    dependencies:
+      - target: ShortcutLens
+      - target: MenuFixture
+        embed: false
+      - package: ShortcutLensCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.mhusted01.shortcutlens.integrationtests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/ShortcutLens.app/Contents/MacOS/ShortcutLens
+        BUNDLE_LOADER: $(TEST_HOST)
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+
 schemes:
   ShortcutLens:
     build:
       targets:
         ShortcutLens: all
+  ShortcutLensIntegration:
+    build:
+      targets:
+        ShortcutLens: all
+        MenuFixture: all
+        ShortcutLensIntegrationTests: [test]
+    test:
+      config: Debug
+      targets:
+        - ShortcutLensIntegrationTests
