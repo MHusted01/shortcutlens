@@ -14,7 +14,22 @@ grouped by menu. Click an entry to run that command.
 - Clicking an entry runs that menu command.
 - Onboarding walks you through granting the Accessibility permission.
 
-Settings, search and favourites are planned for later releases.
+Settings and favourites are planned for later releases.
+
+## Command palette
+
+Not released yet; it comes with v0.2.0. Double-tap Command (press and release
+it twice quickly) to open the overlay as a command palette. It stays open
+without holding Command:
+
+- Type to filter the shortcuts by name; case and accents are ignored.
+- Up and Down select an entry, Return runs it.
+- Escape clears the search; a second Escape closes the palette. Clicking
+  outside it or switching apps closes it too.
+
+If macOS Dictation is set to "Press Command Key Twice" (System Settings >
+Keyboard > Dictation > Shortcut), both react to the double tap. Pick another
+Dictation shortcut; a setting for the palette trigger is planned.
 
 ## Privacy first
 

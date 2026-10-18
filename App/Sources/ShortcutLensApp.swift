@@ -38,6 +38,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         trigger.onArm = { [overlay] in overlay.prepare() }
         trigger.onShow = { [overlay] in overlay.show() }
         trigger.onHide = { [overlay] in overlay.hide() }
+        trigger.onShowPalette = { [overlay] in overlay.showPalette() }
+        overlay.onClosePalette = { [trigger] in trigger.closePalette() }
         permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
     }

@@ -78,5 +78,8 @@ public struct OverlayRow<Element>: Identifiable {
     }
 }
 
+extension OverlayContent: Sendable where Element: Sendable {}
 extension OverlaySection: Equatable where Element: Equatable {}
+extension OverlaySection: Sendable where Element: Sendable {}
 extension OverlayRow: Equatable where Element: Equatable {}
+extension OverlayRow: Sendable where Element: Sendable {}
