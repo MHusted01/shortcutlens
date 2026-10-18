@@ -133,7 +133,8 @@ private struct SectionView: View {
 }
 
 /// One shortcut. The whole row is the click target and highlights on hover;
-/// the palette's selected row has a stronger highlight.
+/// the palette's selected row has a stronger highlight. Display-only rows
+/// (system shortcuts) look normal but do not react to clicks.
 private struct RowView: View {
     private static let highlightInset: CGFloat = -4
     private static let highlightCornerRadius: CGFloat = 5
@@ -159,7 +160,7 @@ private struct RowView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(!row.isEnabled)
+        .disabled(!row.isRunnable)
         .opacity(row.isEnabled ? 1 : Self.disabledOpacity)
         .background {
             RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
@@ -175,6 +176,6 @@ private struct RowView: View {
         if isSelected {
             return Color.accentColor.opacity(0.35)
         }
-        return isHovered && row.isEnabled ? Color.primary.opacity(0.1) : .clear
+        return isHovered && row.isRunnable ? Color.primary.opacity(0.1) : .clear
     }
 }

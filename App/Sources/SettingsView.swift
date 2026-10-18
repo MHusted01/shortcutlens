@@ -36,6 +36,12 @@ struct SettingsView: View {
                     isOn: binding(\.showsDisabledItems) { $0.with(showsDisabledItems: $1) }
                 )
             }
+            Section("System") {
+                Toggle(
+                    "Show system shortcuts",
+                    isOn: binding(\.showsSystemShortcuts) { $0.with(showsSystemShortcuts: $1) }
+                )
+            }
             Section("Startup") {
                 Toggle("Launch at login", isOn: launchAtLogin)
                 launchAtLoginNote
