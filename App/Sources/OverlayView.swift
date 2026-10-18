@@ -159,6 +159,8 @@ private struct RowView: View {
                         .foregroundStyle(.tint)
                         .imageScale(.small)
                         .help("Set in App Shortcuts")
+                        // The row's label already says "custom shortcut".
+                        .accessibilityHidden(true)
                 }
                 Text(row.keys)
                     .foregroundStyle(.secondary)
