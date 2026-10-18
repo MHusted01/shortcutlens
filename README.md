@@ -6,7 +6,15 @@ ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,
 grouped by menu. Click an entry to run that command.
 
-**Status:** early development (Phase 0: project setup). Not usable yet.
+**Status:** v0.1.0, the first usable release (MVP). It covers:
+
+- Holding Command shows the overlay; pressing another key, clicking or a
+  system shortcut such as Cmd+Space cancels it.
+- Shortcuts are read from the frontmost app's menu bar and grouped by menu.
+- Clicking an entry runs that menu command.
+- Onboarding walks you through granting the Accessibility permission.
+
+Settings, search and favourites are planned for later releases.
 
 ## Privacy first
 
@@ -20,7 +28,9 @@ No telemetry, no network access, no third-party code. See [PRIVACY.md](PRIVACY.m
 Accessibility is the only permission ShortcutLens needs. It is used to read
 the frontmost app's menus and to notice key presses while you hold Command
 (so Cmd+C does not open the overlay). Input Monitoring is not needed: the app
-uses `NSEvent` monitors, not an event tap, and never sees which keys you type.
+uses `NSEvent` monitors, not an event tap. It only notes that a key was
+pressed, never which one, and checks the time since the last key press
+(`CGEventSource`) to notice system shortcuts.
 
 ## Install
 
@@ -31,12 +41,18 @@ Download the latest `ShortcutLens-x.y.z.zip` from
 shasum -a 256 -c ShortcutLens-x.y.z.zip.sha256
 ```
 
-The app is ad-hoc signed, not notarized. After unzipping, remove the
-quarantine flag or right-click the app and choose Open:
+The app is a universal binary (Apple silicon and Intel), ad-hoc signed and
+not notarized. Unzip it, move it to `/Applications` and remove the
+quarantine flag:
 
 ```sh
-xattr -dr com.apple.quarantine ShortcutLens.app
+ditto -x -k ShortcutLens-x.y.z.zip .
+mv ShortcutLens.app /Applications/
+xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
 ```
+
+Without that, macOS 15 and later refuse to open the app; right-click > Open
+no longer bypasses Gatekeeper there. On macOS 14 right-click > Open also works.
 
 Because the signature changes with every release, macOS asks for the
 Accessibility permission again after each update. Remove the old entry in
