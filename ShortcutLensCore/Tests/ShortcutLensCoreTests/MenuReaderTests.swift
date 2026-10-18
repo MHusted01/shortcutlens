@@ -77,6 +77,18 @@ struct MenuReaderTests {
         #expect(read(client)[0].items.map(\.shortcut.title) == ["Open"])
     }
 
+    @Test func keepsDisabledItemsWhenAsked() {
+        let client = makeClient()
+        let file = client.addTopLevelMenu("File")
+        client.addItem("Revert", key: "R", isEnabled: false, to: file)
+        client.addItem("Open", key: "O", to: file)
+
+        let items = MenuReader(client: client, includesDisabled: true).read(processID: FakeAXClient.pid)[0].items
+
+        #expect(items.map(\.shortcut.title) == ["Revert", "Open"])
+        #expect(items.map(\.shortcut.isEnabled) == [false, true])
+    }
+
     @Test func dropsItemsWithoutShortcut() {
         let client = makeClient()
         let file = client.addTopLevelMenu("File")

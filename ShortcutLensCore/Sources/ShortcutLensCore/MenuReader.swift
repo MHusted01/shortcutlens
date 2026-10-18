@@ -3,7 +3,8 @@
 /// The tree is `AXMenuBar` -> `AXMenuBarItem` -> `AXMenu` -> `AXMenuItem`,
 /// and an item with a submenu has an `AXMenu` child of its own. The reader
 /// skips the Apple menu, follows submenus up to `maxDepth` levels, visits each
-/// `AXMenu` at most once and keeps enabled items with a displayable key.
+/// `AXMenu` at most once and keeps items with a displayable key. Disabled
+/// items are kept only when `includesDisabled` is set.
 public struct MenuReader<Client: AXClient> {
     public typealias Element = Client.Element
 
@@ -15,15 +16,18 @@ public struct MenuReader<Client: AXClient> {
     public let client: Client
     /// How many menu levels are read; the top-level menu is level 1.
     public let maxDepth: Int
+    /// Whether disabled items are kept; their shortcut has `isEnabled == false`.
+    public let includesDisabled: Bool
 
     private static var menuRole: String {
         "AXMenu"
     }
 
     /// `maxDepth` values below 1 are raised to 1.
-    public init(client: Client, maxDepth: Int = Self.defaultMaxDepth) {
+    public init(client: Client, maxDepth: Int = Self.defaultMaxDepth, includesDisabled: Bool = false) {
         self.client = client
         self.maxDepth = max(maxDepth, 1)
+        self.includesDisabled = includesDisabled
     }
 
     /// The shortcuts of the process's menu bar, one group per top-level menu
@@ -86,7 +90,7 @@ public struct MenuReader<Client: AXClient> {
     }
 
     private func entry(for item: Element, attributes: MenuItemAttributes, path: [String]) -> MenuEntry<Element>? {
-        guard attributes.isEnabled else {
+        guard attributes.isEnabled || includesDisabled else {
             return nil
         }
         let shortcut = MenuShortcut(

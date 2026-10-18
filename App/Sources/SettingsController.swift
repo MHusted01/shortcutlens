@@ -1,0 +1,81 @@
+import AppKit
+import Observation
+import os
+import ServiceManagement
+import ShortcutLensCore
+import SwiftUI
+
+/// Owns the user's settings and the settings window.
+///
+/// Settings live in `UserDefaults` and apply at once through `onChange`.
+/// Launch at login is read from and written to `SMAppService` directly, so the
+/// toggle always shows what the system will actually do.
+@MainActor
+@Observable
+final class SettingsController {
+    private static let log = Logger(subsystem: "dev.shortcutlens", category: "settings")
+
+    private(set) var settings: AppSettings
+    private(set) var launchAtLogin: SMAppService.Status = .notRegistered
+    /// The last launch-at-login failure, shown in the window until the next attempt.
+    private(set) var launchAtLoginError: String?
+    /// Called with the new settings after every change.
+    @ObservationIgnored var onChange: (AppSettings) -> Void = { _ in }
+    @ObservationIgnored private let store: UserDefaults
+    @ObservationIgnored private var window: NSWindow?
+
+    init(store: UserDefaults = .standard) {
+        self.store = store
+        settings = AppSettings(store: store)
+    }
+
+    func update(_ newSettings: AppSettings) {
+        guard newSettings != settings else {
+            return
+        }
+        settings = newSettings
+        newSettings.save(to: store)
+        onChange(newSettings)
+    }
+
+    func showWindow() {
+        refreshLaunchAtLogin()
+        let window = window ?? makeWindow()
+        self.window = window
+        NSApp.activate()
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        let service = SMAppService.mainApp
+        do {
+            if enabled {
+                try service.register()
+            } else {
+                try service.unregister()
+            }
+            launchAtLoginError = nil
+        } catch {
+            Self.log.error("launch at login change failed: \(error.localizedDescription, privacy: .public)")
+            launchAtLoginError = error.localizedDescription
+        }
+        refreshLaunchAtLogin()
+    }
+
+    func openLoginItemsSettings() {
+        SMAppService.openSystemSettingsLoginItems()
+    }
+
+    private func refreshLaunchAtLogin() {
+        launchAtLogin = SMAppService.mainApp.status
+    }
+
+    private func makeWindow() -> NSWindow {
+        let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(controller: self)))
+        window.title = "ShortcutLens Settings"
+        window.styleMask = [.titled, .closable]
+        window.isReleasedWhenClosed = false
+        return window
+    }
+}

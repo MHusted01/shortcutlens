@@ -137,6 +137,7 @@ private struct SectionView: View {
 private struct RowView: View {
     private static let highlightInset: CGFloat = -4
     private static let highlightCornerRadius: CGFloat = 5
+    private static let disabledOpacity = 0.4
 
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
@@ -158,6 +159,8 @@ private struct RowView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(!row.isEnabled)
+        .opacity(row.isEnabled ? 1 : Self.disabledOpacity)
         .background {
             RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
                 .inset(by: Self.highlightInset)
@@ -172,6 +175,6 @@ private struct RowView: View {
         if isSelected {
             return Color.accentColor.opacity(0.35)
         }
-        return isHovered ? Color.primary.opacity(0.1) : .clear
+        return isHovered && row.isEnabled ? Color.primary.opacity(0.1) : .clear
     }
 }

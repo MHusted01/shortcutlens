@@ -42,7 +42,13 @@ public struct OverlayContent<Element> {
             }
             .enumerated()
             .map { index, item in
-                OverlayRow(id: index, title: item.entry.shortcut.title, keys: item.keys, element: item.entry.element)
+                OverlayRow(
+                    id: index,
+                    title: item.entry.shortcut.title,
+                    keys: item.keys,
+                    isEnabled: item.entry.shortcut.isEnabled,
+                    element: item.entry.element
+                )
             }
     }
 }
@@ -68,12 +74,15 @@ public struct OverlayRow<Element>: Identifiable {
     public let title: String
     /// The formatted shortcut, e.g. `⇧⌘S`.
     public let keys: String
+    /// False for a disabled menu item, shown dimmed and not runnable.
+    public let isEnabled: Bool
     public let element: Element
 
-    public init(id: Int, title: String, keys: String, element: Element) {
+    public init(id: Int, title: String, keys: String, isEnabled: Bool = true, element: Element) {
         self.id = id
         self.title = title
         self.keys = keys
+        self.isEnabled = isEnabled
         self.element = element
     }
 }
