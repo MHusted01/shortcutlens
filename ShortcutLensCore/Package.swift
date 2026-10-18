@@ -11,6 +11,10 @@ let package = Package(
     ],
     targets: [
         .target(name: "ShortcutLensCore"),
-        .testTarget(name: "ShortcutLensCoreTests", dependencies: ["ShortcutLensCore"]),
+        .testTarget(
+            name: "ShortcutLensCoreTests",
+            dependencies: ["ShortcutLensCore"],
+            resources: [.copy("Fixtures")]
+        ),
     ]
 )

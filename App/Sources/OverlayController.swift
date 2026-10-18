@@ -18,6 +18,9 @@ import SwiftUI
 /// filters, arrow keys select, Return runs. The panel keeps the size it has
 /// for all rows while filtering. Every way of closing the palette goes
 /// through `onClosePalette`, so the trigger state machine always knows.
+///
+/// System shortcuts are read at each `prepare()` and appended as a last,
+/// display-only section; the cache holds menu content only.
 @MainActor
 final class OverlayController {
     private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
@@ -79,6 +82,7 @@ final class OverlayController {
     private var isShown = false
     private var palette: OpenPalette?
     private var readSettings = AppSettings.defaults
+    private var systemShortcuts: [MenuShortcut] = []
 
     init() {
         panel.onResignKey = { [weak self] in self?.onClosePalette() }
@@ -126,7 +130,8 @@ final class OverlayController {
             return
         }
         let key = AppKey(app)
-        content = cache.value(for: key)
+        systemShortcuts = readSettings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
+        content = cache.value(for: key).map(withSystemShortcuts)
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
         read(key, for: target)
@@ -229,11 +234,10 @@ final class OverlayController {
     /// messaging timeout. The target app stays frontmost throughout: the panel
     /// never activates ShortcutLens.
     private func run(_ row: OverlayRow<AXUIElement>) {
-        guard row.isEnabled else {
+        guard row.isEnabled, let element = row.element.map(UncheckedSendable.init) else {
             return
         }
         hide()
-        let element = UncheckedSendable(value: row.element)
         Task.detached(priority: .userInitiated) {
             let outcome = MenuItemRunner(client: SystemAXClient()).run(element.value)
             // A fixed outcome string only, never the menu title.
@@ -270,7 +274,7 @@ final class OverlayController {
             }
             return
         }
-        let content = cache.value(for: key) ?? result.content
+        let content = withSystemShortcuts(cache.value(for: key) ?? result.content)
         self.content = content
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
@@ -290,6 +294,10 @@ final class OverlayController {
             self?.run(row)
         }
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
+    }
+
+    private func withSystemShortcuts(_ content: OverlayContent<AXUIElement>) -> OverlayContent<AXUIElement> {
+        content.appending(sectionTitle: SystemHotKeyCatalog.sectionTitle, shortcuts: systemShortcuts)
     }
 
     /// The visible frame (without menu bar and Dock) of the screen under the pointer.
@@ -340,7 +348,7 @@ extension OverlayController {
         case .moveRight:
             return moveColumn(by: 1)
         case .submit:
-            guard let row = palette.state.selectedRow, row.isEnabled else {
+            guard let row = palette.state.selectedRow, row.isRunnable else {
                 NSSound.beep()
                 return true
             }
@@ -380,13 +388,4 @@ extension OverlayController {
         }
         return app.isTerminated
     }
-}
-
-/// Carries AX elements between the main actor and background tasks.
-///
-/// `AXUIElement` is an immutable reference to another process's element and
-/// the AX API may be called from any thread, but the type is not marked
-/// `Sendable`. The value is created once and never mutated after it is sent.
-struct UncheckedSendable<Value>: @unchecked Sendable {
-    let value: Value
 }
