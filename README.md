@@ -6,21 +6,23 @@ ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,
 grouped by menu. Click an entry to run that command.
 
-**Status:** v0.1.0, the first usable release (MVP). It covers:
+**Status:** v0.2.0. It covers:
 
 - Holding Command shows the overlay; pressing another key, clicking or a
   system shortcut such as Cmd+Space cancels it.
 - Shortcuts are read from the frontmost app's menu bar and grouped by menu.
 - Clicking an entry runs that menu command.
+- Double-tapping Command opens a searchable command palette (below).
+- A settings window for the trigger delay, menu depth, disabled items and
+  launch at login.
 - Onboarding walks you through granting the Accessibility permission.
 
-Settings and favourites are planned for later releases.
+Favourites are planned for a later release.
 
 ## Command palette
 
-Not released yet; it comes with v0.2.0. Double-tap Command (press and release
-it twice quickly) to open the overlay as a command palette. It stays open
-without holding Command:
+Double-tap Command (press and release it twice quickly) to open the overlay
+as a command palette. It stays open without holding Command:
 
 - Type to filter the shortcuts by name; case and accents are ignored.
 - Up and Down select an entry, Left and Right jump between columns, Return
@@ -31,6 +33,20 @@ without holding Command:
 If macOS Dictation is set to "Press Command Key Twice" (System Settings >
 Keyboard > Dictation > Shortcut), both react to the double tap. Pick another
 Dictation shortcut; a setting for the palette trigger is planned.
+
+## Settings
+
+Open them from the ShortcutLens menu bar icon > Settings… (Cmd+,). Changes
+apply at once and are stored locally in the app's preferences.
+
+- **Hold Command for:** how long Command must be held before the overlay
+  shows, 0.1 to 1.5 s (default 1.0 s).
+- **Menu depth:** how many submenu levels are read, 1 to 8 (default 8).
+  Lower it if an app with very deep menus is slow to show.
+- **Show disabled items:** also list commands that are greyed out in the
+  app's menu right now. They are dimmed and cannot be run.
+- **Launch at login:** start ShortcutLens when you log in. If macOS asks for
+  approval, allow it in System Settings > General > Login Items.
 
 ## Privacy first
 
