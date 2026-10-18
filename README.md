@@ -47,7 +47,11 @@ make test       # Core unit tests with an 80% line coverage gate
 make lint       # SwiftLint and SwiftFormat
 make check      # no-telemetry check
 make build      # Debug build of the app
+make integration  # local only: reads Fixtures/MenuFixture through the AX API
 ```
+
+`make integration` runs inside ShortcutLens.app and needs its Accessibility
+permission, so set up local signing (below) first. CI does not run it.
 
 ### Local signing (one-time setup)
 
@@ -81,6 +85,7 @@ Project layout:
 
 - `ShortcutLensCore/` - Swift package with all testable logic
 - `App/` - AppKit/SwiftUI app layer
+- `Fixtures/MenuFixture/` - app with known menus, read by `IntegrationTests/`
 - `project.yml` - XcodeGen spec (the Xcode project is generated, not committed)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request workflow.

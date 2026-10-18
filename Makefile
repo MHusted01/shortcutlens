@@ -5,7 +5,7 @@ CORE := ShortcutLensCore
 COVERAGE_MIN := 80
 BUILD_NUMBER ?= 1
 
-.PHONY: generate build test lint check release clean
+.PHONY: generate build test integration lint check release clean
 
 generate:
 	xcodegen generate --quiet
@@ -17,6 +17,11 @@ build: generate
 test:
 	cd $(CORE) && swift test --enable-code-coverage
 	python3 -I scripts/check-coverage.py "$$(cd $(CORE) && swift test --show-codecov-path)" $(COVERAGE_MIN)
+
+# Local only: needs the Accessibility permission for ShortcutLens.app.
+integration: generate
+	xcodebuild -project $(PROJECT) -scheme ShortcutLensIntegration -configuration Debug \
+		-derivedDataPath $(DERIVED) test
 
 lint:
 	swiftlint lint --strict
