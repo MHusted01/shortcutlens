@@ -180,15 +180,14 @@ final class OverlayController {
     }
 
     /// Moves the selection between the columns currently shown. Returns
-    /// false when there is no selection or only one column.
+    /// false when the selection did not change (no selection, one column).
     private func moveColumn(by offset: Int) -> Bool {
-        guard case let .shortcuts(_, columns, _) = palette?.model.body,
-              columns.count > 1, palette?.state.selection != nil
-        else {
+        guard case let .shortcuts(_, columns, _) = palette?.model.body else {
             return false
         }
+        let before = palette?.state.selection
         updatePalette { $0.movingSelection(columns: offset, in: columns, metrics: .standard) }
-        return true
+        return palette?.state.selection != before
     }
 
     private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
