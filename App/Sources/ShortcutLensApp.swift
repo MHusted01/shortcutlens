@@ -15,6 +15,10 @@ struct ShortcutLensApp: App {
                 Divider()
             }
             Text("ShortcutLens \(version.displayString)")
+            Button("Settings…") {
+                appDelegate.settings.showWindow()
+            }
+            .keyboardShortcut(",")
             Divider()
             Button("Quit ShortcutLens") {
                 NSApplication.shared.terminate(nil)
@@ -31,10 +35,13 @@ struct ShortcutLensApp: App {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let permission = PermissionController()
+    let settings = SettingsController()
     private let trigger = TriggerController()
     private let overlay = OverlayController()
 
     func applicationDidFinishLaunching(_: Notification) {
+        apply(settings.settings)
+        settings.onChange = { [weak self] in self?.apply($0) }
         trigger.onArm = { [overlay] in overlay.prepare() }
         trigger.onShow = { [overlay] in overlay.show() }
         trigger.onHide = { [overlay] in overlay.hide() }
@@ -42,6 +49,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlay.onClosePalette = { [trigger] in trigger.closePalette() }
         permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
+    }
+
+    private func apply(_ settings: AppSettings) {
+        trigger.setDelay(settings.triggerDelay)
+        overlay.apply(settings)
     }
 }
 

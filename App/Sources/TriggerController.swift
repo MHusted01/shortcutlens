@@ -67,6 +67,11 @@ final class TriggerController {
         }
     }
 
+    /// Seconds Command must be held, from the next countdown on.
+    func setDelay(_ delay: TimeInterval) {
+        machine = machine.with(delay: delay)
+    }
+
     /// Closes the palette, for example after Escape or running an item.
     /// Does nothing when the palette is not open.
     func closePalette() {

@@ -42,6 +42,7 @@ final class OverlayController {
     private struct ReadResult {
         let content: OverlayContent<AXUIElement>
         let budgetSpent: Bool
+        let settings: AppSettings
     }
 
     /// The app a read was started for.
@@ -77,6 +78,7 @@ final class OverlayController {
     private var terminationObserver: NSObjectProtocol?
     private var isShown = false
     private var palette: OpenPalette?
+    private var readSettings = AppSettings.defaults
 
     init() {
         panel.onResignKey = { [weak self] in self?.onClosePalette() }
@@ -100,6 +102,16 @@ final class OverlayController {
 
     private func forget(_ key: AppKey) {
         cache = cache.removing(key)
+    }
+
+    /// Uses `settings` from the next menu read on. Settings that change what
+    /// a read returns drop the cached content and stop reusing a running read.
+    func apply(_ settings: AppSettings) {
+        if settings.changesMenuReads(comparedTo: readSettings) {
+            cache = MenuCache(capacity: Self.cacheCapacity)
+            inFlight = nil
+        }
+        readSettings = settings
     }
 
     /// Starts reading the frontmost app's menus and shows its cached content
@@ -132,8 +144,9 @@ final class OverlayController {
 
     private func startRead(key: AppKey, appName: String) -> ReadTask {
         let pid = key.pid
+        let settings = readSettings
         let task = Task.detached(priority: .userInitiated) {
-            Self.readContent(pid: pid, appName: appName)
+            Self.readContent(pid: pid, appName: appName, settings: settings)
         }
         inFlight = (key, task)
         return task
@@ -177,49 +190,6 @@ final class OverlayController {
         panel.dismiss()
     }
 
-    /// Returns false only for Left/Right without another column to move to,
-    /// so the search field moves its cursor instead.
-    private func handle(_ command: SearchCommand) -> Bool {
-        guard let palette else {
-            return false
-        }
-        switch command {
-        case .moveUp:
-            updatePalette { $0.movingSelection(by: -1) }
-        case .moveDown:
-            updatePalette { $0.movingSelection(by: 1) }
-        case .moveLeft:
-            return moveColumn(by: -1)
-        case .moveRight:
-            return moveColumn(by: 1)
-        case .submit:
-            guard let row = palette.state.selectedRow else {
-                NSSound.beep()
-                return true
-            }
-            runFromPalette(row)
-        case .cancel:
-            switch palette.state.escaped() {
-            case let .cleared(state):
-                updatePalette { _ in state }
-            case .close:
-                onClosePalette()
-            }
-        }
-        return true
-    }
-
-    /// Moves the selection between the columns currently shown. Returns
-    /// false when the selection did not change (no selection, one column).
-    private func moveColumn(by offset: Int) -> Bool {
-        guard case let .shortcuts(_, columns, _) = palette?.model.body else {
-            return false
-        }
-        let before = palette?.state.selection
-        updatePalette { $0.movingSelection(columns: offset, in: columns, metrics: .standard) }
-        return palette?.state.selection != before
-    }
-
     private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
         guard let palette else {
             return
@@ -254,6 +224,9 @@ final class OverlayController {
     /// messaging timeout. The target app stays frontmost throughout: the panel
     /// never activates ShortcutLens.
     private func run(_ row: OverlayRow<AXUIElement>) {
+        guard row.isEnabled else {
+            return
+        }
         hide()
         let element = UncheckedSendable(value: row.element)
         Task.detached(priority: .userInitiated) {
@@ -271,11 +244,14 @@ final class OverlayController {
     }
 
     private func finishRead(_ result: ReadResult, generation: Int, key: AppKey) {
-        if inFlight?.key == key {
+        // A read made with older settings is neither the one in flight nor
+        // cacheable: `apply(_:)` already dropped both.
+        let isCurrent = !result.settings.changesMenuReads(comparedTo: readSettings)
+        if isCurrent, inFlight?.key == key {
             inFlight = nil
         }
         // A read that outlived its app would re-add an entry nothing removes.
-        if !Self.hasTerminated(key) {
+        if isCurrent, !Self.hasTerminated(key) {
             cache = cache.storing(read: result.content, for: key, budgetSpent: result.budgetSpent)
         }
         guard generation == self.generation else {
@@ -312,26 +288,74 @@ final class OverlayController {
 
     private nonisolated static func readContent(
         pid: pid_t,
-        appName: String
+        appName: String,
+        settings: AppSettings
     ) -> UncheckedSendable<ReadResult> {
         let start = ContinuousClock.now
         let client = DeadlineAXClient(base: SystemAXClient(), budget: readBudget) {
             ProcessInfo.processInfo.systemUptime
         }
-        let groups = MenuReader(client: client).read(processID: pid)
+        let reader = MenuReader(
+            client: client, maxDepth: settings.maxMenuDepth, includesDisabled: settings.showsDisabledItems
+        )
+        let groups = reader.read(processID: pid)
         let content = OverlayContent(appName: appName, groups: groups)
         let elapsed = ContinuousClock.now - start
         let rows = content.rowCount
         let expired = client.hasExpired
         // Counts and timing only, never app names or titles.
         log.notice("read \(rows) shortcuts in \(elapsed, privacy: .public), budget spent: \(expired, privacy: .public)")
-        return UncheckedSendable(value: ReadResult(content: content, budgetSpent: expired))
+        return UncheckedSendable(value: ReadResult(content: content, budgetSpent: expired, settings: settings))
+    }
+}
+
+/// Palette key handling.
+extension OverlayController {
+    /// Returns false only for Left/Right without another column to move to,
+    /// so the search field moves its cursor instead.
+    private func handle(_ command: SearchCommand) -> Bool {
+        guard let palette else {
+            return false
+        }
+        switch command {
+        case .moveUp:
+            updatePalette { $0.movingSelection(by: -1) }
+        case .moveDown:
+            updatePalette { $0.movingSelection(by: 1) }
+        case .moveLeft:
+            return moveColumn(by: -1)
+        case .moveRight:
+            return moveColumn(by: 1)
+        case .submit:
+            guard let row = palette.state.selectedRow, row.isEnabled else {
+                NSSound.beep()
+                return true
+            }
+            runFromPalette(row)
+        case .cancel:
+            switch palette.state.escaped() {
+            case let .cleared(state):
+                updatePalette { _ in state }
+            case .close:
+                onClosePalette()
+            }
+        }
+        return true
+    }
+
+    /// Moves the selection between the columns currently shown. Returns
+    /// false when the selection did not change (no selection, one column).
+    private func moveColumn(by offset: Int) -> Bool {
+        guard case let .shortcuts(_, columns, _) = palette?.model.body else {
+            return false
+        }
+        let before = palette?.state.selection
+        updatePalette { $0.movingSelection(columns: offset, in: columns, metrics: .standard) }
+        return palette?.state.selection != before
     }
 }
 
 extension OverlayController {
-    private static let placeholderSize = CGSize(width: 360, height: 150)
-
     /// True when the app `key` names is gone, also when its pid now belongs to another app.
     private static func hasTerminated(_ key: AppKey) -> Bool {
         guard let app = NSRunningApplication(processIdentifier: key.pid) else {
@@ -342,40 +366,6 @@ extension OverlayController {
             return true
         }
         return app.isTerminated
-    }
-
-    /// The body to show and the panel size it needs on a screen whose visible
-    /// area is `visible`. Nil `content` means the read is still running.
-    static func layout(_ content: OverlayContent<AXUIElement>?, in visible: CGRect) -> (OverlayBody, CGSize) {
-        guard let content else {
-            return (.loading, placeholderSize)
-        }
-        guard !content.isEmpty else {
-            return (.empty, placeholderSize)
-        }
-        let result = PanelLayout.layout(
-            rowCounts: content.sections.map(\.rows.count),
-            metrics: .standard,
-            visible: visible.size
-        )
-        return (.shortcuts(sections: content.sections, columns: result.columns, scrolls: result.scrolls), result.size)
-    }
-
-    /// The palette's visible rows laid out inside the panel `size` that the
-    /// `unfiltered` body needs. Loading and empty states are kept as they are.
-    static func paletteBody(_ state: PaletteState<AXUIElement>, unfiltered: OverlayBody, size: CGSize) -> OverlayBody {
-        guard case .shortcuts = unfiltered, let visible = state.visible else {
-            return unfiltered
-        }
-        guard !visible.isEmpty else {
-            return .noMatches
-        }
-        let result = PanelLayout.layout(
-            rowCounts: visible.sections.map(\.rows.count),
-            metrics: .standard,
-            fitting: size
-        )
-        return .shortcuts(sections: visible.sections, columns: result.columns, scrolls: result.scrolls)
     }
 }
 

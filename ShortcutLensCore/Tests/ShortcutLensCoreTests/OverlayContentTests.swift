@@ -24,6 +24,20 @@ struct OverlayContentTests {
         #expect(!content.isEmpty)
     }
 
+    @Test func rowsCarryWhetherTheItemIsEnabled() {
+        let disabled = MenuEntry(
+            shortcut: MenuShortcut(
+                title: "Revert", keyCharacter: "r", modifiers: [], isEnabled: false, menuPath: ["File", "Revert"]
+            ),
+            element: 1
+        )
+        let group = MenuGroup(title: "File", items: [disabled, entry("Open", key: "o", element: 2)])
+
+        let rows = OverlayContent(appName: "App", groups: [group]).sections[0].rows
+
+        #expect(rows.map(\.isEnabled) == [false, true])
+    }
+
     @Test func numbersRowsWithinEachSection() {
         let group = MenuGroup(title: "File", items: [
             entry("New", key: "n", element: 1),
