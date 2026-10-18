@@ -21,8 +21,8 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case keyDown
         case mouseDown
         case timerFired(token: Int)
-        /// Something the monitors cannot see took over, such as the app
-        /// switcher (Cmd+Tab) or a Space change. Treated like a key press.
+        /// Focus moved without a key event the monitors saw, such as another
+        /// app activating or a Space change. Treated like a key press.
         case interrupted
         /// Monitoring stopped (for example the permission was revoked).
         case reset

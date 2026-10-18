@@ -10,9 +10,10 @@ import ShortcutLensCore
 /// local monitor sees events sent to this app. Monitors are installed only
 /// while the permission is granted.
 ///
-/// The system consumes some chords (Cmd+Tab, Cmd+Space) before any monitor
-/// sees the key, so another app activating or a Space change counts as an
-/// interruption.
+/// Key presses are the main way a countdown is cancelled (Tab in Cmd+Tab does
+/// reach the global monitor). As a best-effort fallback, another app
+/// activating or a Space change also counts as an interruption, for changes
+/// that arrive without a key event.
 ///
 /// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
 /// before dropping it, or the monitors stay installed.

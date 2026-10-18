@@ -265,8 +265,8 @@ struct TriggerStateMachineTests {
         #expect(actions.last == Machine.Action.none)
     }
 
-    @Test func appSwitcherNeverShowsOverlay() {
-        // Cmd+Tab: the system consumes Tab, so only the app activation is seen.
+    @Test func interruptionNeverShowsOverlay() {
+        // Fallback path: an app activation or Space change without a key event.
         let events: [Machine.Event] = [
             .modifiersChanged(.command), .interrupted, .modifiersChanged([]),
         ]
