@@ -1,0 +1,31 @@
+included:
+  - App
+  - ShortcutLensCore/Sources
+  - ShortcutLensCore/Tests
+excluded:
+  - ShortcutLensCore/.build
+  - build
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - sorted_imports
+
+# Matches `--commas always` in .swiftformat.
+trailing_comma:
+  mandatory_comma: true
+
+line_length:
+  warning: 120
+  error: 150
+
+function_body_length:
+  warning: 50
+  error: 80
+
+file_length:
+  warning: 400
+  error: 800

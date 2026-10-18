@@ -1,0 +1,57 @@
+# XcodeGen spec. Run `make generate`; the .xcodeproj is not committed.
+name: ShortcutLens
+
+options:
+  bundleIdPrefix: io.github.mhusted01
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+# Only the local Core package. Remote packages are rejected by
+# scripts/check-no-telemetry.sh.
+packages:
+  ShortcutLensCore:
+    path: ShortcutLensCore
+
+targets:
+  ShortcutLens:
+    type: application
+    platform: macOS
+    sources:
+      - App/Sources
+    dependencies:
+      - package: ShortcutLensCore
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: ShortcutLens
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSUIElement: true
+        NSHumanReadableCopyright: Copyright (c) 2026 Marcus Husted. MIT License.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.mhusted01.shortcutlens
+        MARKETING_VERSION: "0.0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        # Ad-hoc signing; no Apple Developer account required.
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+        # Xcode disables the hardened runtime for ad-hoc signatures; enable it
+        # together with Developer ID signing if that is added later.
+        # The Accessibility API is unavailable inside the App Sandbox.
+        ENABLE_APP_SANDBOX: NO
+
+schemes:
+  ShortcutLens:
+    build:
+      targets:
+        ShortcutLens: all
