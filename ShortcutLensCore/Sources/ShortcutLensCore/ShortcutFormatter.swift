@@ -52,7 +52,10 @@ public enum ShortcutFormatter {
         if let glyph = specialCharacterGlyphs[character] {
             return MenuGlyph.symbol(for: glyph)
         }
-        guard character.count == 1, character.unicodeScalars.allSatisfy(isDisplayable) else {
+        guard character.count == 1,
+              let base = character.unicodeScalars.first, !isMark(base),
+              character.unicodeScalars.allSatisfy(isDisplayable)
+        else {
             return nil
         }
         let uppercased = character.uppercased()
@@ -63,6 +66,16 @@ public enum ShortcutFormatter {
     private static let invisibleCategories: Set<Unicode.GeneralCategory> = [
         .control, .format, .privateUse, .surrogate, .unassigned,
     ]
+
+    /// A combining mark on its own would render as a floating accent.
+    private static func isMark(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.properties.generalCategory {
+        case .nonspacingMark, .spacingMark, .enclosingMark:
+            true
+        default:
+            false
+        }
+    }
 
     private static func isDisplayable(_ scalar: Unicode.Scalar) -> Bool {
         let properties = scalar.properties

@@ -27,6 +27,12 @@ struct ShortcutFormatterTests {
         #expect(ShortcutFormatter.keySymbol(for: shortcut) == expected)
     }
 
+    @Test func treatsCombiningSequenceAsOneKey() {
+        let shortcut = makeShortcut(keyCharacter: "e\u{301}", modifiers: 0)
+
+        #expect(ShortcutFormatter.string(for: shortcut) == "⌘E\u{301}")
+    }
+
     @Test func keepsCharacterWhoseUppercaseIsLonger() {
         let shortcut = makeShortcut(keyCharacter: "ß", modifiers: 0)
 
@@ -68,6 +74,7 @@ struct ShortcutFormatterTests {
         (String?.some("ab"), Int?.none),
         (String?.some("\u{200B}"), Int?.none),
         (String?.some("\u{FEFF}"), Int?.none),
+        (String?.some("\u{301}"), Int?.none),
     ])
     func returnsNilWithoutUsableKey(keyCharacter: String?, glyph: Int?) {
         let shortcut = makeShortcut(keyCharacter: keyCharacter, glyph: glyph, modifiers: 0)

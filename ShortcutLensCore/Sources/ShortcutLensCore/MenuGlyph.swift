@@ -21,6 +21,7 @@ public enum MenuGlyph {
 
     private static let namedKeys: [Int: String] = [
         0x02: "⇥", // kMenuTabRightGlyph
+        0x03: "⇤", // kMenuTabLeftGlyph
         0x04: "⌤", // kMenuEnterGlyph
         0x09: "Space", // kMenuSpaceGlyph
         0x0A: "⌦", // kMenuDeleteRightGlyph
