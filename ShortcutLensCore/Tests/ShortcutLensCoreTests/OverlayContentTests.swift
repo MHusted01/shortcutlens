@@ -36,7 +36,9 @@ struct OverlayContentTests {
         #expect(content.sections.map(\.id) == [0])
     }
 
-    @Test func hidesOptionAlternates() {
+    /// AX cannot tell a hidden Option alternate ("Close All") from a visible
+    /// item ("Hide Others"), so both are kept.
+    @Test func keepsOptionVariants() {
         let group = MenuGroup(title: "File", items: [
             entry("Close", key: "w", element: 1),
             entry("Close All", key: "w", modifiers: .option, element: 2),
@@ -44,7 +46,7 @@ struct OverlayContentTests {
 
         let content = OverlayContent(appName: "App", groups: [group])
 
-        #expect(content.sections[0].rows.map(\.title) == ["Close"])
+        #expect(content.sections[0].rows.map(\.title) == ["Close", "Close All"])
     }
 
     @Test func dropsRowsWithoutDisplayableKeyAndEmptySections() {

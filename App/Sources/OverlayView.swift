@@ -2,27 +2,8 @@ import AppKit
 import ShortcutLensCore
 import SwiftUI
 
-/// Fixed sizes of the overlay. Rows and section titles have fixed heights, so
-/// the panel size and the column split can be computed before rendering.
-enum OverlayMetrics {
-    static let padding: CGFloat = 20
-    static let headerHeight: CGFloat = 40
-    /// The `Divider` below the header.
-    static let dividerHeight: CGFloat = 1
-    static let columnWidth: CGFloat = 260
-    static let columnSpacing: CGFloat = 24
-    static let rowHeight: CGFloat = 20
-    static let sectionTitleHeight: CGFloat = 24
-    static let sectionSpacing: CGFloat = 14
-    static let placeholderSize = CGSize(width: 360, height: 150)
-    /// Share of the screen's visible area the overlay may cover.
-    static let screenFraction: CGFloat = 0.9
-
-    /// Includes the spacing below the section; see `OverlayController.layout`.
-    static func sectionHeight(rows: Int) -> Int {
-        Int(sectionTitleHeight + CGFloat(rows) * rowHeight + sectionSpacing)
-    }
-}
+/// The sizes `PanelLayout` computes with; the view must render exactly these.
+private let metrics = PanelLayout.Metrics.standard
 
 /// What the panel shows below its header.
 enum OverlayBody {
@@ -49,7 +30,7 @@ struct OverlayView: View {
                 placeholder { Text("No keyboard shortcuts").foregroundStyle(.secondary) }
             case let .shortcuts(sections, columns, scrolls):
                 let stack = columnStack(sections: sections, columns: columns)
-                    .padding(.top, OverlayMetrics.sectionSpacing)
+                    .padding(.top, metrics.sectionSpacing)
                 if scrolls {
                     ScrollView(.vertical) { stack }
                 } else {
@@ -57,7 +38,7 @@ struct OverlayView: View {
                 }
             }
         }
-        .padding(OverlayMetrics.padding)
+        .padding(metrics.padding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
@@ -73,7 +54,7 @@ struct OverlayView: View {
                 .font(.title3.weight(.semibold))
                 .lineLimit(1)
         }
-        .frame(height: OverlayMetrics.headerHeight, alignment: .top)
+        .frame(height: metrics.headerHeight, alignment: .top)
     }
 
     private func placeholder(@ViewBuilder _ content: () -> some View) -> some View {
@@ -81,14 +62,14 @@ struct OverlayView: View {
     }
 
     private func columnStack(sections: [OverlaySection<AXUIElement>], columns: [[Int]]) -> some View {
-        HStack(alignment: .top, spacing: OverlayMetrics.columnSpacing) {
+        HStack(alignment: .top, spacing: metrics.columnSpacing) {
             ForEach(columns.indices, id: \.self) { column in
-                VStack(alignment: .leading, spacing: OverlayMetrics.sectionSpacing) {
+                VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
                     ForEach(columns[column], id: \.self) { index in
                         SectionView(section: sections[index])
                     }
                 }
-                .frame(width: OverlayMetrics.columnWidth, alignment: .leading)
+                .frame(width: metrics.columnWidth, alignment: .leading)
             }
         }
     }
@@ -102,7 +83,7 @@ private struct SectionView: View {
             Text(section.title)
                 .font(.headline)
                 .lineLimit(1)
-                .frame(height: OverlayMetrics.sectionTitleHeight, alignment: .topLeading)
+                .frame(height: metrics.sectionTitleHeight, alignment: .topLeading)
             ForEach(section.rows) { row in
                 HStack(spacing: 8) {
                     Text(row.title)
@@ -113,7 +94,7 @@ private struct SectionView: View {
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
-                .frame(height: OverlayMetrics.rowHeight)
+                .frame(height: metrics.rowHeight)
                 .accessibilityElement(children: .combine)
             }
         }

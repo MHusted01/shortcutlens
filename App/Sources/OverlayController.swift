@@ -21,7 +21,10 @@ final class OverlayController {
         let icon: NSImage?
     }
 
+    private typealias ReadTask = Task<UncheckedSendable<OverlayContent<AXUIElement>>, Never>
+
     private let panel = OverlayPanel()
+    private var inFlight: (pid: pid_t, task: ReadTask)?
     private var generation = 0
     private var target: Target?
     private var content: OverlayContent<AXUIElement>?
@@ -40,14 +43,25 @@ final class OverlayController {
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
         self.target = target
         let pid = app.processIdentifier
-        let name = target.name
-        let read = Task.detached(priority: .userInitiated) {
-            Self.readContent(pid: pid, appName: name)
-        }
+        let read = runningRead(for: pid) ?? startRead(pid: pid, appName: target.name)
         Task { [weak self] in
             let result = await read.value
-            self?.finishRead(result.value, generation: target.generation)
+            self?.finishRead(result.value, generation: target.generation, pid: pid)
         }
+    }
+
+    /// The read already running for `pid`, if any. Reusing it keeps repeated
+    /// Command holds on a slow app from piling up concurrent menu walks.
+    private func runningRead(for pid: pid_t) -> ReadTask? {
+        inFlight?.pid == pid ? inFlight?.task : nil
+    }
+
+    private func startRead(pid: pid_t, appName: String) -> ReadTask {
+        let task = Task.detached(priority: .userInitiated) {
+            Self.readContent(pid: pid, appName: appName)
+        }
+        inFlight = (pid, task)
+        return task
     }
 
     /// Shows the panel for the app `prepare()` captured.
@@ -64,7 +78,10 @@ final class OverlayController {
         panel.orderOut(nil)
     }
 
-    private func finishRead(_ content: OverlayContent<AXUIElement>, generation: Int) {
+    private func finishRead(_ content: OverlayContent<AXUIElement>, generation: Int, pid: pid_t) {
+        if inFlight?.pid == pid {
+            inFlight = nil
+        }
         guard generation == self.generation else {
             return
         }
@@ -106,39 +123,23 @@ final class OverlayController {
 }
 
 extension OverlayController {
+    private static let placeholderSize = CGSize(width: 360, height: 150)
+
     /// The body to show and the panel size it needs on a screen whose visible
     /// area is `visible`. Nil `content` means the read is still running.
     static func layout(_ content: OverlayContent<AXUIElement>?, in visible: CGRect) -> (OverlayBody, CGSize) {
         guard let content else {
-            return (.loading, OverlayMetrics.placeholderSize)
+            return (.loading, placeholderSize)
         }
         guard !content.isEmpty else {
-            return (.empty, OverlayMetrics.placeholderSize)
+            return (.empty, placeholderSize)
         }
-        let padding = OverlayMetrics.padding * 2
-        let chrome = padding + OverlayMetrics.headerHeight + OverlayMetrics.dividerHeight
-            + OverlayMetrics.sectionSpacing
-        let maxWidth = visible.width * OverlayMetrics.screenFraction - padding
-        let maxHeight = visible.height * OverlayMetrics.screenFraction - chrome
-        let heights = content.sections.map { OverlayMetrics.sectionHeight(rows: $0.rows.count) }
-        let maxColumns = ColumnLayout.columnCount(
-            availableWidth: maxWidth,
-            columnWidth: OverlayMetrics.columnWidth,
-            spacing: OverlayMetrics.columnSpacing
+        let result = PanelLayout.layout(
+            rowCounts: content.sections.map(\.rows.count),
+            metrics: .standard,
+            visible: visible.size
         )
-        // Section heights include the spacing below them, but the last section
-        // of a column has none, so one spacing is added to the limit and taken
-        // off the result.
-        let spacing = Int(OverlayMetrics.sectionSpacing)
-        let columns = ColumnLayout.layout(heights, maxColumns: maxColumns, maxHeight: Int(maxHeight) + spacing)
-        let tallest = (columns.map { ColumnLayout.height(of: $0, in: heights) }.max() ?? 0) - spacing
-        let count = CGFloat(columns.count)
-        let scrolls = CGFloat(tallest) > maxHeight
-        let size = CGSize(
-            width: count * OverlayMetrics.columnWidth + (count - 1) * OverlayMetrics.columnSpacing + padding,
-            height: min(CGFloat(tallest), maxHeight) + chrome
-        )
-        return (.shortcuts(sections: content.sections, columns: columns, scrolls: scrolls), size)
+        return (.shortcuts(sections: content.sections, columns: result.columns, scrolls: result.scrolls), result.size)
     }
 }
 

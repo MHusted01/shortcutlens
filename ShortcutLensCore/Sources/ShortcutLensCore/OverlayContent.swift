@@ -1,5 +1,10 @@
 /// What the overlay displays for one app: its menus as sections of rows with
-/// formatted key labels. Option alternates are hidden (see `OptionAlternates`).
+/// formatted key labels.
+///
+/// AppKit's hidden Option alternates (e.g. "Close All" ⌥⌘W next to "Close"
+/// ⌘W) are kept: the Accessibility API reports them exactly like visible
+/// items such as "Hide Others" ⌥⌘H, so they cannot be told apart, and every
+/// listed shortcut works when pressed.
 public struct OverlayContent<Element> {
     public let appName: String
     /// Non-empty sections in menu bar order.
@@ -7,7 +12,7 @@ public struct OverlayContent<Element> {
 
     public init(appName: String, groups: [MenuGroup<Element>]) {
         self.appName = appName
-        sections = OptionAlternates.removed(from: groups)
+        sections = groups
             .map { (title: $0.title, rows: Self.rows(for: $0.items)) }
             .filter { !$0.rows.isEmpty }
             .enumerated()
