@@ -19,6 +19,9 @@ import SwiftUI
 @MainActor
 final class OverlayController {
     private nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
+    /// Seconds a read stays usable for the next `prepare()` of the same app;
+    /// long enough for the second tap of a double tap.
+    private static let contentReuseWindow: TimeInterval = 2
 
     /// The app a read was started for.
     private struct Target {
@@ -49,8 +52,8 @@ final class OverlayController {
     private var generation = 0
     private var target: Target?
     private var content: OverlayContent<AXUIElement>?
-    /// The app `content` was read from.
-    private var contentPID: pid_t?
+    /// The app `content` was read from, and when (system uptime).
+    private var contentSource: (pid: pid_t, readAt: TimeInterval)?
     private var isShown = false
     private var palette: OpenPalette?
 
@@ -60,9 +63,9 @@ final class OverlayController {
 
     /// Starts reading the frontmost app's menus. ShortcutLens itself is skipped.
     ///
-    /// Content already read for the same app is kept until the new read
-    /// replaces it, so the second tap of a double tap does not throw away
-    /// what the first tap read.
+    /// Content read for the same app within `contentReuseWindow` is kept until
+    /// the new read replaces it, so the second tap of a double tap does not
+    /// throw away what the first tap read.
     func prepare() {
         generation += 1
         guard let app = NSWorkspace.shared.frontmostApplication,
@@ -72,7 +75,7 @@ final class OverlayController {
             content = nil
             return
         }
-        if app.processIdentifier != contentPID {
+        if !canReuseContent(for: app.processIdentifier) {
             content = nil
         }
         let target = Target(generation: generation, name: app.localizedName ?? "", icon: app.icon)
@@ -83,6 +86,13 @@ final class OverlayController {
             let result = await read.value
             self?.finishRead(result.value, generation: target.generation, pid: pid)
         }
+    }
+
+    private func canReuseContent(for pid: pid_t) -> Bool {
+        guard let source = contentSource, source.pid == pid else {
+            return false
+        }
+        return ProcessInfo.processInfo.systemUptime - source.readAt <= Self.contentReuseWindow
     }
 
     /// The read already running for `pid`, if any. Reusing it keeps repeated
@@ -220,7 +230,7 @@ final class OverlayController {
             return
         }
         self.content = content
-        contentPID = pid
+        contentSource = (pid, ProcessInfo.processInfo.systemUptime)
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
             let size = refreshPalette()
