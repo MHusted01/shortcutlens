@@ -13,16 +13,6 @@ struct SystemAXClient: AXClient {
     /// hung app cannot stall the overlay. The system default is about 6 seconds.
     static let defaultMessagingTimeout: Float = 0.25
 
-    /// Order matters: `attributes(of:)` reads the values by index.
-    private static let attributeNames: [String] = [
-        kAXTitleAttribute,
-        kAXEnabledAttribute,
-        kAXRoleAttribute,
-        kAXMenuItemCmdCharAttribute,
-        kAXMenuItemCmdModifiersAttribute,
-        kAXMenuItemCmdGlyphAttribute,
-    ]
-
     let messagingTimeout: Float
 
     init(messagingTimeout: Float = Self.defaultMessagingTimeout) {
@@ -45,22 +35,14 @@ struct SystemAXClient: AXClient {
         var values: CFArray?
         let result = AXUIElementCopyMultipleAttributeValues(
             element,
-            Self.attributeNames as CFArray,
+            MenuItemAttributes.axAttributeNames as CFArray,
             AXCopyMultipleAttributeOptions(),
             &values
         )
-        // Attributes an element lacks come back as AXValue errors; the casts below turn them into nil.
-        guard result == .success, let values = values as? [Any], values.count == Self.attributeNames.count else {
+        guard result == .success, let values = values as? [Any] else {
             return nil
         }
-        return MenuItemAttributes(
-            title: values[0] as? String,
-            isEnabled: values[1] as? Bool ?? true,
-            role: values[2] as? String,
-            keyCharacter: values[3] as? String,
-            modifiers: values[4] as? Int,
-            glyph: values[5] as? Int
-        )
+        return MenuItemAttributes(axValues: values)
     }
 
     /// The timeout only applies to the element it is set on, not to the app or

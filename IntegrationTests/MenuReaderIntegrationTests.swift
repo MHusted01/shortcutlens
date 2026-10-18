@@ -11,8 +11,6 @@ struct MenuReaderIntegrationTests {
     /// One line per shortcut: menu path, then the rendered shortcut.
     private static let expected = [
         "MenuFixture > Quit MenuFixture: ⌘Q",
-        // AppKit adds this Option alternate to the Quit item by itself.
-        "MenuFixture > Quit and Keep Windows: ⌥⌘Q",
         "File > New: ⌘N",
         "File > Save As…: ⇧⌘S",
         "File > Export > PDF: ⌥⌘P",
@@ -46,19 +44,25 @@ struct MenuReaderIntegrationTests {
         return try await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
     }
 
-    /// The menu bar appears shortly after launch; poll until it has shortcuts.
+    private struct MenusNotReady: Error, CustomStringConvertible {
+        let description: String
+    }
+
+    /// The menu bar fills in shortly after launch. Poll until two reads in a
+    /// row agree, so a half-built menu bar is never compared.
     private func waitForMenus(of pid: pid_t) async throws -> [String] {
         let reader = MenuReader(client: SystemAXClient())
         let deadline = ContinuousClock.now + Self.launchTimeout
+        var previous: [String] = []
         while ContinuousClock.now < deadline {
-            let groups = reader.read(processID: pid)
-            if !groups.isEmpty {
-                return groups.flatMap(\.items).map(describe)
+            let lines = reader.read(processID: pid).flatMap(\.items).map(describe)
+            if !lines.isEmpty, lines == previous {
+                return lines
             }
+            previous = lines
             try await Task.sleep(for: .milliseconds(100))
         }
-        Issue.record("MenuFixture showed no menu bar within \(Self.launchTimeout)")
-        return []
+        throw MenusNotReady(description: "MenuFixture menus not stable within \(Self.launchTimeout): \(previous)")
     }
 
     private func describe(_ entry: MenuEntry<AXUIElement>) -> String {

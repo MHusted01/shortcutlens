@@ -16,6 +16,16 @@ public protocol AXClient {
 
 /// The attributes read from one menu element. Missing attributes are nil.
 public struct MenuItemAttributes: Hashable, Sendable {
+    /// The AX attribute names, in the order `init(axValues:)` expects their values.
+    public static let axAttributeNames = [
+        "AXTitle",
+        "AXEnabled",
+        "AXRole",
+        "AXMenuItemCmdChar",
+        "AXMenuItemCmdModifiers",
+        "AXMenuItemCmdGlyph",
+    ]
+
     /// `AXTitle`.
     public let title: String?
     /// `AXEnabled`; elements that do not report it count as enabled.
@@ -43,5 +53,23 @@ public struct MenuItemAttributes: Hashable, Sendable {
         self.keyCharacter = keyCharacter
         self.modifiers = modifiers
         self.glyph = glyph
+    }
+
+    /// Decodes the values of one multiple-attribute read, in `axAttributeNames`
+    /// order. A value of the wrong type, such as the AXValue error an element
+    /// returns for an attribute it lacks, becomes nil. Returns nil when the
+    /// number of values does not match.
+    public init?(axValues values: [Any]) {
+        guard values.count == Self.axAttributeNames.count else {
+            return nil
+        }
+        self.init(
+            title: values[0] as? String,
+            isEnabled: values[1] as? Bool ?? true,
+            role: values[2] as? String,
+            keyCharacter: values[3] as? String,
+            modifiers: values[4] as? Int,
+            glyph: values[5] as? Int
+        )
     }
 }

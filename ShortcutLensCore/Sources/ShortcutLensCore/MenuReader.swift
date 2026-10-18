@@ -28,6 +28,10 @@ public struct MenuReader<Client: AXClient> {
 
     /// The shortcuts of the process's menu bar, one group per top-level menu
     /// that has at least one. Empty when the menu bar cannot be read.
+    ///
+    /// Synchronous: every client call can wait up to the client's messaging
+    /// timeout, so a slow app can make this take seconds. Call it off the main
+    /// actor.
     public func read(processID: Int32) -> [MenuGroup<Element>] {
         guard let menuBar = client.menuBar(forProcess: processID) else {
             return []
