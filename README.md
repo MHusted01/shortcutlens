@@ -60,8 +60,18 @@ make build
 ```
 
 The script also writes the gitignored `Config/Local.xcconfig`, which makes
-Debug builds use that identity. Grant Accessibility to
-`build/Build/Products/Debug/ShortcutLens.app` once; later rebuilds keep it.
+Debug builds use that identity. Then grant the Accessibility permission once;
+later rebuilds keep it:
+
+```sh
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+```
+
+Click **+**, press Cmd+Shift+G, choose
+`build/Build/Products/Debug/ShortcutLens.app` and switch it on. The pane is
+called Accessibility on older macOS versions; newer ones name it after
+device control and data access (Danish: "Styring af enhed og adgang til
+data"). The command above opens it either way.
 On the first build macOS may ask whether `codesign` may use the key: choose
 Always Allow. CI and Release builds stay ad-hoc signed. To undo it, run
 `security delete-identity -c "ShortcutLens Development"` and
