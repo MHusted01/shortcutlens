@@ -26,12 +26,15 @@ struct ShortcutLensApp: App {
     }
 }
 
-/// Starts the permission check at launch, before any menu is opened.
+/// Starts the permission check at launch, before any menu is opened. The
+/// Command trigger runs only while the permission is granted.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let permission = PermissionController()
+    private let trigger = TriggerController()
 
     func applicationDidFinishLaunching(_: Notification) {
+        permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
     }
 }

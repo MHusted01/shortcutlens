@@ -21,6 +21,8 @@ final class PermissionController {
     )
 
     private(set) var permission = AccessibilityPermission.initial
+    /// Called after every check that changed `permission`.
+    @ObservationIgnored var onChange: (AccessibilityPermission) -> Void = { _ in }
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var window: NSWindow?
 
@@ -51,6 +53,7 @@ final class PermissionController {
         let (state, action) = permission.updated(isTrusted: AXIsProcessTrusted())
         if state != permission {
             permission = state
+            onChange(state)
         }
         switch action {
         case .showOnboarding:
