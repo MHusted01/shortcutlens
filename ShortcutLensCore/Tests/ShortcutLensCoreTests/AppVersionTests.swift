@@ -27,4 +27,9 @@ struct AppVersionTests {
 
         #expect(version == AppVersion(marketing: AppVersion.unknownMarketing, build: AppVersion.unknownBuild))
     }
+
+    // TEMPORARY: verifies that a failing CI check blocks merging. Removed in this PR.
+    @Test func temporaryFailureForProtectionCheck() {
+        #expect(AppVersion(infoDictionary: [:]).build == "intentionally wrong")
+    }
 }
