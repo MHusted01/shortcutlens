@@ -258,7 +258,7 @@ final class OverlayController {
     private func finishRead(_ result: ReadResult, generation: Int, key: AppKey) {
         // A read made with older settings is not the one in flight
         // (`apply(_:)` dropped it), and is neither cached nor shown.
-        let isCurrent = !result.settings.changesMenuReads(comparedTo: readSettings)
+        let isCurrent = !readSettings.restartsReads(comparedTo: result.settings)
         if isCurrent, inFlight?.key == key {
             inFlight = nil
         }
