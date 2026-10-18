@@ -16,8 +16,9 @@ valid_days=3650
 
 # find-identity (not find-certificate): the private key must be there too.
 # No -v: an untrusted self-signed identity is fine for codesign and Xcode.
-if security find-identity -p codesigning "$keychain" 2>/dev/null |
-    grep -qF "\"$identity\""; then
+# Captured first: piping into grep -q could SIGPIPE under pipefail.
+identities="$(security find-identity -p codesigning "$keychain" 2>/dev/null || true)"
+if grep -qF "\"$identity\"" <<<"$identities"; then
     echo "Identity \"$identity\" already exists in $(basename "$keychain")."
 else
     workdir="$(mktemp -d)"
