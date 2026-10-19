@@ -123,6 +123,51 @@ struct OverlayContentPathsTests {
         #expect(titles(section) == ["Spelling > Find Next"])
     }
 
+    @Test func searchRanksTitleMatchesAbovePathMatches() throws {
+        let content = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "Edit", items: [
+                entry(["Edit", "Spelling", "Find Next"], key: ";", element: 1),
+                entry(["Edit", "Find", "Find Next"], key: "g", element: 2),
+                entry(["Edit", "Check Spelling"], key: "k", element: 3),
+            ]),
+        ])
+
+        let section = try #require(ShortcutMatcher.filter(content, query: "spelling").sections.first)
+
+        #expect(titles(section) == ["Check Spelling", "Spelling > Find Next"])
+    }
+
+    @Test func searchRanksPathMatchesAboveFuzzyTitleMatches() throws {
+        let content = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "Edit", items: [
+                entry(["Edit", "Paste Special All"], key: "v", element: 1),
+                entry(["Edit", "Spelling", "Find Next"], key: ";", element: 2),
+                entry(["Edit", "Find", "Find Next"], key: "g", element: 3),
+            ]),
+        ])
+
+        let section = try #require(ShortcutMatcher.filter(content, query: "spell").sections.first)
+
+        #expect(titles(section) == ["Spelling > Find Next", "Paste Special All"])
+    }
+
+    @Test func searchMatchesPathsOnlyContiguously() {
+        #expect(ShortcutMatcher.filter(findNext, query: "spellingfind").isEmpty)
+    }
+
+    @Test func searchFindsAFavouriteByTheMenuInItsLabel() throws {
+        let content = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "File", items: [entry(["File", "Close"], key: "w", element: 1)]),
+            MenuGroup(title: "Window", items: [entry(["Window", "Close"], key: "x", element: 2)]),
+        ])
+        let pinned = content.pinning([["File", "Close"], ["Window", "Close"]])
+
+        let favourites = try #require(ShortcutMatcher.filter(pinned, query: "window").sections.first)
+
+        #expect(favourites.isPinned)
+        #expect(titles(favourites) == ["Window > Close"])
+    }
+
     @Test func showsTheFullPathWhenItDoesNotStartWithTheSection() {
         let content = OverlayContent(appName: "App", groups: [
             MenuGroup(title: "Tools", items: [
