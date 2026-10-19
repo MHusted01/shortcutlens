@@ -68,23 +68,21 @@ public enum ShortcutPackParser {
         let title = try text(raw.title, field: "\(path).title")
         let modifiers = try (raw.modifiers ?? []).reduce(into: ModifierMask.noCommand) { mask, name in
             guard let modifier = PackKeys.modifier(named: name) else {
-                let reason = String(localized: "unknown modifier \"\(name)\"", bundle: .module)
-                throw PackError.invalidValue(field: "\(path).modifiers", reason: reason)
+                throw PackError.invalidValue(field: "\(path).modifiers", reason: .unknownModifier(name))
             }
             mask = modifier == .noCommand ? mask.subtracting(.noCommand) : mask.union(modifier)
         }
         guard let shortcut = PackKeys.shortcut(
             title: title, key: raw.key, modifiers: modifiers, menuPath: [section, title]
         ) else {
-            let reason = String(localized: "unknown key \"\(raw.key)\"", bundle: .module)
-            throw PackError.invalidValue(field: "\(path).key", reason: reason)
+            throw PackError.invalidValue(field: "\(path).key", reason: .unknownKey(raw.key))
         }
         return shortcut
     }
 
     private static func text(_ value: String, field: String) throws -> String {
         guard !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw PackError.invalidValue(field: field, reason: String(localized: "must not be empty", bundle: .module))
+            throw PackError.invalidValue(field: field, reason: .empty)
         }
         return value
     }
@@ -102,8 +100,7 @@ public enum ShortcutPackParser {
         case let .valueNotFound(_, context):
             return .missingField(path(context.codingPath))
         case let .typeMismatch(_, context) where !context.codingPath.isEmpty:
-            let reason = String(localized: "wrong type", bundle: .module)
-            return .invalidValue(field: path(context.codingPath), reason: reason)
+            return .invalidValue(field: path(context.codingPath), reason: .wrongType)
         default:
             // Unparsable text, or a top level that is not an object.
             return .invalidJSON

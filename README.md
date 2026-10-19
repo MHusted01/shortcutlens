@@ -59,7 +59,8 @@ Choose Export Shortcuts as Markdown… or Print Shortcuts… from the
 ShortcutLens menu bar icon to export the frontmost app's shortcuts. The
 export has every section the overlay shows, without a search filter, and
 marks App Shortcuts and conflicts. To get a PDF, choose Save as PDF in the
-print panel. Files are only written where you save them.
+print panel. Files are only written where you save them. Headings and the
+file name are in the app's language, like the menu titles from the app.
 
 ## Editing shortcuts
 
@@ -153,7 +154,7 @@ System Settings and add the new app.
 
 ## Development
 
-Requirements: Xcode 27 or later (older SwiftPM does not compile the string
+Requirements: Xcode 26.6 or later (older SwiftPM does not compile the string
 catalogs), plus `brew install xcodegen swiftlint swiftformat`.
 
 ```sh

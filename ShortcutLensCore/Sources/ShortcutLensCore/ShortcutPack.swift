@@ -35,7 +35,29 @@ public enum PackError: Error, Hashable, Sendable {
     case tooLarge
     case unsupportedVersion(Int)
     case missingField(String)
-    case invalidValue(field: String, reason: String)
+    case invalidValue(field: String, reason: Reason)
+
+    /// What is wrong with a value. Kept apart from the text so errors compare
+    /// equal in any language.
+    public enum Reason: Hashable, Sendable {
+        case empty
+        case wrongType
+        case unknownKey(String)
+        case unknownModifier(String)
+
+        var text: String {
+            switch self {
+            case .empty:
+                String(localized: "must not be empty", bundle: .module)
+            case .wrongType:
+                String(localized: "wrong type", bundle: .module)
+            case let .unknownKey(key):
+                String(localized: "unknown key \"\(key)\"", bundle: .module)
+            case let .unknownModifier(name):
+                String(localized: "unknown modifier \"\(name)\"", bundle: .module)
+            }
+        }
+    }
 
     /// The schema version this build reads.
     private static let readable = ShortcutPackParser.schemaVersion
@@ -55,7 +77,7 @@ public enum PackError: Error, Hashable, Sendable {
         case let .missingField(field):
             String(localized: "Missing field \"\(field)\".", bundle: .module)
         case let .invalidValue(field, reason):
-            String(localized: "Invalid \"\(field)\": \(reason).", bundle: .module)
+            String(localized: "Invalid \"\(field)\": \(reason.text).", bundle: .module)
         }
     }
 }
