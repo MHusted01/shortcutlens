@@ -71,6 +71,16 @@
         }
       }
     },
+    "About ShortcutLens" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om ShortcutLens"
+          }
+        }
+      }
+    },
     "Add to Favourites" : {
       "localizations" : {
         "da" : {
