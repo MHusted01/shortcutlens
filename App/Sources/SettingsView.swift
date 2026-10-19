@@ -42,6 +42,7 @@ struct SettingsView: View {
                     isOn: binding(\.showsSystemShortcuts) { $0.with(showsSystemShortcuts: $1) }
                 )
             }
+            packsSection
             Section("Startup") {
                 Toggle("Launch at login", isOn: launchAtLogin)
                 launchAtLoginNote
@@ -50,6 +51,31 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: Self.width)
         .fixedSize()
+    }
+
+    private var packsSection: some View {
+        Section("Shortcut packs") {
+            LabeledContent("Packs in use", value: "\(controller.packs.packs.count)")
+            ForEach(controller.packs.problems, id: \.self) { problem in
+                VStack(alignment: .leading) {
+                    Text(problem.fileName)
+                        .font(.callout.bold())
+                    Text(problem.message)
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                }
+            }
+            if let error = controller.packsFolderError {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .font(.callout)
+            }
+            HStack {
+                Button("Reload") { controller.reloadPacks() }
+                Spacer()
+                Button("Show Packs Folder") { controller.showPacksFolder() }
+            }
+        }
     }
 
     @ViewBuilder private var launchAtLoginNote: some View {

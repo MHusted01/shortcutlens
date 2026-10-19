@@ -1,0 +1,152 @@
+import Foundation
+import ShortcutLensCore
+import Testing
+
+struct ShortcutPackParserTests {
+    private func parse(_ json: String) -> Result<ShortcutPack, PackError> {
+        ShortcutPackParser.parse(Data(json.utf8))
+    }
+
+    private func pack(shortcuts: String) -> String {
+        """
+        {"schemaVersion": 1, "bundleIdentifier": "com.example.app", "name": "Example",
+         "sections": [{"title": "Navigation", "shortcuts": [\(shortcuts)]}]}
+        """
+    }
+
+    private func error(_ json: String) -> PackError? {
+        guard case let .failure(error) = parse(json) else {
+            return nil
+        }
+        return error
+    }
+
+    private func keys(_ shortcuts: String) throws -> [String?] {
+        let pack = try parse(pack(shortcuts: shortcuts)).get()
+        return pack.sections[0].shortcuts.map { ShortcutFormatter.string(for: $0) }
+    }
+
+    @Test func parsesAValidPack() throws {
+        let pack = try parse(pack(shortcuts: #"{"title": "Open", "key": "Down", "modifiers": ["command"]}"#)).get()
+
+        #expect(pack.bundleIdentifier == "com.example.app")
+        #expect(pack.name == "Example")
+        #expect(pack.sections.map(\.title) == ["Navigation"])
+        let shortcut = try #require(pack.sections[0].shortcuts.first)
+        #expect(shortcut.title == "Open")
+        #expect(shortcut.menuPath == ["Navigation", "Open"])
+        #expect(ShortcutFormatter.string(for: shortcut) == "⌘↓")
+    }
+
+    @Test func nameIsOptional() throws {
+        let json = #"{"schemaVersion": 1, "bundleIdentifier": "com.example.app", "sections": []}"#
+
+        #expect(try parse(json).get().name == nil)
+    }
+
+    @Test func modifiersFollowTheMenuConvention() throws {
+        let keys = try keys("""
+        {"title": "A", "key": "k"},
+        {"title": "B", "key": "k", "modifiers": []},
+        {"title": "C", "key": "k", "modifiers": ["shift", "command", "option", "control"]},
+        {"title": "D", "key": "Tab", "modifiers": ["shift"]}
+        """)
+
+        #expect(keys == ["K", "K", "⌃⌥⇧⌘K", "⇧⇥"])
+    }
+
+    @Test func namedKeysMapToTheirGlyphs() throws {
+        let names = [
+            "Space", "Return", "Enter", "Tab", "Escape", "Delete", "ForwardDelete", "Clear",
+            "PageUp", "PageDown", "Home", "End", "Left", "Right", "Up", "Down", "Help", "F1", "F19",
+        ]
+        let shortcuts = names.map { #"{"title": "\#($0)", "key": "\#($0)"}"# }.joined(separator: ",")
+
+        #expect(try keys(shortcuts) == [
+            "Space", "↩", "⌤", "⇥", "⎋", "⌫", "⌦", "⌧", "⇞", "⇟", "↖", "↘", "←", "→", "↑", "↓", "Help", "F1", "F19",
+        ])
+    }
+
+    @Test func packCombosMatchMenuCombos() throws {
+        let pack = try parse(pack(shortcuts: #"{"title": "Quick Look", "key": "Space"}"#)).get()
+        let menu = MenuShortcut(title: "Look", keyCharacter: " ", modifiers: .noCommand)
+
+        #expect(KeyCombo(pack.sections[0].shortcuts[0]) == KeyCombo(menu))
+    }
+
+    @Test func badJSONIsReported() {
+        #expect(error("{not json") == .invalidJSON)
+        #expect(error("[]") == .invalidJSON)
+    }
+
+    @Test func unknownVersionIsReportedBeforeOtherFields() {
+        #expect(error(#"{"schemaVersion": 2}"#) == .unsupportedVersion(2))
+    }
+
+    @Test func missingFieldsAreNamed() {
+        let shortcut = "sections[0].shortcuts[0]"
+
+        #expect(error(#"{"bundleIdentifier": "a", "sections": []}"#) == .missingField("schemaVersion"))
+        #expect(error(#"{"schemaVersion": 1, "sections": []}"#) == .missingField("bundleIdentifier"))
+        #expect(error(#"{"schemaVersion": 1, "bundleIdentifier": "a"}"#) == .missingField("sections"))
+        #expect(error(pack(shortcuts: #"{"title": "Open"}"#)) == .missingField("\(shortcut).key"))
+        #expect(error(pack(shortcuts: #"{"key": "a"}"#)) == .missingField("\(shortcut).title"))
+        #expect(error(pack(shortcuts: #"{"title": null, "key": "a"}"#)) == .missingField("\(shortcut).title"))
+    }
+
+    @Test func wrongTypesAreReported() {
+        #expect(error(#"{"schemaVersion": "1"}"#) == .invalidValue(field: "schemaVersion", reason: "wrong type"))
+        #expect(
+            error(pack(shortcuts: #"{"title": "A", "key": 5}"#))
+                == .invalidValue(field: "sections[0].shortcuts[0].key", reason: "wrong type")
+        )
+    }
+
+    @Test func emptyTextIsReported() {
+        let json = #"{"schemaVersion": 1, "bundleIdentifier": " ", "sections": []}"#
+
+        #expect(error(json) == .invalidValue(field: "bundleIdentifier", reason: "must not be empty"))
+        #expect(
+            error(pack(shortcuts: #"{"title": "", "key": "a"}"#))
+                == .invalidValue(field: "sections[0].shortcuts[0].title", reason: "must not be empty")
+        )
+    }
+
+    @Test func unknownKeysAndModifiersAreReported() {
+        #expect(
+            error(pack(shortcuts: #"{"title": "A", "key": "ab"}"#))
+                == .invalidValue(field: "sections[0].shortcuts[0].key", reason: "unknown key \"ab\"")
+        )
+        #expect(
+            error(pack(shortcuts: #"{"title": "A", "key": "a", "modifiers": ["hyper"]}"#))
+                == .invalidValue(field: "sections[0].shortcuts[0].modifiers", reason: "unknown modifier \"hyper\"")
+        )
+    }
+
+    @Test func messagesAreReadable() {
+        #expect(PackError.invalidJSON.message == "Not valid JSON.")
+        #expect(PackError.unsupportedVersion(2).message == "Unsupported schemaVersion 2; this version reads 1.")
+        #expect(PackError.missingField("sections").message == "Missing field \"sections\".")
+        #expect(PackError.invalidValue(field: "key", reason: "wrong type").message == "Invalid \"key\": wrong type.")
+        #expect(PackError.tooLarge.message == "File is larger than 256 KB.")
+    }
+
+    @Test func oversizedFilesAreRejected() {
+        let data = Data(count: ShortcutPackParser.maxFileSize + 1)
+
+        #expect(ShortcutPackParser.parse(data) == .failure(.tooLarge))
+    }
+
+    @Test func bundledExamplePackLoads() throws {
+        let repository = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let url = repository.appending(path: "App/Resources/Packs/com.apple.finder.json")
+
+        let pack = try ShortcutPackParser.parse(Data(contentsOf: url)).get()
+
+        #expect(pack.bundleIdentifier == "com.apple.finder")
+        #expect(!pack.sections.isEmpty)
+        #expect(pack.sections.allSatisfy { !$0.shortcuts.isEmpty })
+    }
+}

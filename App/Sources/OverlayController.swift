@@ -20,7 +20,8 @@ import SwiftUI
 /// through `onClosePalette`, so the trigger state machine always knows.
 ///
 /// System shortcuts are read with the menus, off the main actor, and appended
-/// as a last, display-only section. The cache holds menu content only.
+/// as a last, display-only section. The cache holds menu and pack content
+/// only.
 @MainActor
 final class OverlayController {
     nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")

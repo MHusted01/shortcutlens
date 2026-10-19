@@ -14,8 +14,8 @@ extension OverlayController {
         let settings: AppSettings
     }
 
-    /// Reads the menus, system shortcuts and App Shortcuts of one app. Runs
-    /// off the main actor.
+    /// Reads the menus, shortcut packs, system shortcuts and App Shortcuts of
+    /// one app. Pack sections follow the menus. Runs off the main actor.
     nonisolated static func readContent(
         pid: pid_t,
         bundleID: String?,
@@ -32,7 +32,9 @@ extension OverlayController {
         let groups = reader.read(processID: pid)
         let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
         let custom = UserKeyEquivalentSource.equivalents(bundleID: bundleID)
+        let packSections = PackSource.library().sections(for: bundleID)
         let content = OverlayContent(appName: appName, groups: groups, custom: custom)
+            .appending(sections: packSections.map { (title: $0.title, shortcuts: $0.shortcuts) })
         let elapsed = ContinuousClock.now - start
         let rows = content.rowCount
         let expired = client.hasExpired

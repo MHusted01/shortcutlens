@@ -19,6 +19,10 @@ final class SettingsController {
     private(set) var launchAtLogin: SMAppService.Status = .notRegistered
     /// The last launch-at-login failure, shown in the window until the next attempt.
     private(set) var launchAtLoginError: String?
+    /// The shortcut packs as last read, for listing problems per file.
+    private(set) var packs = PackLibrary.empty
+    /// Why the packs folder could not be created, if it failed.
+    private(set) var packsFolderError: String?
     /// Called with the new settings after every change.
     @ObservationIgnored var onChange: (AppSettings) -> Void = { _ in }
     @ObservationIgnored private let store: UserDefaults
@@ -40,6 +44,7 @@ final class SettingsController {
 
     func showWindow() {
         refreshLaunchAtLogin()
+        reloadPacks()
         let window = window ?? makeWindow()
         self.window = window
         NSApp.activate()
@@ -65,6 +70,24 @@ final class SettingsController {
 
     func openLoginItemsSettings() {
         SMAppService.openSystemSettingsLoginItems()
+    }
+
+    /// Reads the pack files again. The overlay reads them on its own with
+    /// every menu read; this only updates what the window lists.
+    func reloadPacks() {
+        packs = PackSource.library()
+    }
+
+    /// Opens the user's packs folder in Finder, creating it first.
+    func showPacksFolder() {
+        do {
+            try PackSource.createUserDirectory()
+            packsFolderError = nil
+            NSWorkspace.shared.open(PackSource.userDirectory)
+        } catch {
+            Self.log.error("packs folder not created: \(error.localizedDescription, privacy: .public)")
+            packsFolderError = error.localizedDescription
+        }
     }
 
     private func refreshLaunchAtLogin() {
