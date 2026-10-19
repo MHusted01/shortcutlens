@@ -43,6 +43,14 @@ If macOS Dictation is set to "Press Command Key Twice" (System Settings >
 Keyboard > Dictation > Shortcut), both react to the double tap. Pick another
 Dictation shortcut; a setting for the palette trigger is planned.
 
+## Export
+
+Choose Export Shortcuts as Markdown… or Print Shortcuts… from the
+ShortcutLens menu bar icon to export the frontmost app's shortcuts. The
+export has every section the overlay shows, without a search filter, and
+marks App Shortcuts and conflicts. To get a PDF, choose Save as PDF in the
+print panel. Files are only written where you save them.
+
 ## Settings
 
 Open them from the ShortcutLens menu bar icon > Settings… (Cmd+,). Changes
