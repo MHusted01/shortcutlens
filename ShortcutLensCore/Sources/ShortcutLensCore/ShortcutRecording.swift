@@ -38,6 +38,15 @@ public enum ShortcutRecording {
         return hasModifier ? nil : .needsModifier
     }
 
+    /// The key to record for a key event with `keyCode`. A key with a menu
+    /// glyph takes AppKit's character (`charactersIgnoringModifiers`, F1 is
+    /// U+F704), because the layout gives legacy codes that cannot tell F1 from
+    /// F5 or Forward Delete from Delete. Other keys take the layout's
+    /// character without modifiers (`characters(byApplyingModifiers: [])`).
+    public static func key(keyCode: Int, layoutCharacter: String, appKitCharacter: String) -> String {
+        KeyCodes.glyph(for: keyCode) == nil ? layoutCharacter : appKitCharacter
+    }
+
     /// The store's modifier characters; see `UserKeyEquivalent`.
     private static let reservedCharacters: Set<String> = ["@", "$", "~", "^"]
 }
