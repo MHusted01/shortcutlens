@@ -21,6 +21,26 @@
   Line coverage must stay at or above 80%.
 - Code must pass `make lint` (SwiftLint and SwiftFormat).
 
+## Translations
+
+ShortcutLens is in English and Danish, and macOS picks the language from the
+system preferences. New languages are welcome. Each one needs only
+translations, no code:
+
+1. Claim your language in a comment on
+   [#77](https://github.com/MHusted01/shortcutlens/issues/77), so two
+   people don't do the same one.
+2. Add it to both string catalogs and translate every entry:
+   `App/Resources/Localizable.xcstrings` and
+   `ShortcutLensCore/Sources/ShortcutLensCore/Localizable.xcstrings`.
+3. Use the names macOS uses in your language, keep placeholders such as
+   `%@` and `%lld`, and fill in every plural form.
+4. Run `make test`: `LocalizationTests` fails when an entry is missing or a
+   placeholder changed.
+5. Open one PR per language, titled `feat: <Language> localization`.
+
+[#77](https://github.com/MHusted01/shortcutlens/issues/77) has the details.
+
 ## Releases
 
 Maintainers tag a commit on `main` with `vX.Y.Z`. The release workflow builds,
