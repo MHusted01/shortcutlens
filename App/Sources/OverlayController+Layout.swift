@@ -4,6 +4,13 @@ import ShortcutLensCore
 extension OverlayController {
     private static let placeholderSize = CGSize(width: 360, height: 150)
 
+    /// The visible frame (without menu bar and Dock) of the screen under the pointer.
+    static func visibleFrameUnderPointer() -> CGRect? {
+        let screens = NSScreen.screens
+        let index = ScreenPicker.index(for: NSEvent.mouseLocation, in: screens.map(\.frame))
+        return (index.map { screens[$0] } ?? NSScreen.main)?.visibleFrame
+    }
+
     /// The body to show and the panel size it needs on a screen whose visible
     /// area is `visible`. Nil `content` means the read is still running.
     static func layout(_ content: OverlayContent<AXUIElement>?, in visible: CGRect) -> (OverlayBody, CGSize) {
