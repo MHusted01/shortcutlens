@@ -81,6 +81,16 @@
         }
       }
     },
+    "Advanced" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanceret"
+          }
+        }
+      }
+    },
     "Allow ShortcutLens to use Accessibility" : {
       "localizations" : {
         "da" : {
@@ -307,6 +317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Slet fremad"
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generelt"
           }
         }
       }
@@ -577,6 +597,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alternativ"
+          }
+        }
+      }
+    },
+    "Overlay" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overlay"
+          }
+        }
+      }
+    },
+    "Packs" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakker"
           }
         }
       }

@@ -106,9 +106,10 @@ final class SettingsController {
     }
 
     private func makeWindow() -> NSWindow {
-        let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(controller: self)))
-        window.title = String(localized: "ShortcutLens Settings")
+        // The title follows the selected tab.
+        let window = NSWindow(contentViewController: SettingsTabController(controller: self, store: store))
         window.styleMask = [.titled, .closable]
+        window.toolbarStyle = .preference
         window.isReleasedWhenClosed = false
         return window
     }
