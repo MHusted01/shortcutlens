@@ -36,6 +36,9 @@ struct ShortcutEditorView: View {
         }
         .padding(20)
         .frame(width: Self.width, alignment: .leading)
+        // Takes the height the wrapped messages need, so the window grows
+        // instead of truncating them.
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func header(_ request: ShortcutEditRequest) -> some View {
