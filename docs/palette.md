@@ -10,6 +10,8 @@ Command:
 - Escape clears the search; a second Escape closes the palette. Clicking
   outside it or switching apps closes it too.
 
+When nothing matches the search, the palette says "No matching shortcuts".
+
 With VoiceOver, the palette announces the app, the number of matches and the
 selected entry, reads keys as words ("Command Shift S") and lists section
 headings in the rotor.
