@@ -6,7 +6,7 @@ import Foundation
 /// e.g. `⌘Space` becomes `⌘Mellemrum` in Danish, as macOS menus show it.
 public enum KeyDisplay {
     /// The shown words for the keys `MenuGlyph` names with a word.
-    public struct Words: Sendable {
+    public struct Words: Equatable, Sendable {
         public let space: String
         public let help: String
 
@@ -15,13 +15,26 @@ public enum KeyDisplay {
             self.help = help
         }
 
-        /// The words in the app's language.
-        public static var localized: Words {
-            Words(
-                space: String(localized: "Space", bundle: .module),
-                help: String(localized: "Help", bundle: .module)
+        /// The words in the catalog's `language`, e.g. "da"; nil when Core
+        /// has no localization for it.
+        public init?(language: String) {
+            guard let path = Bundle.module.path(forResource: language, ofType: "lproj"),
+                  let bundle = Bundle(path: path)
+            else {
+                return nil
+            }
+            self.init(
+                space: bundle.localizedString(forKey: "Space", value: nil, table: nil),
+                help: bundle.localizedString(forKey: "Help", value: nil, table: nil)
             )
         }
+
+        /// The words in the app's language, looked up once: the app's
+        /// language only changes with a relaunch.
+        public static let localized = Words(
+            space: String(localized: "Space", bundle: .module),
+            help: String(localized: "Help", bundle: .module)
+        )
     }
 
     /// `keys` with a Space or Help key in the app's language.

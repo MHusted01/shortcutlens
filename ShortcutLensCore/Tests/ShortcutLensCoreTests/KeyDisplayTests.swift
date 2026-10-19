@@ -32,9 +32,22 @@ struct KeyDisplayTests {
         #expect(KeyDisplay.text(for: "⌘Space", words: english) == "⌘Space")
     }
 
-    /// Tests run with `-testLanguage en`, so the catalog gives the English words.
-    @Test func defaultsToTheCatalogWords() {
+    /// The catalog's Danish entries, read from the built Core bundle.
+    @Test func catalogHasTheDanishWords() {
+        #expect(KeyDisplay.Words(language: "da") == danish)
+    }
+
+    @Test func catalogHasTheEnglishWords() {
+        #expect(KeyDisplay.Words(language: "en") == KeyDisplay.Words(space: "Space", help: "Help"))
+    }
+
+    @Test func unknownLanguageHasNoWords() {
+        #expect(KeyDisplay.Words(language: "xx") == nil)
+    }
+
+    /// Tests run with `-testLanguage en`, so the app's language is English.
+    @Test func defaultsToTheAppLanguage() {
+        #expect(KeyDisplay.Words.localized == KeyDisplay.Words(language: "en"))
         #expect(KeyDisplay.text(for: "⌥⌘Space") == "⌥⌘Space")
-        #expect(KeyDisplay.text(for: "⌘Help") == "⌘Help")
     }
 }
