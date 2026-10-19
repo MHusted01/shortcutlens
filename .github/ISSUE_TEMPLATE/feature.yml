@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest an idea or an improvement.
+labels: [enhancement]
+body:
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched the existing issues and this has not been suggested.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How should ShortcutLens behave?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other solutions or workarounds you considered.
+  - type: markdown
+    attributes:
+      value: |
+        ShortcutLens stays offline: no telemetry, accounts, sync or auto-update.
+        See [PRIVACY.md](https://github.com/MHusted01/shortcutlens/blob/main/PRIVACY.md).

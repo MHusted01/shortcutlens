@@ -1,0 +1,37 @@
+name: Translation
+description: Add a language or fix a translation.
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adding a language needs no code. See
+        [CONTRIBUTING.md](https://github.com/MHusted01/shortcutlens/blob/main/CONTRIBUTING.md#translations),
+        and claim the language on [#77](https://github.com/MHusted01/shortcutlens/issues/77) first.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New language
+        - Fix an existing translation
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: "German (de)"
+    validations:
+      required: true
+  - type: textarea
+    id: strings
+    attributes:
+      label: Strings
+      description: For a fix, the current text, where it appears and the suggested text.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I will open a pull request with the translation.
