@@ -60,7 +60,16 @@ struct OverlayView: View {
             case .empty:
                 placeholder { Text("No keyboard shortcuts").foregroundStyle(.secondary) }
             case .noMatches:
-                placeholder { Text("No matching shortcuts").foregroundStyle(.secondary) }
+                // PaletteAnnouncement speaks the text when the state appears.
+                placeholder {
+                    VStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.title2)
+                            .accessibilityHidden(true)
+                        Text("No matching shortcuts")
+                    }
+                    .foregroundStyle(.secondary)
+                }
             case let .shortcuts(sections, columns, scrolls):
                 let stack = columnStack(sections: sections, columns: columns)
                     .padding(.top, metrics.sectionSpacing)
@@ -92,7 +101,7 @@ struct OverlayView: View {
                 .font(.title3.weight(.semibold))
                 .lineLimit(1)
             if let palette {
-                SearchField(text: palette.query, onChange: palette.onQueryChange, onCommand: palette.onCommand)
+                SearchBox(text: palette.query, onChange: palette.onQueryChange, onCommand: palette.onCommand)
                     .frame(minWidth: metrics.columnWidth / 2)
             }
         }
