@@ -54,9 +54,12 @@ struct LocalizationTests {
         return text.matches(of: pattern).map { "%" + String($0.output.1 ?? "") + String($0.output.2) }.sorted()
     }
 
-    /// `text` with every format specifier as a bare `%`.
+    /// `text` with every format specifier as a bare `%`, and `%%` as the `%`
+    /// a code literal has.
     static func withoutPlaceholders(_ text: String) -> String {
-        text.replacing(#/%(?:\d+\$)?(?:\.\d+)?(?:lld|ld|d|u|f|@)/#, with: "%")
+        text.split(separator: "%%", omittingEmptySubsequences: false)
+            .map { $0.replacing(#/%(?:\d+\$)?(?:\.\d+)?(?:lld|ld|d|u|f|@)/#, with: "%") }
+            .joined(separator: "%")
     }
 
     /// Where localized literals are used: a catalog, the sources it serves, and
@@ -169,6 +172,11 @@ struct LocalizationTests {
     @Test func placeholdersIgnorePositions() {
         #expect(Self.placeholders(in: "%2$@ har %1$lld") == ["%@", "%lld"])
         #expect(Self.placeholders(in: "%.1f%% of %@") == ["%%", "%.1f", "%@"])
+    }
+
+    @Test func catalogKeysMatchCodeLiterals() {
+        #expect(Self.withoutPlaceholders("%lld%% of %@") == "%% of %")
+        #expect(Self.withoutPlaceholders("50%%") == "50%")
     }
 
     @Test func shortcutCountIsEnglishByDefault() {

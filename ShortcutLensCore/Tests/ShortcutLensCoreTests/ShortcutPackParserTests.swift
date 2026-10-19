@@ -151,6 +151,17 @@ struct ShortcutPackParserTests {
         #expect(PackError.tooLarge.message == "File is larger than 256 KB.")
     }
 
+    @Test func invalidValueMessagesNameTheReason() {
+        func message(_ reason: PackError.Reason) -> String {
+            PackError.invalidValue(field: "f", reason: reason).message
+        }
+
+        #expect(message(.empty) == "Invalid \"f\": must not be empty.")
+        #expect(message(.wrongType) == "Invalid \"f\": wrong type.")
+        #expect(message(.unknownKey("ab")) == "Invalid \"f\": unknown key \"ab\".")
+        #expect(message(.unknownModifier("hyper")) == "Invalid \"f\": unknown modifier \"hyper\".")
+    }
+
     @Test func oversizedFilesAreRejected() {
         let data = Data(count: ShortcutPackParser.maxFileSize + 1)
 
