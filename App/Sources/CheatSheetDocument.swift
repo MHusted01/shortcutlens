@@ -5,8 +5,10 @@ import ShortcutLensCore
 /// export, laid out as text with a keys column. The text view paginates.
 @MainActor
 enum CheatSheetDocument {
-    /// Where the command column starts, after the keys.
-    private static let commandIndent: CGFloat = 90
+    /// Where the command column starts at the earliest, after the keys.
+    private static let minimumCommandIndent: CGFloat = 90
+    /// Space between the widest keys and the command column.
+    private static let columnGap: CGFloat = 12
     private static let titleFont = NSFont.boldSystemFont(ofSize: 18)
     private static let headingFont = NSFont.boldSystemFont(ofSize: 13)
     private static let rowFont = NSFont.systemFont(ofSize: 11)
@@ -33,6 +35,7 @@ enum CheatSheetDocument {
     }
 
     static func text(for content: OverlayContent<AXUIElement>) -> NSAttributedString {
+        let indent = commandIndent(for: content)
         let text = NSMutableAttributedString()
         text.append(line(CheatSheetMarkdown.title(appName: content.appName), font: titleFont, spacingAfter: 8))
         if content.isEmpty {
@@ -41,13 +44,23 @@ enum CheatSheetDocument {
         for section in content.sections {
             text.append(line(section.title, font: headingFont, spacingBefore: 12, spacingAfter: 4))
             for row in section.rows {
-                text.append(line("\(row.keys)\t\(row.displayTitle)", font: rowFont))
+                let keys = KeyDisplay.text(for: row.keys)
+                text.append(line("\(keys)\t\(row.displayTitle)", font: rowFont, indent: indent))
                 if let note = CheatSheetMarkdown.note(for: row) {
-                    text.append(line("\t\(note)", font: noteFont, color: noteColor))
+                    text.append(line("\t\(note)", font: noteFont, color: noteColor, indent: indent))
                 }
             }
         }
         return text
+    }
+
+    /// Past the widest keys, so a long key word such as "⌃⌥⇧⌘Mellemrum" does
+    /// not push its title to the next default tab stop.
+    private static func commandIndent(for content: OverlayContent<AXUIElement>) -> CGFloat {
+        let widths = content.sections.flatMap(\.rows).map { row in
+            (KeyDisplay.text(for: row.keys) as NSString).size(withAttributes: [.font: rowFont]).width
+        }
+        return max(minimumCommandIndent, (widths.max() ?? 0) + columnGap)
     }
 
     private static func line(
@@ -55,10 +68,11 @@ enum CheatSheetDocument {
         font: NSFont,
         color: NSColor = textColor,
         spacingBefore: CGFloat = 0,
-        spacingAfter: CGFloat = 0
+        spacingAfter: CGFloat = 0,
+        indent: CGFloat = minimumCommandIndent
     ) -> NSAttributedString {
         let style = NSMutableParagraphStyle()
-        style.tabStops = [NSTextTab(textAlignment: .left, location: commandIndent)]
+        style.tabStops = [NSTextTab(textAlignment: .left, location: indent)]
         style.paragraphSpacingBefore = spacingBefore
         style.paragraphSpacing = spacingAfter
         return NSAttributedString(

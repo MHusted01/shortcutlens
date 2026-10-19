@@ -86,7 +86,7 @@ final class ShortcutEditor {
 
     /// The recorded keys as menus show them, e.g. `⌥⌘S`.
     var recordedLabel: String? {
-        recorded.flatMap { ShortcutFormatter.string(for: Self.shortcut(for: $0)) }
+        recorded.flatMap { ShortcutFormatter.string(for: Self.shortcut(for: $0)) }.map { KeyDisplay.text(for: $0) }
     }
 
     var canSave: Bool {
