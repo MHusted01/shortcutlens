@@ -174,9 +174,12 @@ struct LocalizationTests {
         #expect(Self.placeholders(in: "%.1f%% of %@") == ["%%", "%.1f", "%@"])
     }
 
-    @Test func catalogKeysMatchCodeLiterals() {
+    @Test func withoutPlaceholdersMapsPercentEscapes() {
         #expect(Self.withoutPlaceholders("%lld%% of %@") == "%% of %")
         #expect(Self.withoutPlaceholders("50%%") == "50%")
+        // `\(n)%\(name)` in code; `%%@` is a literal "%@".
+        #expect(Self.withoutPlaceholders("%lld%%%@") == "%%%")
+        #expect(Self.withoutPlaceholders("%%@") == "%@")
     }
 
     @Test func shortcutCountIsEnglishByDefault() {
