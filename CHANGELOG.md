@@ -6,6 +6,17 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-20
+
+This release polishes the overlay, palette, settings and onboarding. The
+visual changes follow the
+[UI spec on #90](https://github.com/MHusted01/shortcutlens/issues/90#issuecomment-6277410728).
+Screenshots are from macOS 26.
+
+<img src="https://raw.githubusercontent.com/MHusted01/shortcutlens/v1.2.0/docs/images/overlay-light.png" alt="Overlay in light mode" width="420"> <img src="https://raw.githubusercontent.com/MHusted01/shortcutlens/v1.2.0/docs/images/overlay-dark.png" alt="Overlay in dark mode" width="420">
+
+<img src="https://raw.githubusercontent.com/MHusted01/shortcutlens/v1.2.0/docs/images/palette-dark.png" alt="Command palette with a query and a selection" width="420"> <img src="https://raw.githubusercontent.com/MHusted01/shortcutlens/v1.2.0/docs/images/settings-general-light.png" alt="Settings, General tab" width="420">
+
 ### Added
 
 - The README shows a demo GIF, and the overlay, palette, settings and FAQ
@@ -128,7 +139,8 @@ All notable changes to ShortcutLens are listed here. The format follows
 - The overlay closes on system shortcuts such as Cmd+Space instead of staying
   open. (#42)
 
-[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MHusted01/shortcutlens/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MHusted01/shortcutlens/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MHusted01/shortcutlens/compare/v0.4.0...v1.0.0
 [0.4.0]: https://github.com/MHusted01/shortcutlens/compare/v0.3.0...v0.4.0
