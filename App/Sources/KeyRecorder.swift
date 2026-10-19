@@ -3,17 +3,19 @@ import ShortcutLensCore
 import SwiftUI
 
 /// A pressed key as an App Shortcut needs it: the character the key types
-/// without modifiers, in the current layout, and the modifiers held.
+/// without modifiers, in the current layout, and the modifiers held. The key
+/// code and the shifted character are kept for practice answers.
 struct RecordedKeys: Equatable {
     let key: String
     let modifiers: ModifierMask
+    let keyCode: Int
+    let shiftedKey: String?
 
     init(_ event: NSEvent) {
         key = event.characters(byApplyingModifiers: []) ?? ""
-        let flags = event.modifierFlags
-        let held: [(NSEvent.ModifierFlags, ModifierMask)] = [(.shift, .shift), (.option, .option), (.control, .control)]
-        let base: ModifierMask = flags.contains(.command) ? [] : .noCommand
-        modifiers = held.filter { flags.contains($0.0) }.reduce(base) { $0.union($1.1) }
+        modifiers = ModifierMask(eventFlags: Int(event.modifierFlags.rawValue))
+        keyCode = Int(event.keyCode)
+        shiftedKey = event.characters(byApplyingModifiers: .shift)
     }
 }
 
