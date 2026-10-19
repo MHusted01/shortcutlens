@@ -3,8 +3,8 @@
 /// Keys without a printable character map to the `kMenu*Glyph` code that
 /// `MenuGlyph` renders, so system shortcuts look like menu shortcuts.
 /// Character keys map to what they type on the US (ANSI) layout; this is the
-/// fallback when a store has no character, until labels follow the current
-/// layout (#52).
+/// last fallback when neither the current layout (`KeyLabels`) nor the store
+/// has a character.
 enum KeyCodes {
     static func glyph(for keyCode: Int) -> Int? {
         glyphs[keyCode]
@@ -51,14 +51,17 @@ enum KeyCodes {
 public extension SymbolicHotKeyBinding {
     /// The binding as a shortcut `ShortcutFormatter` can render. A non-character
     /// key's glyph wins over the stored character, which is a control code for
-    /// keys such as Return. A stored control code is ignored, so a key without
-    /// a glyph still gets its US-layout label.
-    func shortcut(title: String, menuPath: [String] = []) -> MenuShortcut {
+    /// keys such as Return. The system matches the key code, so the current
+    /// layout's label for it wins over the stored character, which is from the
+    /// layout the entry was saved with (US for the built-in defaults). A stored
+    /// control code is ignored, so a key without a glyph still gets its
+    /// US-layout label.
+    func shortcut(title: String, menuPath: [String] = [], layout: KeyLabels = .none) -> MenuShortcut {
         let glyph = keyCode.flatMap(KeyCodes.glyph)
         let printable = character.flatMap { character in
             character.unicodeScalars.contains { $0.properties.generalCategory == .control } ? nil : character
         }
-        let character = printable ?? keyCode.flatMap(KeyCodes.usCharacter)
+        let character = keyCode.flatMap(layout.label) ?? printable ?? keyCode.flatMap(KeyCodes.usCharacter)
         return MenuShortcut(
             title: title,
             keyCharacter: character.map(String.init),

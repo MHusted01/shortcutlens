@@ -18,8 +18,9 @@ public enum SystemHotKeyCatalog {
 
     /// Enabled shortcuts that have a displayable key, in catalog order. A
     /// store entry's flag and keys win over the defaults; a missing flag or
-    /// malformed keys fall back to them.
-    public static func shortcuts(from hotKeys: [Int: SymbolicHotKey]) -> [MenuShortcut] {
+    /// malformed keys fall back to them. Character keys are labelled for
+    /// `layout` where it has a label.
+    public static func shortcuts(from hotKeys: [Int: SymbolicHotKey], layout: KeyLabels = .none) -> [MenuShortcut] {
         definitions.compactMap { definition in
             let entry = hotKeys[definition.id]
             guard entry?.isEnabled ?? definition.isEnabledByDefault,
@@ -27,7 +28,9 @@ public enum SystemHotKeyCatalog {
             else {
                 return nil
             }
-            let shortcut = binding.shortcut(title: definition.title, menuPath: [sectionTitle, definition.title])
+            let shortcut = binding.shortcut(
+                title: definition.title, menuPath: [sectionTitle, definition.title], layout: layout
+            )
             return ShortcutFormatter.keySymbol(for: shortcut) == nil ? nil : shortcut
         }
     }

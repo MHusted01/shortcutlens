@@ -15,12 +15,14 @@ extension OverlayController {
     }
 
     /// Reads the menus, shortcut packs, system shortcuts and App Shortcuts of
-    /// one app. Pack sections follow the menus. Runs off the main actor.
+    /// one app. Pack sections follow the menus. Runs off the main actor, so
+    /// the caller takes the keyboard `layout` snapshot on the main actor.
     nonisolated static func readContent(
         pid: pid_t,
         bundleID: String?,
         appName: String,
-        settings: AppSettings
+        settings: AppSettings,
+        layout: KeyLabels
     ) -> UncheckedSendable<ReadResult> {
         let start = ContinuousClock.now
         let client = DeadlineAXClient(base: SystemAXClient(), budget: readBudget) {
@@ -30,7 +32,7 @@ extension OverlayController {
             client: client, maxDepth: settings.maxMenuDepth, includesDisabled: settings.showsDisabledItems
         )
         let groups = reader.read(processID: pid)
-        let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts() : []
+        let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts(layout: layout) : []
         let custom = UserKeyEquivalentSource.equivalents(bundleID: bundleID)
         let packSections = PackSource.library().sections(for: bundleID)
         let content = OverlayContent(appName: appName, groups: groups, custom: custom)

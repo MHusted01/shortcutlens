@@ -61,10 +61,12 @@ final class CheatSheetExporter {
         }
         isExporting = true
         let settings = settings
+        let layout = KeyboardLayout.current()
         Task { [weak self] in
             let read = await Task.detached(priority: .userInitiated) {
                 OverlayController.readContent(
-                    pid: target.pid, bundleID: target.bundleID, appName: target.name, settings: settings
+                    pid: target.pid, bundleID: target.bundleID, appName: target.name, settings: settings,
+                    layout: layout
                 )
             }.value.value
             let content = read.content.appending(
