@@ -1,3 +1,5 @@
+import Foundation
+
 /// Finds key combinations that more than one shortcut uses, within an app or
 /// between an app and the system.
 ///
@@ -31,6 +33,7 @@ public enum ShortcutConflicts {
 
     /// The text shown under a conflicting row; nil without clashes.
     public static func explanation(for clashes: [String]) -> String? {
-        clashes.isEmpty ? nil : "Also used by " + clashes.joined(separator: ", ")
+        let locations = clashes.joined(separator: ", ")
+        return clashes.isEmpty ? nil : String(localized: "Also used by \(locations)", bundle: .module)
     }
 }

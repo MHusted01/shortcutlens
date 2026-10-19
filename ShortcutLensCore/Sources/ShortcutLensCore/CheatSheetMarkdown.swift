@@ -5,8 +5,8 @@ import Foundation
 /// moment of the read, e.g. which document was open.
 public enum CheatSheetMarkdown {
     /// Shown instead of tables when the app has no shortcut.
-    public static let emptyText = "No shortcuts."
-    static let customNote = "App Shortcut"
+    public static let emptyText = String(localized: "No shortcuts.", bundle: .module)
+    static let customNote = String(localized: "App Shortcut", bundle: .module)
 
     /// Characters that Markdown could read as formatting, links, HTML or a
     /// table cell border or an HTML entity.
@@ -24,7 +24,7 @@ public enum CheatSheetMarkdown {
     /// app without a name.
     public static func title(appName: String) -> String {
         let name = appName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return name.isEmpty ? "Shortcuts" : "\(name) shortcuts"
+        return name.isEmpty ? untitled : String(localized: "\(name) shortcuts", bundle: .module)
     }
 
     /// What the row's note says: whether it is an App Shortcut and what else
@@ -41,7 +41,7 @@ public enum CheatSheetMarkdown {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .drop { $0 == "." }
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let base = name.isEmpty ? "Shortcuts" : "\(name) Shortcuts"
+        let base = name.isEmpty ? untitled : String(localized: "\(name) Shortcuts", bundle: .module)
         return "\(base).\(pathExtension)"
     }
 
@@ -49,14 +49,19 @@ public enum CheatSheetMarkdown {
     /// one of the section's rows has a note.
     private static func table(_ section: OverlaySection<some Any>) -> String {
         let hasNotes = section.rows.contains { note(for: $0) != nil }
-        let header = hasNotes
-            ? ["| Shortcut | Command | Note |", "| --- | --- | --- |"]
-            : ["| Shortcut | Command |", "| --- | --- |"]
+        let columns = [shortcutColumn, commandColumn] + (hasNotes ? [noteColumn] : [])
+        let header = [tableRow(columns), "|" + String(repeating: " --- |", count: columns.count)]
         let rows = section.rows.map { row in
             tableRow([row.keys, row.title] + (hasNotes ? [note(for: row) ?? ""] : []))
         }
         return (["## \(escape(section.title))", ""] + header + rows).joined(separator: "\n")
     }
+
+    /// Title and file name for an app without a name.
+    private static let untitled = String(localized: "Shortcuts", bundle: .module)
+    private static let shortcutColumn = String(localized: "Shortcut", bundle: .module)
+    private static let commandColumn = String(localized: "Command", bundle: .module, comment: "The menu command")
+    private static let noteColumn = String(localized: "Note", bundle: .module)
 
     /// One table row of escaped cells; an empty cell is a single space.
     private static func tableRow(_ cells: [String]) -> String {

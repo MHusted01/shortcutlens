@@ -5,12 +5,13 @@ import PackageDescription
 /// the app ships without third-party code (see scripts/check-no-telemetry.sh).
 let package = Package(
     name: "ShortcutLensCore",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "ShortcutLensCore", targets: ["ShortcutLensCore"]),
     ],
     targets: [
-        .target(name: "ShortcutLensCore"),
+        .target(name: "ShortcutLensCore", resources: [.process("Localizable.xcstrings")]),
         .testTarget(
             name: "ShortcutLensCoreTests",
             dependencies: ["ShortcutLensCore"],

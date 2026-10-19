@@ -69,19 +69,19 @@ enum PackSource {
         let name = url.lastPathComponent
         let descriptor = open(url.path, O_RDONLY | O_NONBLOCK | O_CLOEXEC)
         guard descriptor >= 0 else {
-            return .failed(PackProblem(fileName: name, message: "Could not be read."))
+            return .failed(PackProblem(fileName: name, message: String(localized: "Could not be read.")))
         }
         let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
         defer { try? handle.close() }
         var info = stat()
         guard fstat(descriptor, &info) == 0, info.st_mode & S_IFMT == S_IFREG else {
-            return .failed(PackProblem(fileName: name, message: "Not a readable file."))
+            return .failed(PackProblem(fileName: name, message: String(localized: "Not a readable file.")))
         }
         do {
             let data = try handle.read(upToCount: ShortcutPackParser.maxFileSize + 1) ?? Data()
             return .loaded(PackFile(name: name, data: data, isBundled: isBundled))
         } catch {
-            return .failed(PackProblem(fileName: name, message: "Could not be read."))
+            return .failed(PackProblem(fileName: name, message: String(localized: "Could not be read.")))
         }
     }
 }

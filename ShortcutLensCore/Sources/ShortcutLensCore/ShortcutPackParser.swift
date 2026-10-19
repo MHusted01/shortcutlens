@@ -68,21 +68,23 @@ public enum ShortcutPackParser {
         let title = try text(raw.title, field: "\(path).title")
         let modifiers = try (raw.modifiers ?? []).reduce(into: ModifierMask.noCommand) { mask, name in
             guard let modifier = PackKeys.modifier(named: name) else {
-                throw PackError.invalidValue(field: "\(path).modifiers", reason: "unknown modifier \"\(name)\"")
+                let reason = String(localized: "unknown modifier \"\(name)\"", bundle: .module)
+                throw PackError.invalidValue(field: "\(path).modifiers", reason: reason)
             }
             mask = modifier == .noCommand ? mask.subtracting(.noCommand) : mask.union(modifier)
         }
         guard let shortcut = PackKeys.shortcut(
             title: title, key: raw.key, modifiers: modifiers, menuPath: [section, title]
         ) else {
-            throw PackError.invalidValue(field: "\(path).key", reason: "unknown key \"\(raw.key)\"")
+            let reason = String(localized: "unknown key \"\(raw.key)\"", bundle: .module)
+            throw PackError.invalidValue(field: "\(path).key", reason: reason)
         }
         return shortcut
     }
 
     private static func text(_ value: String, field: String) throws -> String {
         guard !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw PackError.invalidValue(field: field, reason: "must not be empty")
+            throw PackError.invalidValue(field: field, reason: String(localized: "must not be empty", bundle: .module))
         }
         return value
     }
@@ -100,7 +102,8 @@ public enum ShortcutPackParser {
         case let .valueNotFound(_, context):
             return .missingField(path(context.codingPath))
         case let .typeMismatch(_, context) where !context.codingPath.isEmpty:
-            return .invalidValue(field: path(context.codingPath), reason: "wrong type")
+            let reason = String(localized: "wrong type", bundle: .module)
+            return .invalidValue(field: path(context.codingPath), reason: reason)
         default:
             // Unparsable text, or a top level that is not an object.
             return .invalidJSON

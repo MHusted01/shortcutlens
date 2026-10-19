@@ -136,7 +136,7 @@ final class PracticeController {
     private func showWindow() {
         let window = window ?? makeWindow()
         self.window = window
-        window.title = "Practice – \(appName)"
+        window.title = String(localized: "Practice – \(appName)")
         NSApp.activate()
         window.center()
         window.makeKeyAndOrderFront(nil)
@@ -151,10 +151,10 @@ final class PracticeController {
 
     private func showNoAppAlert() {
         let alert = NSAlert()
-        alert.messageText = "No app to practise"
-        alert.informativeText = """
+        alert.messageText = String(localized: "No app to practise")
+        alert.informativeText = String(localized: """
         Switch to the app whose shortcuts you want to learn, then choose this again from the menu bar.
-        """
+        """)
         NSApp.activate()
         alert.runModal()
     }

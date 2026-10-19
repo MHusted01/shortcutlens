@@ -8,10 +8,10 @@ struct ShortcutEditorView: View {
     private static let width: CGFloat = 380
     private static let recorderHeight: CGFloat = 32
     /// macOS handles its own active shortcuts before any app sees the keys.
-    private static let systemShortcutHint = """
+    private static let systemShortcutHint = String(localized: """
     Shortcuts macOS uses can't be recorded. Turn them off in System Settings > Keyboard > \
     Keyboard Shortcuts first.
-    """
+    """)
 
     let editor: ShortcutEditor
 
@@ -52,7 +52,7 @@ struct ShortcutEditorView: View {
     private var recorder: some View {
         ZStack {
             KeyRecorder { editor.record($0) }
-            Text(editor.recordedLabel ?? "Press the new shortcut")
+            Text(editor.recordedLabel ?? String(localized: "Press the new shortcut"))
                 .foregroundStyle(editor.recorded == nil ? .secondary : .primary)
                 .monospacedDigit()
                 .allowsHitTesting(false)
@@ -62,7 +62,7 @@ struct ShortcutEditorView: View {
         .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
         .accessibilityElement()
         .accessibilityLabel("New shortcut")
-        .accessibilityValue(editor.recordedLabel ?? "None")
+        .accessibilityValue(editor.recordedLabel ?? String(localized: "None"))
     }
 
     @ViewBuilder
@@ -78,7 +78,11 @@ struct ShortcutEditorView: View {
     private func outcome(_ request: ShortcutEditRequest) -> some View {
         switch editor.status {
         case .saved:
-            Text("Saved. Relaunch \(request.appName) to use \(editor.recordedLabel ?? "it").")
+            if let label = editor.recordedLabel {
+                Text("Saved. Relaunch \(request.appName) to use \(label).")
+            } else {
+                Text("Saved. Relaunch \(request.appName) to use it.")
+            }
             relaunchFailure
         case .removed:
             Text("Removed. Relaunch \(request.appName) to use the default shortcut.")

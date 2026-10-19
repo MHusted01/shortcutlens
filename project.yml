@@ -6,6 +6,8 @@ options:
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
+  # English source strings; translations are in the .xcstrings catalogs.
+  developmentLanguage: en
 
 settings:
   base:
@@ -25,6 +27,7 @@ targets:
     platform: macOS
     sources:
       - App/Sources
+      - App/Resources/Localizable.xcstrings
       # Example shortcut packs, copied as Contents/Resources/Packs.
       - path: App/Resources/Packs
         type: folder

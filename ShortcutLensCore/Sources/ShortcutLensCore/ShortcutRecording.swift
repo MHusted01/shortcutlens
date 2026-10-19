@@ -1,3 +1,5 @@
+import Foundation
+
 /// Checks a recorded shortcut before it is written as an App Shortcut.
 ///
 /// Named keys (F1, arrows, Return, ...) are recorded as the characters AppKit
@@ -15,9 +17,9 @@ public enum ShortcutRecording {
         public var message: String {
             switch self {
             case .needsModifier:
-                "Add Command, Option or Control."
+                String(localized: "Add Command, Option or Control.", bundle: .module)
             case .unsupportedKey:
-                "This key cannot be used for an App Shortcut."
+                String(localized: "This key cannot be used for an App Shortcut.", bundle: .module)
             }
         }
     }

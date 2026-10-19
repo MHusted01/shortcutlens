@@ -1,7 +1,9 @@
+import Foundation
+
 public extension OverlayContent {
     /// The title of the section that lists the favourites.
     static var favouritesTitle: String {
-        "Favourites"
+        String(localized: "Favourites", bundle: .module)
     }
 
     /// A copy with a first Favourites section that lists the menu rows at
