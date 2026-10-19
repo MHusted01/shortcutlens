@@ -61,7 +61,7 @@ final class CheatSheetExporter {
         }
         isExporting = true
         let settings = settings
-        let layout = KeyboardLayout.current()
+        let layout = settings.showsSystemShortcuts ? KeyboardLayout.current() : .none
         Task { [weak self] in
             let read = await Task.detached(priority: .userInitiated) {
                 OverlayController.readContent(
