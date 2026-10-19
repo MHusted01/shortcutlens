@@ -62,6 +62,24 @@ struct PracticeDeckTests {
         #expect(paths(cards) == [["File", "Save"], ["Edit", "Copy"]])
     }
 
+    @Test func leavesOutPlainDialogKeys() {
+        let keys = ["\r", "\u{3}", "\u{1B}"]
+        let plain = keys.enumerated().map { offset, key in
+            MenuEntry(
+                shortcut: MenuShortcut(
+                    title: "Plain \(offset)", keyCharacter: key, modifiers: .noCommand, menuPath: ["Play", "\(offset)"]
+                ),
+                element: offset
+            )
+        }
+        let withCommand = entry("Play", "Command", key: "\r", element: 9)
+        let dialog = OverlayContent(appName: "App", groups: [MenuGroup(title: "Play", items: plain + [withCommand])])
+
+        let cards = PracticeDeck.cards(from: dialog, systemShortcuts: [])
+
+        #expect(paths(cards) == [["Play", "Command"]])
+    }
+
     @Test func leavesOutDisplayOnlyRows() {
         let pack = MenuShortcut(title: "Pack", keyCharacter: "p", modifiers: [], menuPath: ["Pack", "Pack"])
         let extended = content.appending(sectionTitle: "Pack", shortcuts: [pack])

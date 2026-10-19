@@ -22,15 +22,21 @@ public enum PracticeDeck {
     /// Questions per session.
     public static let sessionLength = 10
 
+    /// Return, keypad Enter and Escape without modifiers press the practice
+    /// window's buttons, so they cannot be answered.
+    private static let dialogKeys = [0x0B, 0x04, 0x1B].compactMap(MenuGlyph.symbol(for:)).map {
+        KeyCombo(key: $0, modifiers: .noCommand)
+    }
+
     /// One card per menu path for every menu item with keys, in menu order.
     /// Display-only rows (packs, System) and the Favourites copies are left
-    /// out, and so are items on keys macOS uses itself: those keys never
-    /// reach the practice window.
+    /// out, and so are items on keys macOS uses itself, which never reach the
+    /// practice window, and items on plain Return, Enter or Escape.
     public static func cards(
         from content: OverlayContent<some Any>,
         systemShortcuts: [MenuShortcut]
     ) -> [PracticeCard] {
-        let reserved = Set(systemShortcuts.compactMap(KeyCombo.init))
+        let reserved = Set(systemShortcuts.compactMap(KeyCombo.init) + dialogKeys)
         let cards = content.sections.filter { !$0.isPinned }.flatMap(\.rows).compactMap { row -> PracticeCard? in
             guard row.canBeFavourite, let combo = row.combo, !reserved.contains(combo) else {
                 return nil
