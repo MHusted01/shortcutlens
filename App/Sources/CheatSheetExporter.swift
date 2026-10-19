@@ -19,6 +19,11 @@ final class CheatSheetExporter {
         let name: String
     }
 
+    /// Keeps the `.md` extension even if the system has no type for it;
+    /// `.plainText` would make the save panel switch to `.txt`.
+    private static let markdownType = UTType(filenameExtension: "md")
+        ?? UTType(importedAs: "net.daringfireball.markdown", conformingTo: .plainText)
+
     private var settings = AppSettings.defaults
     private var isExporting = false
 
@@ -30,7 +35,7 @@ final class CheatSheetExporter {
         export { content in
             let panel = NSSavePanel()
             panel.nameFieldStringValue = CheatSheetMarkdown.fileName(appName: content.appName, pathExtension: "md")
-            panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
+            panel.allowedContentTypes = [Self.markdownType]
             panel.canCreateDirectories = true
             guard panel.runModal() == .OK, let url = panel.url else {
                 return

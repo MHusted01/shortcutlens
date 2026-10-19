@@ -40,6 +40,7 @@ struct CheatSheetMarkdownTests {
         let rows = [
             row(0, "Show `raw` [1] <b>_x_</b>", keys: "⇧⌘|"),
             row(1, "Back", keys: "⌘\\"),
+            row(2, "Copy &amp; Paste", keys: "⌘V"),
         ]
         let sheet = content([("View *all* | more", rows)])
 
@@ -48,6 +49,7 @@ struct CheatSheetMarkdownTests {
         #expect(lines.contains(#"## View \*all\* \| more"#))
         #expect(lines.contains(#"| ⇧⌘\| | Show \`raw\` \[1\] \<b>\_x\_\</b> |"#))
         #expect(lines.contains(#"| ⌘\\ | Back |"#))
+        #expect(lines.contains(#"| ⌘V | Copy \&amp; Paste |"#))
     }
 
     @Test func escapesTheAppNameAndJoinsLineBreaks() {
@@ -62,6 +64,12 @@ struct CheatSheetMarkdownTests {
 
     @Test func saysSoWhenThereIsNothingToExport() {
         #expect(CheatSheetMarkdown.render(content([], appName: "Finder")) == "# Finder shortcuts\n\nNo shortcuts.\n")
+    }
+
+    @Test(arguments: [("Safari", "Safari shortcuts"), ("", "Shortcuts"), (" \n", "Shortcuts")])
+    func titlesTheSheetEvenWithoutAnAppName(appName: String, expected: String) {
+        #expect(CheatSheetMarkdown.title(appName: appName) == expected)
+        #expect(CheatSheetMarkdown.render(content([], appName: appName)).hasPrefix("# \(expected)\n"))
     }
 
     @Test func notesNameTheAppShortcutAndTheConflict() {

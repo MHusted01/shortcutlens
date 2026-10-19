@@ -34,7 +34,7 @@ enum CheatSheetDocument {
 
     static func text(for content: OverlayContent<AXUIElement>) -> NSAttributedString {
         let text = NSMutableAttributedString()
-        text.append(line("\(content.appName) shortcuts", font: titleFont, spacingAfter: 8))
+        text.append(line(CheatSheetMarkdown.title(appName: content.appName), font: titleFont, spacingAfter: 8))
         if content.isEmpty {
             text.append(line(CheatSheetMarkdown.emptyText, font: rowFont))
         }

@@ -9,15 +9,22 @@ public enum CheatSheetMarkdown {
     static let customNote = "App Shortcut"
 
     /// Characters that Markdown could read as formatting, links, HTML or a
-    /// table cell border.
-    private static let specialCharacters: Set<Character> = ["\\", "`", "*", "_", "[", "]", "<", "|", "#", "~"]
+    /// table cell border or an HTML entity.
+    private static let specialCharacters: Set<Character> = ["\\", "`", "*", "_", "[", "]", "<", "&", "|", "#", "~"]
 
     public static func render(_ content: OverlayContent<some Any>) -> String {
-        let title = "# \(escape(content.appName)) shortcuts"
+        let title = "# \(escape(title(appName: content.appName)))"
         guard !content.isEmpty else {
             return "\(title)\n\n\(emptyText)\n"
         }
         return ([title] + content.sections.map(table)).joined(separator: "\n\n") + "\n"
+    }
+
+    /// The sheet's title, e.g. "Safari shortcuts"; just "Shortcuts" for an
+    /// app without a name.
+    public static func title(appName: String) -> String {
+        let name = appName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? "Shortcuts" : "\(name) shortcuts"
     }
 
     /// What the row's note says: whether it is an App Shortcut and what else
