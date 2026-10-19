@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings = SettingsController()
     private let trigger = TriggerController()
     private let overlay = OverlayController()
+    private let editor = ShortcutEditor()
 
     func applicationDidFinishLaunching(_: Notification) {
         apply(settings.settings)
@@ -47,6 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         trigger.onHide = { [overlay] in overlay.hide() }
         trigger.onShowPalette = { [overlay] in overlay.showPalette() }
         overlay.onClosePalette = { [trigger] in trigger.closePalette() }
+        overlay.onEditShortcut = { [editor] in editor.show($0) }
         permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
     }

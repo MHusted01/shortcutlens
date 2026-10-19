@@ -81,6 +81,7 @@ public struct OverlayContent<Element> {
                     isEnabled: item.entry.shortcut.isEnabled,
                     isCustom: custom.isCustom(item.entry.shortcut),
                     combo: KeyCombo(item.entry.shortcut),
+                    menuPath: item.entry.shortcut.menuPath,
                     element: item.entry.element
                 )
             }
@@ -122,6 +123,9 @@ public struct OverlayRow<Element>: Identifiable {
     public let combo: KeyCombo?
     /// What else uses these keys, e.g. "Also used by System > Lock Screen".
     public let conflict: String?
+    /// Titles from the top-level menu down to the item, for editing its
+    /// shortcut; empty when built without them.
+    public let menuPath: [String]
     /// The menu item to press; nil for a display-only row.
     public let element: Element?
 
@@ -133,6 +137,7 @@ public struct OverlayRow<Element>: Identifiable {
         isCustom: Bool = false,
         combo: KeyCombo? = nil,
         conflict: String? = nil,
+        menuPath: [String] = [],
         element: Element?
     ) {
         self.id = id
@@ -142,6 +147,7 @@ public struct OverlayRow<Element>: Identifiable {
         self.isCustom = isCustom
         self.combo = combo
         self.conflict = conflict
+        self.menuPath = menuPath
         self.element = element
     }
 
@@ -149,7 +155,7 @@ public struct OverlayRow<Element>: Identifiable {
     public func with(conflict: String?) -> Self {
         Self(
             id: id, title: title, keys: keys, isEnabled: isEnabled, isCustom: isCustom,
-            combo: combo, conflict: conflict, element: element
+            combo: combo, conflict: conflict, menuPath: menuPath, element: element
         )
     }
 

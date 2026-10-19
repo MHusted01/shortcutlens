@@ -44,6 +44,8 @@ struct OverlayView: View {
     let content: OverlayBody
     var palette: PaletteModel?
     let onSelect: (OverlayRow<AXUIElement>) -> Void
+    /// Opens the shortcut editor for a menu item row; nil hides "Edit Shortcut…".
+    var onEdit: ((RowID, OverlayRow<AXUIElement>) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -103,7 +105,9 @@ struct OverlayView: View {
             ForEach(columns.indices, id: \.self) { column in
                 VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
                     ForEach(columns[column], id: \.self) { index in
-                        SectionView(section: sections[index], selection: palette?.selection, onSelect: onSelect)
+                        SectionView(
+                            section: sections[index], selection: palette?.selection, onSelect: onSelect, onEdit: onEdit
+                        )
                     }
                 }
                 .frame(width: metrics.columnWidth, alignment: .leading)
@@ -116,6 +120,7 @@ private struct SectionView: View {
     let section: OverlaySection<AXUIElement>
     let selection: RowID?
     let onSelect: (OverlayRow<AXUIElement>) -> Void
+    let onEdit: ((RowID, OverlayRow<AXUIElement>) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -127,6 +132,12 @@ private struct SectionView: View {
                 let id = RowID(section: section.id, row: row.id)
                 RowView(row: row, isSelected: id == selection) { onSelect(row) }
                     .id(id)
+                    .contextMenu {
+                        // Only menu items have an App Shortcut to edit.
+                        if let onEdit, row.element != nil {
+                            Button("Edit Shortcut…") { onEdit(id, row) }
+                        }
+                    }
             }
         }
     }
