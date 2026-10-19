@@ -107,7 +107,7 @@ final class SettingsController {
 
     private func makeWindow() -> NSWindow {
         let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(controller: self)))
-        window.title = "ShortcutLens Settings"
+        window.title = String(localized: "ShortcutLens Settings")
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         return window

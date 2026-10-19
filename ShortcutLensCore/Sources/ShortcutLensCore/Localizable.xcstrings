@@ -1,0 +1,1056 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ Shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@-genveje"
+          }
+        }
+      }
+    },
+    "%@ shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@-genveje"
+          }
+        }
+      }
+    },
+    "%lld shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld genvej"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld genveje"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld shortcut"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld shortcuts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Accessibility Permission Required…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kræver tilladelse til Tilgængelighed…"
+          }
+        }
+      }
+    },
+    "Add Command, Option or Control." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilføj Kommando, Alternativ eller Kontrol."
+          }
+        }
+      }
+    },
+    "Allow ShortcutLens to use Accessibility" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giv ShortcutLens adgang til Tilgængelighed"
+          }
+        }
+      }
+    },
+    "Also used by %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruges også af %@"
+          }
+        }
+      }
+    },
+    "Apostrophe" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apostrof"
+          }
+        }
+      }
+    },
+    "App Shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appgenvej"
+          }
+        }
+      }
+    },
+    "Application windows" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programvinduer"
+          }
+        }
+      }
+    },
+    "Back Tab" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilbage-tab"
+          }
+        }
+      }
+    },
+    "Backslash" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omvendt skråstreg"
+          }
+        }
+      }
+    },
+    "Change the way Tab moves focus" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skift den måde, tabulatoren flytter fokus på"
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ryd"
+          }
+        }
+      }
+    },
+    "Comma" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komma"
+          }
+        }
+      }
+    },
+    "Command" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kommando"
+          }
+        }
+      }
+    },
+    "Control" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrol"
+          }
+        }
+      }
+    },
+    "Copy picture of screen to the clipboard" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiér billede af skærm til udklipsholderen"
+          }
+        }
+      }
+    },
+    "Copy picture of selected area to the clipboard" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiér billede af valgt område til udklipsholderen"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet"
+          }
+        }
+      }
+    },
+    "Down Arrow" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pil ned"
+          }
+        }
+      }
+    },
+    "End" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        }
+      }
+    },
+    "Enter" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter"
+          }
+        }
+      }
+    },
+    "Equals" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lighedstegn"
+          }
+        }
+      }
+    },
+    "Escape" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escape"
+          }
+        }
+      }
+    },
+    "Favourites" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoritter"
+          }
+        }
+      }
+    },
+    "File is larger than %lld KB." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filen er større end %lld KB."
+          }
+        }
+      }
+    },
+    "Forward Delete" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slet fremad"
+          }
+        }
+      }
+    },
+    "Grave Accent" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accent grave"
+          }
+        }
+      }
+    },
+    "Help" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hjælp"
+          }
+        }
+      }
+    },
+    "Home" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "Invalid \"%@\": %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ugyldigt \"%@\": %@."
+          }
+        }
+      }
+    },
+    "Invert colours" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inverter farver"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senere"
+          }
+        }
+      }
+    },
+    "Left Arrow" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Venstrepil"
+          }
+        }
+      }
+    },
+    "Left Bracket" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Venstre kantet parentes"
+          }
+        }
+      }
+    },
+    "Minus" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minus"
+          }
+        }
+      }
+    },
+    "Missing field \"%@\"." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feltet \"%@\" mangler."
+          }
+        }
+      }
+    },
+    "Mission Control" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mission Control"
+          }
+        }
+      }
+    },
+    "Move focus to active or next window" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til aktivt eller næste vindue"
+          }
+        }
+      }
+    },
+    "Move focus to floating window" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til svævende vindue"
+          }
+        }
+      }
+    },
+    "Move focus to next window" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til næste vindue"
+          }
+        }
+      }
+    },
+    "Move focus to status menus" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til statusmenuer"
+          }
+        }
+      }
+    },
+    "Move focus to the Dock" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til Dock"
+          }
+        }
+      }
+    },
+    "Move focus to the menu bar" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til menulinjen"
+          }
+        }
+      }
+    },
+    "Move focus to window toolbar" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt fokus til vinduets værktøjslinje"
+          }
+        }
+      }
+    },
+    "Move left a space" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt et område til venstre"
+          }
+        }
+      }
+    },
+    "Move right a space" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyt et område til højre"
+          }
+        }
+      }
+    },
+    "No matching shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen matchende genveje"
+          }
+        }
+      }
+    },
+    "No shortcuts." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen genveje."
+          }
+        }
+      }
+    },
+    "Not valid JSON." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke gyldig JSON."
+          }
+        }
+      }
+    },
+    "Note" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        }
+      }
+    },
+    "Open Accessibility Settings" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn indstillinger for Tilgængelighed"
+          }
+        }
+      }
+    },
+    "Open System Settings and turn on ShortcutLens under Privacy & Security > Accessibility. This window closes by itself once access is granted." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn Systemindstillinger, og slå ShortcutLens til under Anonymitet og sikkerhed > Tilgængelighed. Vinduet lukker af sig selv, når adgangen er givet."
+          }
+        }
+      }
+    },
+    "Option" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternativ"
+          }
+        }
+      }
+    },
+    "Page Down" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Side ned"
+          }
+        }
+      }
+    },
+    "Page Up" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Side op"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punktum"
+          }
+        }
+      }
+    },
+    "Plus" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus"
+          }
+        }
+      }
+    },
+    "Question Mark" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spørgsmålstegn"
+          }
+        }
+      }
+    },
+    "Return" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retur"
+          }
+        }
+      }
+    },
+    "Right Arrow" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højrepil"
+          }
+        }
+      }
+    },
+    "Right Bracket" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Højre kantet parentes"
+          }
+        }
+      }
+    },
+    "Save picture of screen as a file" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem billede af skærm som fil"
+          }
+        }
+      }
+    },
+    "Save picture of selected area as a file" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem billede af valgt område som fil"
+          }
+        }
+      }
+    },
+    "Screenshot and recording options" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indstillinger til skærmbilleder og optagelse"
+          }
+        }
+      }
+    },
+    "Select next source in Input menu" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg næste kilde i menuen Input"
+          }
+        }
+      }
+    },
+    "Select the previous input source" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg den forrige inputkilde"
+          }
+        }
+      }
+    },
+    "Semicolon" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semikolon"
+          }
+        }
+      }
+    },
+    "Shift" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skift"
+          }
+        }
+      }
+    },
+    "Shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genvej"
+          }
+        }
+      }
+    },
+    "ShortcutLens collects nothing and sends nothing." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ShortcutLens indsamler intet og sender intet."
+          }
+        }
+      }
+    },
+    "ShortcutLens reads the menu bar of the app in front (menu titles and their keyboard shortcuts) through the macOS Accessibility API, and presses a menu item when you click it in the overlay. It does not read window contents, typed text or other apps' documents, and it does not store what it reads." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ShortcutLens læser menulinjen i appen forrest (menutitler og deres tastaturgenveje) via macOS' Tilgængelighed-API og vælger et menupunkt, når du klikker på det i oversigten. Den læser ikke indholdet af vinduer, indtastet tekst eller andre appers dokumenter, og den gemmer ikke det, den læser."
+          }
+        }
+      }
+    },
+    "Shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genveje"
+          }
+        }
+      }
+    },
+    "Show Accessibility controls" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Tilgængelighedsbetjening"
+          }
+        }
+      }
+    },
+    "Show Desktop" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis skrivebord"
+          }
+        }
+      }
+    },
+    "Show Finder search window" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Finder-søgevindue"
+          }
+        }
+      }
+    },
+    "Show Help menu" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis menuen Hjælp"
+          }
+        }
+      }
+    },
+    "Show Launchpad" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Launchpad"
+          }
+        }
+      }
+    },
+    "Show Notification Center" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Notifikationscenter"
+          }
+        }
+      }
+    },
+    "Show Spotlight search" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis Spotlight-søgning"
+          }
+        }
+      }
+    },
+    "Slash" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skråstreg"
+          }
+        }
+      }
+    },
+    "Space" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mellemrum"
+          }
+        }
+      }
+    },
+    "Switch to Desktop %lld" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skift til skrivebord %lld"
+          }
+        }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        }
+      }
+    },
+    "Tab" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab"
+          }
+        }
+      }
+    },
+    "This key cannot be used for an App Shortcut." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne tast kan ikke bruges til en appgenvej."
+          }
+        }
+      }
+    },
+    "Turn Do Not Disturb on or off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå Forstyr ikke til eller fra"
+          }
+        }
+      }
+    },
+    "Turn Dock hiding on or off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå skjul Dock til eller fra"
+          }
+        }
+      }
+    },
+    "Turn VoiceOver on or off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå VoiceOver til eller fra"
+          }
+        }
+      }
+    },
+    "Turn keyboard access on or off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå tastaturadgang til eller fra"
+          }
+        }
+      }
+    },
+    "Turn zoom on or off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå zoom til eller fra"
+          }
+        }
+      }
+    },
+    "Unsupported schemaVersion %lld; this version reads %lld." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "schemaVersion %lld understøttes ikke; denne version læser %lld."
+          }
+        }
+      }
+    },
+    "Up Arrow" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pil op"
+          }
+        }
+      }
+    },
+    "Zoom in" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ind"
+          }
+        }
+      }
+    },
+    "Zoom out" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom ud"
+          }
+        }
+      }
+    },
+    "custom shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tilpasset genvej"
+          }
+        }
+      }
+    },
+    "favourite" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "favorit"
+          }
+        }
+      }
+    },
+    "must not be empty" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "må ikke være tom"
+          }
+        }
+      }
+    },
+    "unknown key \"%@\"" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ukendt tast \"%@\""
+          }
+        }
+      }
+    },
+    "unknown modifier \"%@\"" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ukendt ændringstast \"%@\""
+          }
+        }
+      }
+    },
+    "wrong type" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "forkert type"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

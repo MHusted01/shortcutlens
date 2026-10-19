@@ -33,7 +33,7 @@ jobs:
 
   test:
     name: test
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
@@ -43,7 +43,7 @@ jobs:
 
   build:
     name: build
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
@@ -51,3 +51,7 @@ jobs:
           xcode-version: latest-stable
       - run: brew install xcodegen
       - run: make build
+      - name: Translations are compiled into the app
+        run: |
+          test -d build/Build/Products/Debug/ShortcutLens.app/Contents/Resources/da.lproj
+          test -d build/Build/Products/Debug/ShortcutLens.app/Contents/Resources/ShortcutLensCore_ShortcutLensCore.bundle/Contents/Resources/da.lproj
