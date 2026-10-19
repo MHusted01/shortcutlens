@@ -78,11 +78,12 @@ struct ShortcutConflictsTests {
         #expect(clashes[1] == ["A > One", "C > Three"])
     }
 
-    /// The same item listed twice is not a clash with itself.
-    @Test func entriesAtTheSameLocationDoNotClash() {
-        let clashes = ShortcutConflicts.clashes(among: [entry("File > Save", "S"), entry("File > Save", "S")])
+    /// Two items with the same title are still two items; only an entry
+    /// itself is left out.
+    @Test func sameTitledItemsClash() {
+        let clashes = ShortcutConflicts.clashes(among: [entry("File > Close", "W"), entry("File > Close", "W")])
 
-        #expect(clashes == [[], []])
+        #expect(clashes == [["File > Close"], ["File > Close"]])
     }
 
     @Test func entriesWithoutAComboNeverClash() {

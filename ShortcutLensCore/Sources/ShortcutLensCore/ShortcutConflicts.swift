@@ -16,15 +16,16 @@ public enum ShortcutConflicts {
     }
 
     /// For each entry, the locations of the other entries with its combo, in
-    /// input order. Entries without a combo clash with nothing, and an entry
-    /// at the same location is the same item listed twice, not a clash.
+    /// input order. Entries without a combo clash with nothing. Entries are
+    /// told apart by position, so two items with the same title still clash.
     public static func clashes(among entries: [Entry]) -> [[String]] {
-        let byCombo = Dictionary(grouping: entries.filter { $0.combo != nil }) { $0.combo }
-        return entries.map { entry in
+        let indexed = entries.enumerated().filter { $0.element.combo != nil }
+        let byCombo = Dictionary(grouping: indexed) { $0.element.combo }
+        return entries.enumerated().map { index, entry in
             guard let combo = entry.combo, let group = byCombo[combo] else {
                 return []
             }
-            return group.map(\.location).filter { $0 != entry.location }
+            return group.filter { $0.offset != index }.map(\.element.location)
         }
     }
 
