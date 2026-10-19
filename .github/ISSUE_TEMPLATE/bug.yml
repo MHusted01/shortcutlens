@@ -18,7 +18,7 @@ body:
     id: app-version
     attributes:
       label: ShortcutLens version
-      description: Menu bar icon > About ShortcutLens.
+      description: Menu bar icon > About ShortcutLens, or on v1.0.0 and earlier, Finder > Get Info on ShortcutLens.app.
       placeholder: "1.0.0"
     validations:
       required: true
