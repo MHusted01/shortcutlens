@@ -41,10 +41,12 @@ final class OverlayController {
     }
 
     /// The app a read was started for.
-    private struct Target {
+    struct Target {
         let generation: Int
         let name: String
+        let processID: pid_t
         let bundleID: String?
+        let bundleURL: URL?
         let icon: NSImage?
     }
 
@@ -64,16 +66,23 @@ final class OverlayController {
     /// Called when the palette should close: Escape on an empty query, an
     /// item was run, or the panel lost key status.
     var onClosePalette: () -> Void = {}
+    /// Called with the menu item the user chose "Edit Shortcut…" for, after
+    /// the panel closed.
+    var onEditShortcut: (ShortcutEditRequest) -> Void = { _ in }
 
     private let panel = OverlayPanel()
     private var inFlight: (key: AppKey, task: ReadTask)?
     private var generation = 0
-    private var target: Target?
-    private var content: OverlayContent<AXUIElement>?
+    private(set) var target: Target?
+    private(set) var content: OverlayContent<AXUIElement>?
     private var cache = MenuCache<AppKey, OverlayContent<AXUIElement>>(capacity: cacheCapacity)
     private var terminationObserver: NSObjectProtocol?
     private var isShown = false
     private var palette: OpenPalette?
+    var isPaletteOpen: Bool {
+        palette != nil
+    }
+
     private var readSettings = AppSettings.defaults
     private var systemShortcuts: [MenuShortcut] = []
 
@@ -128,7 +137,9 @@ final class OverlayController {
         let key = AppKey(app)
         content = cache.value(for: key).map(withSystemShortcuts)
         let target = Target(
-            generation: generation, name: app.localizedName ?? "", bundleID: app.bundleIdentifier, icon: app.icon
+            generation: generation, name: app.localizedName ?? "", processID: app.processIdentifier,
+            bundleID: app.bundleIdentifier,
+            bundleURL: app.bundleURL, icon: app.icon
         )
         self.target = target
         read(key, for: target)
@@ -184,7 +195,8 @@ final class OverlayController {
         isShown = true
         let select: (OverlayRow<AXUIElement>) -> Void = { [weak self] row in self?.runFromPalette(row) }
         let view = OverlayView(
-            appName: target.name, icon: target.icon, content: .loading, palette: model, onSelect: select
+            appName: target.name, icon: target.icon, content: .loading, palette: model, onSelect: select,
+            onEdit: { [weak self] id, row in self?.edit(row, id: id) }
         )
         let size = refreshPalette()
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
@@ -289,9 +301,11 @@ final class OverlayController {
             return
         }
         let (body, size) = Self.layout(content, in: visible)
-        let view = OverlayView(appName: target.name, icon: target.icon, content: body) { [weak self] row in
-            self?.run(row)
-        }
+        let view = OverlayView(
+            appName: target.name, icon: target.icon, content: body,
+            onSelect: { [weak self] row in self?.run(row) },
+            onEdit: { [weak self] id, row in self?.edit(row, id: id) }
+        )
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
     }
 

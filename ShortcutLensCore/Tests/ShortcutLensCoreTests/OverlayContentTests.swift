@@ -20,10 +20,16 @@ struct OverlayContentTests {
         #expect(content.appName == "TextEdit")
         #expect(content.sections.map(\.title) == ["File", "Edit"])
         #expect(content.sections[0].rows == [
-            OverlayRow(id: 0, title: "Save", keys: "⌘S", combo: KeyCombo(key: "S", modifiers: []), element: 1),
+            OverlayRow(
+                id: 0, title: "Save", keys: "⌘S", combo: KeyCombo(key: "S", modifiers: []),
+                menuPath: ["File", "Save"], element: 1
+            ),
         ])
         #expect(content.sections[1].rows == [
-            OverlayRow(id: 0, title: "Redo", keys: "⇧⌘Z", combo: KeyCombo(key: "Z", modifiers: .shift), element: 2),
+            OverlayRow(
+                id: 0, title: "Redo", keys: "⇧⌘Z", combo: KeyCombo(key: "Z", modifiers: .shift),
+                menuPath: ["File", "Redo"], element: 2
+            ),
         ])
         #expect(!content.isEmpty)
     }
