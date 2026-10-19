@@ -7,6 +7,11 @@ import SwiftUI
 struct ShortcutEditorView: View {
     private static let width: CGFloat = 380
     private static let recorderHeight: CGFloat = 32
+    /// macOS handles its own active shortcuts before any app sees the keys.
+    private static let systemShortcutHint = """
+    Shortcuts macOS uses can't be recorded. Turn them off in System Settings > Keyboard > \
+    Keyboard Shortcuts first.
+    """
 
     let editor: ShortcutEditor
 
@@ -19,6 +24,10 @@ struct ShortcutEditorView: View {
                 } else if editor.status == .editing {
                     recorder
                     messages
+                    Text(Self.systemShortcutHint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 } else {
                     outcome(request)
                 }
