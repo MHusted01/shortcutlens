@@ -21,7 +21,9 @@
 
 <p align="center">No telemetry, no network access, no third-party code. See <a href="PRIVACY.md">PRIVACY.md</a>.</p>
 
-<!-- Screenshot of the overlay and a demo GIF go here (#95). -->
+<p align="center">
+  <img src="docs/images/demo.gif" width="720" alt="Demo in TextEdit: holding Command shows the overlay, clicking Align Right right-aligns the line; double-tapping Command opens the palette, typing center and pressing Return centres the line">
+</p>
 
 ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,

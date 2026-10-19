@@ -4,6 +4,11 @@ Double-tap Command (press and release it twice quickly) to open the
 [overlay](overlay.md) as a command palette. It stays open without holding
 Command:
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/palette-dark.png">
+  <img src="images/palette-light.png" width="600" alt="The command palette over TextEdit with the search 'save': Save and Save As from the File menu, with Save As selected, and two screenshot shortcuts from the System section">
+</picture>
+
 - Type to filter the shortcuts by name; case and accents are ignored.
 - Up and Down select an entry, Left and Right jump between columns, Return
   runs the selected entry.

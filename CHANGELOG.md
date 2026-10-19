@@ -6,6 +6,12 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The README shows a demo GIF, and the overlay, palette, settings and FAQ
+  pages have light and dark screenshots. The social preview shows the
+  overlay. (#95)
+
 ### Changed
 
 - The overlay uses Liquid Glass on macOS 26 and later and a light or dark

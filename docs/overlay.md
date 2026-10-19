@@ -6,6 +6,11 @@ Cmd+Space cancels it. Click an entry to run that menu command. To keep it open
 without holding Command, double-tap Command for the
 [command palette](palette.md).
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/overlay-dark.png">
+  <img src="images/overlay-light.png" width="600" alt="The ShortcutLens overlay over a TextEdit window, listing TextEdit's shortcuts in three columns grouped by menu, with a System section and two conflicting shortcuts marked in orange">
+</picture>
+
 ## What it shows
 
 - Shortcuts are read from the frontmost app's menu bar and grouped by menu.
