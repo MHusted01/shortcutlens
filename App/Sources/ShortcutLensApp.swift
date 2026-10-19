@@ -29,6 +29,11 @@ struct ShortcutLensApp: App {
                 appDelegate.exporter.printSheet()
             }
             .disabled(!appDelegate.permission.permission.isGranted)
+            // Quizzes the app that was frontmost when the menu opened.
+            Button("Practice Shortcuts…") {
+                appDelegate.practice.start()
+            }
+            .disabled(!appDelegate.permission.permission.isGranted)
             Divider()
             Button("Quit ShortcutLens") {
                 NSApplication.shared.terminate(nil)
@@ -47,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let permission = PermissionController()
     let settings = SettingsController()
     let exporter = CheatSheetExporter()
+    let practice = PracticeController()
     private let trigger = TriggerController()
     private let overlay = OverlayController()
     private let editor = ShortcutEditor()
@@ -68,6 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         trigger.setDelay(settings.triggerDelay)
         overlay.apply(settings)
         exporter.apply(settings)
+        practice.apply(settings)
     }
 }
 

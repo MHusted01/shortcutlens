@@ -11,14 +11,6 @@ import UniformTypeIdentifiers
 final class CheatSheetExporter {
     private static let log = Logger(subsystem: "dev.shortcutlens", category: "export")
 
-    /// The app whose shortcuts are exported, captured before ShortcutLens
-    /// activates for its panels.
-    private struct Target {
-        let pid: pid_t
-        let bundleID: String?
-        let name: String
-    }
-
     /// Keeps the `.md` extension even if the system has no type for it;
     /// `.plainText` would make the save panel switch to `.txt`.
     private static let markdownType = UTType(filenameExtension: "md")
@@ -63,7 +55,7 @@ final class CheatSheetExporter {
         guard !isExporting else {
             return
         }
-        guard let target = Self.frontmostTarget() else {
+        guard let target = FrontmostApp.current() else {
             showNoAppAlert()
             return
         }
@@ -82,17 +74,6 @@ final class CheatSheetExporter {
             finish(content)
             self?.isExporting = false
         }
-    }
-
-    /// The frontmost app unless it is ShortcutLens itself, e.g. while its
-    /// Settings window is in front.
-    private static func frontmostTarget() -> Target? {
-        guard let app = NSWorkspace.shared.frontmostApplication,
-              app.processIdentifier != ProcessInfo.processInfo.processIdentifier
-        else {
-            return nil
-        }
-        return Target(pid: app.processIdentifier, bundleID: app.bundleIdentifier, name: app.localizedName ?? "")
     }
 
     private func showNoAppAlert() {
