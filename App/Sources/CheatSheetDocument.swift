@@ -41,7 +41,7 @@ enum CheatSheetDocument {
         for section in content.sections {
             text.append(line(section.title, font: headingFont, spacingBefore: 12, spacingAfter: 4))
             for row in section.rows {
-                text.append(line("\(row.keys)\t\(row.title)", font: rowFont))
+                text.append(line("\(row.keys)\t\(row.displayTitle)", font: rowFont))
                 if let note = CheatSheetMarkdown.note(for: row) {
                     text.append(line("\t\(note)", font: noteFont, color: noteColor))
                 }

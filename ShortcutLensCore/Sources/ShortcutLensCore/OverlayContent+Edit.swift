@@ -15,7 +15,7 @@ public extension OverlayContent {
         return sections.filter { !$0.isPinned }.flatMap { candidate in
             candidate.rows
                 .filter { $0.combo == combo && !(candidate.id == section && $0.id == row) && !isEdited($0) }
-                .map { "\(candidate.title) > \($0.title)" }
+                .map { "\(candidate.title) > \($0.displayTitle)" }
         }
     }
 }

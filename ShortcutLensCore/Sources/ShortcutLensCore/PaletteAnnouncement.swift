@@ -11,7 +11,8 @@ public enum PaletteAnnouncement {
         let custom = row.isCustom ? [String(localized: "custom shortcut", bundle: .module)] : []
         let conflict = row.conflict.map { [$0] } ?? []
         let keys = SpokenKeys.label(for: row.keys)
-        return ([row.title] + (keys.isEmpty ? [] : [keys]) + favourite + custom + conflict).joined(separator: ", ")
+        let parts = [row.displayTitle] + (keys.isEmpty ? [] : [keys]) + favourite + custom + conflict
+        return parts.joined(separator: ", ")
     }
 
     /// The text for the palette changing from `before` (nil: just opened) to
