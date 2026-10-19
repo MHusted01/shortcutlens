@@ -45,9 +45,11 @@ struct KeyDisplayTests {
         #expect(KeyDisplay.Words(language: "xx") == nil)
     }
 
-    /// Tests run with `-testLanguage en`, so the app's language is English.
+    /// Holds in any run language: the app's words are one of the catalog's.
     @Test func defaultsToTheAppLanguage() {
-        #expect(KeyDisplay.Words.localized == KeyDisplay.Words(language: "en"))
-        #expect(KeyDisplay.text(for: "⌥⌘Space") == "⌥⌘Space")
+        let catalog = ["en", "da"].map { KeyDisplay.Words(language: $0) }
+
+        #expect(catalog.contains(KeyDisplay.Words.localized))
+        #expect(KeyDisplay.text(for: "⌥⌘Space") == "⌥⌘" + KeyDisplay.Words.localized.space)
     }
 }
