@@ -1,3 +1,4 @@
+import Foundation
 import ShortcutLensCore
 import Testing
 
@@ -31,6 +32,23 @@ struct KeyComboTests {
         let glyph = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: .option, glyph: 0x6F)
 
         #expect(KeyCombo(character) == KeyCombo(glyph))
+    }
+
+    /// A menu reports Up Arrow as a glyph, a recorded shortcut as AppKit's
+    /// character and a pack by name; all keep the internal arrow symbol.
+    @Test func anArrowFromAMenuARecordingAndAPackIsOneCombo() throws {
+        let glyph = MenuShortcut(title: "Enclosing Folder", keyCharacter: nil, modifiers: [], glyph: 0x68)
+        let recorded = MenuShortcut(title: "Up", keyCharacter: "\u{F700}", modifiers: [])
+        let json = """
+        {"schemaVersion": 1, "bundleIdentifier": "a.b", "sections": [{"title": "Go",
+         "shortcuts": [{"title": "Up", "key": "Up", "modifiers": ["command"]}]}]}
+        """
+        let pack = try ShortcutPackParser.parse(Data(json.utf8)).get()
+        let packed = try #require(pack.sections.first?.shortcuts.first)
+
+        #expect(KeyCombo(glyph) == KeyCombo(key: "↑", modifiers: []))
+        #expect(KeyCombo(recorded) == KeyCombo(glyph))
+        #expect(KeyCombo(packed) == KeyCombo(glyph))
     }
 
     @Test func isNilWithoutADisplayableKey() {
@@ -73,6 +91,17 @@ struct ShortcutConflictsTests {
         ])
 
         #expect(clashes == [["Pack > Help"], ["Help > Help"]])
+    }
+
+    /// Combos keep the arrow symbol, whatever style the overlay draws it in.
+    @Test func arrowShortcutsFromMenuAndPackClash() {
+        let menu = MenuShortcut(title: "Enclosing Folder", keyCharacter: nil, modifiers: [], glyph: 0x68)
+        let clashes = ShortcutConflicts.clashes(among: [
+            Entry(combo: KeyCombo(menu), location: "Go > Enclosing Folder"),
+            entry("Pack > Up", "↑"),
+        ])
+
+        #expect(clashes == [["Pack > Up"], ["Go > Enclosing Folder"]])
     }
 
     @Test func differentModifiersDoNotClash() {
