@@ -9,6 +9,7 @@ in the lens. Chosen in #85 from three concepts. No CheatSheet assets are used.
 | --- | --- |
 | `App/Resources/AppIcon.icon/` | The icon the app ships. Icon Composer format: `icon.json` plus one SVG per layer in `Assets/`. |
 | `design/icon/ShortcutLens.svg` | Flat master on the classic 1024 grid (824 pt rounded square). Use it for the README, the social preview and anything outside the app. |
+| `App/Resources/MenuBarIcon.xcassets/` | The menu bar icon: one 18 x 18 pt SVG (`MenuBarIcon.svg`), kept as vector and marked as a template image so macOS tints it for light, dark and tinted menu bars. |
 | `design/icon/concepts/` | The three concepts from #85 (`a-keycap`, `b-lens`, `c-overlay`) and `sheet.png`, the comparison sheet. Kept for reference only. |
 
 ## Layers
@@ -30,6 +31,15 @@ so they do not include the rounded square or a background.
 into `Assets.car` (Liquid Glass, light, dark and tinted appearances on
 macOS 26+) and an `AppIcon.icns` fallback for macOS 14-15. No exported PNGs
 are committed.
+
+## Menu bar icon
+
+`MenuBarIcon.svg` is the lens, handle and Command symbol from the master in
+one colour (black on transparent; the colour is ignored because it is a
+template). The strokes are thicker than a straight scale-down so the Command
+symbol stays readable at 2x. The lens alone would look like Spotlight, so keep
+the symbol. The app swaps it for the `exclamationmark.triangle` symbol while
+the Accessibility permission is missing.
 
 ## Changing the icon
 

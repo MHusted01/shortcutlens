@@ -92,7 +92,10 @@ private struct MenuBarIcon: View {
     let permission: PermissionController
 
     var body: some View {
-        Image(systemName: permission.permission.isGranted ? "keyboard" : "exclamationmark.triangle")
-            .accessibilityLabel("ShortcutLens")
+        icon.accessibilityLabel("ShortcutLens")
+    }
+
+    private var icon: Image {
+        permission.permission.isGranted ? Image("MenuBarIcon") : Image(systemName: "exclamationmark.triangle")
     }
 }
