@@ -133,23 +133,34 @@ private struct SectionView: View {
                 .font(.headline)
                 .lineLimit(1)
                 .frame(height: metrics.sectionTitleHeight, alignment: .topLeading)
+                .accessibilityAddTraits(.isHeader)
             ForEach(section.rows) { row in
                 let id = RowID(section: section.id, row: row.id)
                 // Every row in Favourites is one, so the star would only repeat the title.
-                RowView(row: row, isSelected: id == selection, showsStar: row.isFavourite && !section.isPinned) {
+                RowView(
+                    row: row, isSelected: id == selection, showsStar: row.isFavourite && !section.isPinned,
+                    accessibilityLabel: PaletteAnnouncement.rowLabel(row, inPinnedSection: section.isPinned)
+                ) {
                     onSelect(row)
                 }
                 .id(id)
-                .contextMenu {
-                    // Only menu items have an App Shortcut to edit.
-                    if let onEdit, row.element != nil {
-                        Button("Edit Shortcut…") { onEdit(id, row) }
-                    }
-                    if let onFavourite, row.canBeFavourite {
-                        Button(row.isFavourite ? "Remove from Favourites" : "Add to Favourites") { onFavourite(row) }
-                    }
-                }
+                .contextMenu { actions(for: row, id: id) }
+                // VoiceOver users reach the same actions with VO-Command-Space.
+                .accessibilityActions { actions(for: row, id: id) }
             }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(section.title)
+    }
+
+    @ViewBuilder
+    private func actions(for row: OverlayRow<AXUIElement>, id: RowID) -> some View {
+        // Only menu items have an App Shortcut to edit.
+        if let onEdit, row.element != nil {
+            Button("Edit Shortcut…") { onEdit(id, row) }
+        }
+        if let onFavourite, row.canBeFavourite {
+            Button(row.isFavourite ? "Remove from Favourites" : "Add to Favourites") { onFavourite(row) }
         }
     }
 }
@@ -173,36 +184,51 @@ private struct RowView: View {
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
     let showsStar: Bool
+    let accessibilityLabel: String
     let action: () -> Void
     @State private var isHovered = false
 
     var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 0) {
-                line
-                if let conflict = row.conflict {
-                    Text(conflict)
-                        .font(.caption)
-                        .foregroundStyle(Self.conflictColor)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .help(conflict)
-                        .frame(height: metrics.rowHeight)
-                }
+        clickTarget
+            .opacity(row.isEnabled ? 1 : Self.disabledOpacity)
+            .background {
+                RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
+                    .inset(by: Self.highlightInset)
+                    .fill(highlight)
             }
-            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    /// A button for menu items. Display-only rows (no menu item to press) are
+    /// plain text, so VoiceOver does not read them as dimmed buttons; disabled
+    /// menu items stay disabled buttons.
+    @ViewBuilder
+    private var clickTarget: some View {
+        if row.element == nil {
+            content.accessibilityElement(children: .ignore)
+        } else {
+            Button(action: action) { content }
+                .buttonStyle(.plain)
+                .disabled(!row.isRunnable)
         }
-        .buttonStyle(.plain)
-        .disabled(!row.isRunnable)
-        .opacity(row.isEnabled ? 1 : Self.disabledOpacity)
-        .background {
-            RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
-                .inset(by: Self.highlightInset)
-                .fill(highlight)
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            line
+            if let conflict = row.conflict {
+                Text(conflict)
+                    .font(.caption)
+                    .foregroundStyle(Self.conflictColor)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .help(conflict)
+                    .frame(height: metrics.rowHeight)
+            }
         }
-        .onHover { isHovered = $0 }
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .contentShape(Rectangle())
     }
 
     /// Title, markers and keys; a conflict adds a caption line below it.
@@ -240,13 +266,6 @@ private struct RowView: View {
                 .monospacedDigit()
         }
         .frame(height: metrics.rowHeight)
-    }
-
-    private var accessibilityLabel: String {
-        let favourite = showsStar ? ["favourite"] : []
-        let custom = row.isCustom ? ["custom shortcut"] : []
-        let conflict = row.conflict.map { [$0] } ?? []
-        return ([row.title, row.keys] + favourite + custom + conflict).joined(separator: ", ")
     }
 
     private var highlight: Color {
