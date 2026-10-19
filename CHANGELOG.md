@@ -15,6 +15,12 @@ All notable changes to ShortcutLens are listed here. The format follows
   displays. (#107)
 - Issue forms for bugs, feature requests and translations, a code of conduct
   and this changelog. (#87)
+- FAQ and troubleshooting page, and a page for each feature in `docs/`. (#88)
+
+### Changed
+
+- The README starts with the icon, badges and install steps and keeps the
+  feature details in `docs/`. (#88)
 
 ## [1.0.0] - 2026-10-19
 
