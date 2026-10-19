@@ -152,7 +152,8 @@ Gaps:
 ## Checklist for ShortcutLens
 
 Priority: **P1** = do in Phase 6, **P2** = do when the owner issue comes up,
-**P3** = optional. Every item has an owner issue.
+**P3** = optional. Each item names its owner issue, either on the item or in
+its section heading (#87, #88).
 
 ### Identity
 
@@ -185,7 +186,7 @@ Priority: **P1** = do in Phase 6, **P2** = do when the owner issue comes up,
 
 - [ ] P1 Release notes for v1.1.0 grouped into Added / Changed / Fixed, written from `CHANGELOG.md` instead of the generated PR list - #89
 - [ ] P2 Release notes include a short "Before you install" note when a version needs a permission re-grant (ad-hoc signing) - #89, #96, #101, #104
-- [ ] P3 `release.yml` uses the matching `CHANGELOG.md` section as the release body, so notes are not written twice - candidate new issue (see below)
+- [ ] P3 `release.yml` uses the matching `CHANGELOG.md` section as the release body, so notes are not written twice - #89
 
 ### Distribution (Phase 9)
 
@@ -197,9 +198,3 @@ Priority: **P1** = do in Phase 6, **P2** = do when the owner issue comes up,
 
 - Website, Discussions, Wiki, FUNDING / donation links, README translations,
   stale bot, App Store release, notarization (no paid developer account).
-
-## Open question
-
-One item has no owner issue yet: having `release.yml` use the matching
-`CHANGELOG.md` section as the release body (P3). It can either be folded into
-#89 or get its own small `ci:` issue in Phase 6.
