@@ -6,11 +6,13 @@ ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,
 grouped by menu. Click an entry to run that command.
 
-**Status:** v0.4.0. It covers:
+**Status:** v1.0.0. It covers:
 
 - Holding Command shows the overlay; pressing another key, clicking or a
   system shortcut such as Cmd+Space cancels it.
 - Shortcuts are read from the frontmost app's menu bar and grouped by menu.
+  Entries that share a name show their menu path, such as
+  `Find > Find Next` next to `Spelling > Find Next`.
 - Clicking an entry runs that menu command.
 - Double-tapping Command opens a searchable command palette (below).
 - A System section lists the macOS shortcuts you have turned on in System
@@ -34,6 +36,13 @@ grouped by menu. Click an entry to run that command.
 - A settings window for the trigger delay, menu depth, disabled items, system
   shortcuts, shortcut packs and launch at login.
 - Onboarding walks you through granting the Accessibility permission.
+- English and Danish, following your system language. See
+  [CONTRIBUTING.md](CONTRIBUTING.md#translations) to add a language.
+- Keys are labelled for your current keyboard layout and update when you
+  switch layouts. Arrow keys are drawn the way the macOS menus draw them.
+- VoiceOver: use the command palette. It announces the app, the number of
+  matches and the selected entry, reads keys as words ("Command Shift S")
+  and lists section headings in the rotor.
 
 Favourites and practice progress are matched by menu titles, which macOS
 translates. They only match in the system language they were made in.
