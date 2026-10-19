@@ -112,4 +112,18 @@ struct PanelLayoutTests {
         #expect(filtered.size.height <= full.size.height)
         #expect(!filtered.scrolls)
     }
+
+    /// The overlay's sizes from the UI spec on #90; spacing is on the 4 pt scale.
+    @Test func standardMetricsMatchTheSpec() {
+        let standard = PanelLayout.Metrics.standard
+
+        #expect(standard.padding == 20)
+        #expect(standard.headerHeight == 40)
+        #expect(standard.dividerHeight == 1)
+        #expect(standard.columnWidth == 260)
+        #expect(standard.columnSpacing == 24)
+        #expect(standard.rowHeight == 20)
+        #expect(standard.sectionTitleHeight == 24)
+        #expect(standard.sectionSpacing == 16)
+    }
 }

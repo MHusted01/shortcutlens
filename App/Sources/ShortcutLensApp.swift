@@ -69,8 +69,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         apply(settings.settings)
         settings.onChange = { [weak self] in self?.apply($0) }
         trigger.onArm = { [overlay] in overlay.prepare() }
-        trigger.onShow = { [overlay] in overlay.show() }
-        trigger.onHide = { [overlay] in overlay.hide() }
+        trigger.onShow = { [overlay] in
+            // Time to show: from the trigger until the panel is ordered front.
+            let start = ContinuousClock.now
+            overlay.show()
+            let elapsed = start.duration(to: .now)
+            OverlayController.log.debug("shown in \(String(describing: elapsed), privacy: .public)")
+        }
+        // Releasing Command or Escape fades the overlay out; a row click hides it at once.
+        trigger.onHide = { [overlay] in overlay.hide(animated: true) }
         trigger.onShowPalette = { [overlay] in overlay.showPalette() }
         overlay.onClosePalette = { [trigger] in trigger.closePalette() }
         overlay.onEditShortcut = { [editor] in editor.show($0) }
