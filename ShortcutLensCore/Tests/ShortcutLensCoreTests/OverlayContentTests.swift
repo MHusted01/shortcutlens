@@ -158,6 +158,25 @@ struct OverlayContentTests {
         #expect(content.isEmpty)
     }
 
+    @Test func appendsSeveralSectionsAndSkipsEmptyOnes() {
+        let groups = [MenuGroup(title: "File", items: [entry("Save", key: "s", element: 1)])]
+        let look = MenuShortcut(title: "Quick Look", keyCharacter: " ", modifiers: .noCommand)
+        let noKey = MenuShortcut(title: "Nothing", keyCharacter: nil, modifiers: [])
+        let save = MenuShortcut(title: "Save All", keyCharacter: "s", modifiers: [])
+
+        let content = OverlayContent(appName: "App", groups: groups).appending(sections: [
+            (title: "Selection", shortcuts: [look]),
+            (title: "Empty", shortcuts: [noKey]),
+            (title: "Files", shortcuts: [save]),
+        ])
+
+        #expect(content.sections.map(\.title) == ["File", "Selection", "Files"])
+        #expect(content.sections.map(\.id) == [0, 1, 2])
+        #expect(content.sections[1].rows.map(\.keys) == ["Space"])
+        #expect(content.sections[0].rows[0].conflict == "Also used by Files > Save All")
+        #expect(content.sections[2].rows[0].conflict == "Also used by File > Save")
+    }
+
     @Test func disabledRowsAreNotRunnable() {
         let row = OverlayRow(id: 0, title: "Revert", keys: "⌘R", isEnabled: false, element: 1)
 

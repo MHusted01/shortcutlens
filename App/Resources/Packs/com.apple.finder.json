@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "bundleIdentifier": "com.apple.finder",
+  "name": "Finder (example)",
+  "sections": [
+    {
+      "title": "Selection",
+      "shortcuts": [
+        { "title": "Quick Look selected items", "key": "Space" },
+        { "title": "Rename selected item", "key": "Return" },
+        { "title": "Open selected item", "key": "Down", "modifiers": ["command"] },
+        { "title": "Select next item", "key": "Tab" },
+        { "title": "Select previous item", "key": "Tab", "modifiers": ["shift"] }
+      ]
+    },
+    {
+      "title": "List View",
+      "shortcuts": [
+        { "title": "Expand folder", "key": "Right" },
+        { "title": "Collapse folder", "key": "Left" },
+        { "title": "Expand folder and subfolders", "key": "Right", "modifiers": ["option"] },
+        { "title": "Collapse folder and subfolders", "key": "Left", "modifiers": ["option"] }
+      ]
+    }
+  ]
+}

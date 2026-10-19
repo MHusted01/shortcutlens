@@ -35,12 +35,23 @@ public struct OverlayContent<Element> {
     /// no section is added when none is left. Conflicts are marked again over
     /// all sections, so app and system rows that share keys both say so.
     public func appending(sectionTitle: String, shortcuts: [MenuShortcut]) -> Self {
-        let rows = Self.rows(for: shortcuts.map { ($0, nil) }, custom: .empty)
-        guard !rows.isEmpty else {
+        appending(sections: [(title: sectionTitle, shortcuts: shortcuts)])
+    }
+
+    /// A copy with several display-only sections after the others, in order,
+    /// e.g. a shortcut pack's. Works like `appending(sectionTitle:shortcuts:)`;
+    /// conflicts are marked once over the result.
+    public func appending(sections added: [(title: String, shortcuts: [MenuShortcut])]) -> Self {
+        let built = added
+            .map { (title: $0.title, rows: Self.rows(for: $0.shortcuts.map { ($0, nil) }, custom: .empty)) }
+            .filter { !$0.rows.isEmpty }
+        guard !built.isEmpty else {
             return self
         }
-        let section = OverlaySection(id: sections.count, title: sectionTitle, rows: rows)
-        return Self(appName: appName, sections: sections + [section]).markingConflicts()
+        let new = built.enumerated().map { offset, section in
+            OverlaySection(id: sections.count + offset, title: section.title, rows: section.rows)
+        }
+        return Self(appName: appName, sections: sections + new).markingConflicts()
     }
 
     /// True when the app has no shortcut to show.
