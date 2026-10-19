@@ -28,6 +28,11 @@ targets:
     sources:
       - App/Sources
       - App/Resources/Localizable.xcstrings
+      # Icon Composer icon; actool compiles it into Assets.car plus an
+      # AppIcon.icns fallback for macOS 14-15. Sources: design/icon/.
+      - path: App/Resources/AppIcon.icon
+        type: file
+        buildPhase: resources
       # Example shortcut packs, copied as Contents/Resources/Packs.
       - path: App/Resources/Packs
         type: folder
@@ -49,6 +54,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.mhusted01.shortcutlens
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "0.0.1"
         CURRENT_PROJECT_VERSION: "1"
         # CODE_SIGN_IDENTITY comes from Config/*.xcconfig (ad-hoc unless a
