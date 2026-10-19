@@ -35,6 +35,6 @@ public extension OverlayContent {
         let renumbered = (favourites + base).enumerated().map { offset, section in
             OverlaySection(id: offset, title: section.title, rows: section.rows, isPinned: section.isPinned)
         }
-        return Self(appName: appName, sections: renumbered).markingConflicts()
+        return Self(appName: appName, sections: renumbered).disambiguatingTitles().markingConflicts()
     }
 }

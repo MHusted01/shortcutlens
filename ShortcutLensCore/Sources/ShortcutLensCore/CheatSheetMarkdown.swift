@@ -52,7 +52,7 @@ public enum CheatSheetMarkdown {
         let columns = [shortcutColumn, commandColumn] + (hasNotes ? [noteColumn] : [])
         let header = [tableRow(columns), "|" + String(repeating: " --- |", count: columns.count)]
         let rows = section.rows.map { row in
-            tableRow([row.keys, row.title] + (hasNotes ? [note(for: row) ?? ""] : []))
+            tableRow([row.keys, row.displayTitle] + (hasNotes ? [note(for: row) ?? ""] : []))
         }
         return (["## \(escape(section.title))", ""] + header + rows).joined(separator: "\n")
     }
