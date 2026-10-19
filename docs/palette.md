@@ -6,7 +6,7 @@ Command:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/palette-dark.png">
-  <img src="images/palette-light.png" width="600" alt="The command palette over TextEdit with the search "save": Save and Save As from the File menu, with Save As selected, and two screenshot shortcuts from the System section">
+  <img src="images/palette-light.png" width="600" alt="The command palette over TextEdit with the search 'save': Save and Save As from the File menu, with Save As selected, and two screenshot shortcuts from the System section">
 </picture>
 
 - Type to filter the shortcuts by name; case and accents are ignored.
