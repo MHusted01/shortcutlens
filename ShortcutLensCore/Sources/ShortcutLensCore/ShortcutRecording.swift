@@ -41,10 +41,15 @@ public enum ShortcutRecording {
     /// The key to record for a key event with `keyCode`. A key with a menu
     /// glyph takes AppKit's character (`charactersIgnoringModifiers`, F1 is
     /// U+F704), because the layout gives legacy codes that cannot tell F1 from
-    /// F5 or Forward Delete from Delete. Other keys take the layout's
-    /// character without modifiers (`characters(byApplyingModifiers: [])`).
+    /// F5 or Forward Delete from Delete. AppKit's character applies Shift
+    /// (Shift-Tab is back-tab), so it is used only when it shows the pressed
+    /// key. Otherwise the layout's character without modifiers wins
+    /// (`characters(byApplyingModifiers: [])`).
     public static func key(keyCode: Int, layoutCharacter: String, appKitCharacter: String) -> String {
-        KeyCodes.glyph(for: keyCode) == nil ? layoutCharacter : appKitCharacter
+        guard let glyph = KeyCodes.glyph(for: keyCode), NamedKeys.glyph(for: appKitCharacter) == glyph else {
+            return layoutCharacter
+        }
+        return appKitCharacter
     }
 
     /// The store's modifier characters; see `UserKeyEquivalent`.

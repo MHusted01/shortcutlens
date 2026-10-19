@@ -66,6 +66,19 @@ struct ShortcutRecordingTests {
         #expect(key == appKitCharacter)
     }
 
+    /// AppKit's character applies Shift: Shift-Tab is back-tab (U+0019). The
+    /// layout's character then names the key that was pressed.
+    @Test(arguments: [(48, "\t", "\u{19}"), (49, " ", " "), (76, "\u{3}", "\u{3}")])
+    func namedKeyIgnoresShiftsEffectOnAppKitsCharacter(
+        _ keyCode: Int, _ layoutCharacter: String, _ appKitCharacter: String
+    ) {
+        let key = ShortcutRecording.key(
+            keyCode: keyCode, layoutCharacter: layoutCharacter, appKitCharacter: appKitCharacter
+        )
+
+        #expect(key == layoutCharacter)
+    }
+
     /// For character keys the layout's character wins: AppKit's applies Shift.
     @Test func characterKeyIsRecordedAsTheLayoutCharacter() {
         #expect(ShortcutRecording.key(keyCode: 0, layoutCharacter: "a", appKitCharacter: "A") == "a")
