@@ -51,7 +51,7 @@ public enum ShortcutMatcher {
         }
         guard !candidates.isEmpty else { return nil }
         let rows = candidates.sorted { ($0.rank, $0.offset) < ($1.rank, $1.offset) }.map(\.row)
-        return OverlaySection(id: section.id, title: section.title, rows: rows)
+        return OverlaySection(id: section.id, title: section.title, rows: rows, isPinned: section.isPinned)
     }
 
     private static func rank(_ title: String, _ needle: String) -> Rank? {
