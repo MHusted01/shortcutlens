@@ -35,8 +35,8 @@ public struct ContainerReads: Equatable, Sendable {
 
     /// A copy that remembers a denial for `bundleID`; other outcomes, and a
     /// read started in an earlier `generation`, change nothing.
-    public func recording(_ outcome: Outcome, for bundleID: String, generation: Int? = nil) -> Self {
-        guard outcome == .denied, (generation ?? self.generation) == self.generation else {
+    public func recording(_ outcome: Outcome, for bundleID: String, generation: Int) -> Self {
+        guard outcome == .denied, generation == self.generation else {
             return self
         }
         return Self(denied: denied.union([bundleID]), generation: self.generation)

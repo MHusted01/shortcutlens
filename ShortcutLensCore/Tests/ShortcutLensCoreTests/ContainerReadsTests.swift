@@ -9,12 +9,15 @@ struct ContainerReadsTests {
         let reads = ContainerReads()
 
         #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
-        #expect(reads.recording(.unavailable, for: "com.apple.TextEdit").shouldRead(bundleID: "com.apple.TextEdit"))
-        #expect(reads.recording(.read([]), for: "com.apple.TextEdit").shouldRead(bundleID: "com.apple.TextEdit"))
+        let unavailable = reads.recording(.unavailable, for: "com.apple.TextEdit", generation: reads.generation)
+        let read = reads.recording(.read([]), for: "com.apple.TextEdit", generation: reads.generation)
+
+        #expect(unavailable.shouldRead(bundleID: "com.apple.TextEdit"))
+        #expect(read.shouldRead(bundleID: "com.apple.TextEdit"))
     }
 
     @Test func skipsAnAppAfterADenial() {
-        let reads = ContainerReads().recording(.denied, for: "com.apple.TextEdit")
+        let reads = ContainerReads().recording(.denied, for: "com.apple.TextEdit", generation: 0)
 
         #expect(!reads.shouldRead(bundleID: "com.apple.TextEdit"))
         #expect(reads.shouldRead(bundleID: "com.apple.Preview"))
@@ -23,13 +26,13 @@ struct ContainerReadsTests {
     @Test func recordingDoesNotChangeTheOriginal() {
         let reads = ContainerReads()
 
-        _ = reads.recording(.denied, for: "com.apple.TextEdit")
+        _ = reads.recording(.denied, for: "com.apple.TextEdit", generation: reads.generation)
 
         #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
     }
 
     @Test func forgettingDenialsReadsEveryAppAgain() {
-        let reads = ContainerReads().recording(.denied, for: "com.apple.TextEdit").forgettingDenials()
+        let reads = ContainerReads().recording(.denied, for: "com.apple.TextEdit", generation: 0).forgettingDenials()
 
         #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
     }
