@@ -20,8 +20,8 @@ struct PanelLayoutTests {
         )
     }
 
-    private func layout(_ rowCounts: [Int], width: Double, height: Double) -> PanelLayout.Result {
-        PanelLayout.layout(rowCounts: rowCounts, metrics: metrics(), visible: CGSize(width: width, height: height))
+    private func layout(_ lineCounts: [Int], width: Double, height: Double) -> PanelLayout.Result {
+        PanelLayout.layout(lineCounts: lineCounts, metrics: metrics(), visible: CGSize(width: width, height: height))
     }
 
     @Test func fitsOneColumnWhenTallEnough() {
@@ -69,8 +69,8 @@ struct PanelLayoutTests {
     @Test func appliesTheScreenFraction() {
         let visible = CGSize(width: 1000, height: 320)
 
-        let full = PanelLayout.layout(rowCounts: [2, 3, 2], metrics: metrics(), visible: visible)
-        let half = PanelLayout.layout(rowCounts: [2, 3, 2], metrics: metrics(screenFraction: 0.5), visible: visible)
+        let full = PanelLayout.layout(lineCounts: [2, 3, 2], metrics: metrics(), visible: visible)
+        let half = PanelLayout.layout(lineCounts: [2, 3, 2], metrics: metrics(screenFraction: 0.5), visible: visible)
 
         #expect(full.columns.count == 1)
         #expect(half.columns.count == 2)
@@ -90,9 +90,13 @@ struct PanelLayoutTests {
     @Test(arguments: [1.0, 0.9])
     func sameRowsFitTheirOwnPanel(fraction: Double) {
         let metrics = metrics(screenFraction: fraction)
-        let full = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics, visible: CGSize(width: 1000, height: 200))
+        let full = PanelLayout.layout(
+            lineCounts: [8, 8, 8],
+            metrics: metrics,
+            visible: CGSize(width: 1000, height: 200)
+        )
 
-        let refit = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics, fitting: full.size)
+        let refit = PanelLayout.layout(lineCounts: [8, 8, 8], metrics: metrics, fitting: full.size)
 
         #expect(full.columns.count > 1)
         #expect(refit == full)
@@ -100,9 +104,9 @@ struct PanelLayoutTests {
 
     @Test func fewerRowsStayWithinThePanel() {
         let visible = CGSize(width: 1000, height: 200)
-        let full = PanelLayout.layout(rowCounts: [8, 8, 8], metrics: metrics(), visible: visible)
+        let full = PanelLayout.layout(lineCounts: [8, 8, 8], metrics: metrics(), visible: visible)
 
-        let filtered = PanelLayout.layout(rowCounts: [8, 1], metrics: metrics(), fitting: full.size)
+        let filtered = PanelLayout.layout(lineCounts: [8, 1], metrics: metrics(), fitting: full.size)
 
         #expect(filtered.size.width <= full.size.width)
         #expect(filtered.size.height <= full.size.height)

@@ -28,7 +28,8 @@ extension PaletteState {
         return selecting(nearest.id)
     }
 
-    /// The rows of the sections at `indices`, stacked as the overlay draws them.
+    /// The rows of the sections at `indices`, stacked as the overlay draws
+    /// them; a row is `lineCount` row heights tall.
     private static func positions(
         of indices: [Int],
         in sections: [OverlaySection<Element>],
@@ -38,9 +39,10 @@ extension PaletteState {
         return indices.filter(sections.indices.contains).flatMap { index in
             let section = sections[index]
             let rowsTop = top + metrics.sectionTitleHeight
-            top = rowsTop + Double(section.rows.count) * metrics.rowHeight + metrics.sectionSpacing
-            return section.rows.enumerated().map { offset, row in
-                let height = rowsTop + Double(offset) * metrics.rowHeight
+            top = rowsTop + Double(section.lineCount) * metrics.rowHeight + metrics.sectionSpacing
+            let linesAbove = section.rows.reduce(into: [0]) { $0.append($0[$0.count - 1] + $1.lineCount) }
+            return zip(section.rows, linesAbove).map { row, lines in
+                let height = rowsTop + Double(lines) * metrics.rowHeight
                 return RowPosition(id: RowID(section: section.id, row: row.id), height: height)
             }
         }

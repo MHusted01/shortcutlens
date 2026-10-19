@@ -19,8 +19,12 @@ struct OverlayContentTests {
 
         #expect(content.appName == "TextEdit")
         #expect(content.sections.map(\.title) == ["File", "Edit"])
-        #expect(content.sections[0].rows == [OverlayRow(id: 0, title: "Save", keys: "⌘S", element: 1)])
-        #expect(content.sections[1].rows == [OverlayRow(id: 0, title: "Redo", keys: "⇧⌘Z", element: 2)])
+        #expect(content.sections[0].rows == [
+            OverlayRow(id: 0, title: "Save", keys: "⌘S", combo: KeyCombo(key: "S", modifiers: []), element: 1),
+        ])
+        #expect(content.sections[1].rows == [
+            OverlayRow(id: 0, title: "Redo", keys: "⇧⌘Z", combo: KeyCombo(key: "Z", modifiers: .shift), element: 2),
+        ])
         #expect(!content.isEmpty)
     }
 
@@ -124,7 +128,10 @@ struct OverlayContentTests {
         #expect(content.sections.map(\.title) == ["File", "System"])
         #expect(content.sections.map(\.id) == [0, 1])
         #expect(content.sections[1].rows == [
-            OverlayRow(id: 0, title: "Show Spotlight search", keys: "⌘Space", element: nil),
+            OverlayRow(
+                id: 0, title: "Show Spotlight search", keys: "⌘Space",
+                combo: KeyCombo(key: "Space", modifiers: []), element: nil
+            ),
         ])
         #expect(!content.sections[1].rows[0].isRunnable)
         #expect(content.sections[0].rows[0].isRunnable)

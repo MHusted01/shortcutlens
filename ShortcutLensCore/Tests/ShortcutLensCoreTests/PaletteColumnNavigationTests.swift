@@ -94,6 +94,23 @@ struct PaletteColumnNavigationTests {
         #expect(back.selectedRow?.title == "d")
     }
 
+    /// A row with a conflict is two lines tall, so the rows below it sit one
+    /// line lower: in File, b is at 40 instead of 30.
+    @Test func rowsWithAConflictCountTwoLines() {
+        let file = Self.section(id: 0, "File", ["a", "b", "c"])
+        let rows = file.rows.enumerated()
+            .map { $0.offset == 0 ? $0.element.with(conflict: "Also used by x") : $0.element }
+        let content = OverlayContent(appName: "App", sections: [
+            OverlaySection(id: 0, title: "File", rows: rows),
+            Self.section(id: 2, "View", ["f", "g", "h", "i"]),
+        ])
+        let atB = State().with(content: content).movingSelection(by: 1)
+
+        let moved = atB.movingSelection(columns: 1, in: [[0], [1]], metrics: Self.metrics)
+
+        #expect(moved.selectedRow?.title == "h")
+    }
+
     // MARK: - Defensive cases
 
     @Test func offsetsBeyondTheColumnCountWrap() {
