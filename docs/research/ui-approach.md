@@ -219,7 +219,7 @@ Implemented by #91.
 - **Material:** as in the tokens. On 26+ the SwiftUI content goes in the glass
   view's `contentView`, and on 14/15 in the effect view. `OverlayPanel` picks
   one when it is created.
-- **Header:** app icon 28 x 28, app name `.title3` semibold, height 40. A
+- **Header:** app icon 28 x 28, app name `.title3` semibold, height 40.
   The existing divider below it (`dividerHeight` 1) stays the same height and
   is only restyled: inset to the content padding.
 - **Layout:** `PanelLayout.Metrics.standard` keeps padding 20, column width
