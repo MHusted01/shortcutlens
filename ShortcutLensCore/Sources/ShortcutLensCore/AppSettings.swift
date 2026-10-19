@@ -20,6 +20,7 @@ public struct AppSettings: Equatable, Sendable {
         public static let maxMenuDepth = "maxMenuDepth"
         public static let showsDisabledItems = "showsDisabledItems"
         public static let showsSystemShortcuts = "showsSystemShortcuts"
+        public static let paletteTrigger = "paletteTrigger"
     }
 
     public static let triggerDelayRange: ClosedRange<Double> = 0.1 ... 1.5
@@ -38,22 +39,26 @@ public struct AppSettings: Equatable, Sendable {
     public let showsDisabledItems: Bool
     /// Whether the overlay ends with a "System" section of macOS shortcuts.
     public let showsSystemShortcuts: Bool
+    /// Which modifier opens the command palette when double-tapped, if any.
+    public let paletteTrigger: PaletteTrigger
 
     /// Out-of-range values are clamped; a non-finite delay becomes the default.
     public init(
         triggerDelay: Double = TriggerStateMachine.defaultDelay,
         maxMenuDepth: Int = Self.maxMenuDepthRange.upperBound,
         showsDisabledItems: Bool = false,
-        showsSystemShortcuts: Bool = true
+        showsSystemShortcuts: Bool = true,
+        paletteTrigger: PaletteTrigger = .command
     ) {
         self.triggerDelay = Self.clampedDelay(triggerDelay)
         self.maxMenuDepth = maxMenuDepth.clamped(to: Self.maxMenuDepthRange)
         self.showsDisabledItems = showsDisabledItems
         self.showsSystemShortcuts = showsSystemShortcuts
+        self.paletteTrigger = paletteTrigger
     }
 
-    /// The settings in `store`; missing values or values of the wrong type
-    /// fall back to the defaults.
+    /// The settings in `store`; missing values, values of the wrong type and
+    /// unknown palette triggers fall back to the defaults.
     public init(store: SettingsStore) {
         self.init(
             triggerDelay: store.object(forKey: Key.triggerDelay) as? Double ?? Self.defaults.triggerDelay,
@@ -61,7 +66,9 @@ public struct AppSettings: Equatable, Sendable {
             showsDisabledItems: store.object(forKey: Key.showsDisabledItems) as? Bool
                 ?? Self.defaults.showsDisabledItems,
             showsSystemShortcuts: store.object(forKey: Key.showsSystemShortcuts) as? Bool
-                ?? Self.defaults.showsSystemShortcuts
+                ?? Self.defaults.showsSystemShortcuts,
+            paletteTrigger: (store.object(forKey: Key.paletteTrigger) as? String)
+                .flatMap(PaletteTrigger.init(rawValue:)) ?? Self.defaults.paletteTrigger
         )
     }
 
@@ -70,6 +77,7 @@ public struct AppSettings: Equatable, Sendable {
         store.set(maxMenuDepth, forKey: Key.maxMenuDepth)
         store.set(showsDisabledItems, forKey: Key.showsDisabledItems)
         store.set(showsSystemShortcuts, forKey: Key.showsSystemShortcuts)
+        store.set(paletteTrigger.rawValue, forKey: Key.paletteTrigger)
     }
 
     public func with(triggerDelay: Double) -> Self {
@@ -88,17 +96,23 @@ public struct AppSettings: Equatable, Sendable {
         copy(showsSystemShortcuts: showsSystemShortcuts)
     }
 
+    public func with(paletteTrigger: PaletteTrigger) -> Self {
+        copy(paletteTrigger: paletteTrigger)
+    }
+
     private func copy(
         triggerDelay: Double? = nil,
         maxMenuDepth: Int? = nil,
         showsDisabledItems: Bool? = nil,
-        showsSystemShortcuts: Bool? = nil
+        showsSystemShortcuts: Bool? = nil,
+        paletteTrigger: PaletteTrigger? = nil
     ) -> Self {
         Self(
             triggerDelay: triggerDelay ?? self.triggerDelay,
             maxMenuDepth: maxMenuDepth ?? self.maxMenuDepth,
             showsDisabledItems: showsDisabledItems ?? self.showsDisabledItems,
-            showsSystemShortcuts: showsSystemShortcuts ?? self.showsSystemShortcuts
+            showsSystemShortcuts: showsSystemShortcuts ?? self.showsSystemShortcuts,
+            paletteTrigger: paletteTrigger ?? self.paletteTrigger
         )
     }
 

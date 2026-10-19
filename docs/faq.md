@@ -80,8 +80,9 @@ use ShortcutLens.
 ## Double-tapping Command also starts Dictation
 
 If macOS Dictation is set to "Press Command Key Twice" (System Settings >
-Keyboard > Dictation > Shortcut), both react to the double tap. Pick another
-Dictation shortcut; a setting for the palette trigger is planned.
+Keyboard > Dictation > Shortcut), both react to the double tap. In ShortcutLens
+Settings > General, set **Open palette** to Double-tap Option or Double-tap
+Control, or pick another Dictation shortcut.
 
 ## Chrome or another Chromium app shows the wrong enabled state
 
