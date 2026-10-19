@@ -15,6 +15,12 @@ struct ShortcutLensApp: App {
                 Divider()
             }
             Text(verbatim: "ShortcutLens \(version.displayString)")
+            // A menu bar app is never active on its own; activate first so
+            // the panel opens in front.
+            Button("About ShortcutLens") {
+                NSApp.activate()
+                NSApp.orderFrontStandardAboutPanel(nil)
+            }
             Button("Settings…") {
                 appDelegate.settings.showWindow()
             }
