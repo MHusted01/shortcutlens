@@ -261,7 +261,7 @@ private struct RowView: View {
                     // The row's label already includes the conflict.
                     .accessibilityHidden(true)
             }
-            Text(row.keys)
+            Text(KeyDisplay.text(for: row.keys))
                 .foregroundStyle(row.conflict == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(Self.conflictColor))
                 .monospacedDigit()
         }

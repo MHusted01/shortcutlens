@@ -5,8 +5,6 @@ import ShortcutLensCore
 /// export, laid out as text with a keys column. The text view paginates.
 @MainActor
 enum CheatSheetDocument {
-    /// Where the command column starts, after the keys.
-    private static let commandIndent: CGFloat = 90
     private static let titleFont = NSFont.boldSystemFont(ofSize: 18)
     private static let headingFont = NSFont.boldSystemFont(ofSize: 13)
     private static let rowFont = NSFont.systemFont(ofSize: 11)
@@ -25,29 +23,37 @@ enum CheatSheetDocument {
         let width = info.paperSize.width - info.leftMargin - info.rightMargin
         let view = NSTextView(frame: NSRect(x: 0, y: 0, width: width, height: 1))
         view.drawsBackground = false
-        view.textStorage?.setAttributedString(text(for: content))
+        view.textStorage?.setAttributedString(text(for: content, pageWidth: width))
         view.sizeToFit()
         let operation = NSPrintOperation(view: view, printInfo: info)
         operation.jobTitle = jobTitle
         return operation
     }
 
-    static func text(for content: OverlayContent<AXUIElement>) -> NSAttributedString {
+    static func text(for content: OverlayContent<AXUIElement>, pageWidth: CGFloat) -> NSAttributedString {
+        let keys = content.sections.map { $0.rows.map { KeyDisplay.text(for: $0.keys) } }
+        let indent = commandIndent(keys: keys.flatMap(\.self), pageWidth: pageWidth)
         let text = NSMutableAttributedString()
         text.append(line(CheatSheetMarkdown.title(appName: content.appName), font: titleFont, spacingAfter: 8))
         if content.isEmpty {
             text.append(line(CheatSheetMarkdown.emptyText, font: rowFont))
         }
-        for section in content.sections {
+        for (section, sectionKeys) in zip(content.sections, keys) {
             text.append(line(section.title, font: headingFont, spacingBefore: 12, spacingAfter: 4))
-            for row in section.rows {
-                text.append(line("\(row.keys)\t\(row.displayTitle)", font: rowFont))
+            for (row, rowKeys) in zip(section.rows, sectionKeys) {
+                text.append(line("\(rowKeys)\t\(row.displayTitle)", font: rowFont, indent: indent))
                 if let note = CheatSheetMarkdown.note(for: row) {
-                    text.append(line("\t\(note)", font: noteFont, color: noteColor))
+                    text.append(line("\t\(note)", font: noteFont, color: noteColor, indent: indent))
                 }
             }
         }
         return text
+    }
+
+    /// See `CheatSheetLayout.commandIndent`.
+    private static func commandIndent(keys: [String], pageWidth: CGFloat) -> CGFloat {
+        let widths = keys.map { Double(($0 as NSString).size(withAttributes: [.font: rowFont]).width) }
+        return CGFloat(CheatSheetLayout.commandIndent(keyWidths: widths, pageWidth: Double(pageWidth)))
     }
 
     private static func line(
@@ -55,10 +61,11 @@ enum CheatSheetDocument {
         font: NSFont,
         color: NSColor = textColor,
         spacingBefore: CGFloat = 0,
-        spacingAfter: CGFloat = 0
+        spacingAfter: CGFloat = 0,
+        indent: CGFloat = CheatSheetLayout.minimumCommandIndent
     ) -> NSAttributedString {
         let style = NSMutableParagraphStyle()
-        style.tabStops = [NSTextTab(textAlignment: .left, location: commandIndent)]
+        style.tabStops = [NSTextTab(textAlignment: .left, location: indent)]
         style.paragraphSpacingBefore = spacingBefore
         style.paragraphSpacing = spacingAfter
         return NSAttributedString(

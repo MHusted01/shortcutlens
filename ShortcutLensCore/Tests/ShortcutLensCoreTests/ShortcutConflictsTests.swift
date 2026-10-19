@@ -64,6 +64,17 @@ struct ShortcutConflictsTests {
         #expect(clashes == [["System > Show Spotlight search"], ["Edit > Emoji"]])
     }
 
+    /// Combos keep the English word, whatever language the overlay shows it in.
+    @Test func helpShortcutsFromMenuAndPackClash() {
+        let menu = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: [], glyph: 0x67)
+        let clashes = ShortcutConflicts.clashes(among: [
+            Entry(combo: KeyCombo(menu), location: "Help > Help"),
+            entry("Pack > Help", "Help"),
+        ])
+
+        #expect(clashes == [["Pack > Help"], ["Help > Help"]])
+    }
+
     @Test func differentModifiersDoNotClash() {
         let clashes = ShortcutConflicts.clashes(among: [
             entry("File > Save", "S"),

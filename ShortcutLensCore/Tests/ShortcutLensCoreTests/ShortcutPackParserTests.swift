@@ -74,6 +74,17 @@ struct ShortcutPackParserTests {
         #expect(KeyCombo(pack.sections[0].shortcuts[0]) == KeyCombo(menu))
     }
 
+    /// A pack's Help, a menu's Help glyph and a recorded Help key are one combo.
+    @Test func packHelpMatchesMenuAndRecordedHelp() throws {
+        let json = #"{"title": "Help", "key": "Help", "modifiers": ["shift", "command"]}"#
+        let pack = try parse(pack(shortcuts: json)).get()
+        let menu = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: .shift, glyph: 0x67)
+        let recorded = MenuShortcut(title: "Help", keyCharacter: "\u{F746}", modifiers: .shift)
+
+        #expect(KeyCombo(pack.sections[0].shortcuts[0]) == KeyCombo(menu))
+        #expect(KeyCombo(recorded) == KeyCombo(menu))
+    }
+
     @Test func badJSONIsReported() {
         #expect(error("{not json") == .invalidJSON)
         #expect(error("[]") == .invalidJSON)
