@@ -17,7 +17,7 @@ public enum PanelLayout {
             columnSpacing: 24,
             rowHeight: 20,
             sectionTitleHeight: 24,
-            sectionSpacing: 14,
+            sectionSpacing: 16,
             screenFraction: 0.9
         )
 

@@ -170,16 +170,26 @@ private struct SectionView: View {
 /// (system shortcuts) look normal but do not react to clicks.
 private struct RowView: View {
     private static let highlightInset: CGFloat = -4
-    private static let highlightCornerRadius: CGFloat = 5
+    private static let hoverOpacity = 0.08
+    private static let selectionOpacity = 0.3
+    /// Under Increase Contrast the selection also gets an accent outline.
+    private static let selectionStrokeWidth: CGFloat = 1
     private static let disabledOpacity = 0.4
     /// Marks a shortcut the user set in App Shortcuts.
     private static let customSymbol = "person.crop.circle"
     /// Marks a shortcut whose keys another row also uses.
     private static let conflictSymbol = "exclamationmark.triangle.fill"
-    private static let conflictColor = Color.orange
+    private static let conflictColor = Color(nsColor: .systemOrange)
     /// Marks a row the user added to the favourites.
     private static let favouriteSymbol = "star.fill"
-    private static let favouriteColor = Color.yellow
+    private static let favouriteColor = Color(nsColor: .systemYellow)
+
+    private static var highlightCornerRadius: CGFloat {
+        if #available(macOS 26, *) {
+            return 6
+        }
+        return 5
+    }
 
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
@@ -187,14 +197,19 @@ private struct RowView: View {
     let accessibilityLabel: String
     let action: () -> Void
     @State private var isHovered = false
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         clickTarget
             .opacity(row.isEnabled ? 1 : Self.disabledOpacity)
             .background {
-                RoundedRectangle(cornerRadius: Self.highlightCornerRadius)
-                    .inset(by: Self.highlightInset)
-                    .fill(highlight)
+                let shape = RoundedRectangle(cornerRadius: Self.highlightCornerRadius).inset(by: Self.highlightInset)
+                shape.fill(highlight)
+                    .overlay {
+                        if isSelected, contrast == .increased {
+                            shape.strokeBorder(Color.accentColor, lineWidth: Self.selectionStrokeWidth)
+                        }
+                    }
             }
             .onHover { isHovered = $0 }
             .accessibilityLabel(accessibilityLabel)
@@ -270,8 +285,8 @@ private struct RowView: View {
 
     private var highlight: Color {
         if isSelected {
-            return Color.accentColor.opacity(0.35)
+            return Color.accentColor.opacity(Self.selectionOpacity)
         }
-        return isHovered && row.isRunnable ? Color.primary.opacity(0.1) : .clear
+        return isHovered && row.isRunnable ? Color.primary.opacity(Self.hoverOpacity) : .clear
     }
 }

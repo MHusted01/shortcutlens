@@ -27,6 +27,18 @@ without holding Command, double-tap Command for the
 - Keys are labelled for your current keyboard layout and update when you
   switch layouts. Arrow keys are drawn the way the macOS menus draw them.
 
+## Appearance
+
+The overlay follows light and dark mode. On macOS 26 and later it is a Liquid
+Glass panel; on macOS 14 and 15 it uses a blurred system material. It fades in
+when it appears and fades out when you release Command. Clicking an entry
+hides it at once. The accessibility display settings are applied each time it
+shows:
+
+- Reduce Motion: the overlay fades without growing into place.
+- Reduce Transparency: the panel becomes opaque.
+- Increase Contrast: the panel and the selected entry get an outline.
+
 ## Favourites
 
 Right-click a menu entry to add it to your favourites, or to
