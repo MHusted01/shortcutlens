@@ -41,6 +41,12 @@ struct PaletteAnnouncementTests {
         #expect(PaletteAnnouncement.rowLabel(row, inPinnedSection: true) == "Save, Command S")
     }
 
+    @Test func rowLabelLeavesOutEmptyKeys() {
+        let row = OverlayRow(id: 0, title: "Save", keys: "", isCustom: true, element: 0)
+
+        #expect(PaletteAnnouncement.rowLabel(row, inPinnedSection: false) == "Save, custom shortcut")
+    }
+
     @Test func openingWhileLoadingSaysNothing() {
         #expect(PaletteAnnouncement.text(from: nil, to: State()) == nil)
     }

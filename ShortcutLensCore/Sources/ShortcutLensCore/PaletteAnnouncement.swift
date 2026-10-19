@@ -8,7 +8,8 @@ public enum PaletteAnnouncement {
         let favourite = row.isFavourite && !inPinnedSection ? ["favourite"] : []
         let custom = row.isCustom ? ["custom shortcut"] : []
         let conflict = row.conflict.map { [$0] } ?? []
-        return ([row.title, SpokenKeys.label(for: row.keys)] + favourite + custom + conflict).joined(separator: ", ")
+        let keys = SpokenKeys.label(for: row.keys)
+        return ([row.title] + (keys.isEmpty ? [] : [keys]) + favourite + custom + conflict).joined(separator: ", ")
     }
 
     /// The text for the palette changing from `before` (nil: just opened) to
