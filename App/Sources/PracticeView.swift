@@ -67,14 +67,16 @@ struct PracticeView: View {
 
     @ViewBuilder
     private func result(_ phase: PracticeSession.Phase, card: PracticeCard) -> some View {
+        let answer = KeyDisplay.text(for: card.keys)
         switch phase {
         case .correct:
-            Label("Right: \(card.keys)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+            Label("Right: \(answer)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case let .wrong(pressed):
-            Label(Self.wrongAnswer(pressed: pressed, answer: card.keys), systemImage: "xmark.circle.fill")
+            let pressedKeys = pressed.map { KeyDisplay.text(for: $0) }
+            Label(Self.wrongAnswer(pressed: pressedKeys, answer: answer), systemImage: "xmark.circle.fill")
                 .foregroundStyle(.red)
         case .revealed:
-            Text("The answer is \(card.keys).")
+            Text("The answer is \(answer).")
         case .asking, .finished:
             EmptyView()
         }

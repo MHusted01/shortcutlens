@@ -45,7 +45,7 @@ struct ShortcutEditorView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(request.title).font(.headline)
             Text(request.menuPath.joined(separator: " › ")).foregroundStyle(.secondary)
-            Text("Current: \(request.currentKeys)").foregroundStyle(.secondary).monospacedDigit()
+            Text("Current: \(KeyDisplay.text(for: request.currentKeys))").foregroundStyle(.secondary).monospacedDigit()
         }
     }
 
