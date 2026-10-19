@@ -10,8 +10,7 @@ public enum ShortcutFormatter {
     }
 
     /// The key part of the shortcut. A known glyph wins over the character.
-    /// Returns nil when
-    /// neither yields something displayable.
+    /// Returns nil when neither yields something displayable.
     public static func keySymbol(for shortcut: MenuShortcut) -> String? {
         if let glyph = shortcut.glyph, let symbol = MenuGlyph.symbol(for: glyph) {
             return symbol
