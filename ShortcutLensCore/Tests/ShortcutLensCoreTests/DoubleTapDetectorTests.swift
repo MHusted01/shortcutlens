@@ -149,6 +149,59 @@ struct DoubleTapDetectorTests {
         #expect(result.last == true)
     }
 
+    /// Feeds `events` to a detector for `trigger`.
+    private static func detections(_ events: [Event], trigger: PaletteTrigger) -> [Bool] {
+        var detector = Detector(trigger: trigger)
+        return events.map { event in
+            let (state, startedAt) = detector.updated(with: event)
+            detector = state
+            return startedAt != nil
+        }
+    }
+
+    private static func taps(_ modifier: HeldModifiers) -> [Event] {
+        [
+            .modifiersChanged(modifier, time: 0), release(0.1),
+            .modifiersChanged(modifier, time: 0.3), release(0.4),
+        ]
+    }
+
+    @Test(arguments: [(PaletteTrigger.option, HeldModifiers.option), (.control, .control)])
+    func otherTriggerDetectsItsModifier(trigger: PaletteTrigger, modifier: HeldModifiers) {
+        let result = Self.detections(Self.taps(modifier), trigger: trigger)
+
+        #expect(result == [false, false, false, true])
+    }
+
+    @Test(arguments: [PaletteTrigger.option, .control])
+    func otherTriggerIgnoresCommandTaps(trigger: PaletteTrigger) {
+        #expect(Self.detections(Self.taps(.command), trigger: trigger).last == false)
+    }
+
+    @Test func commandTriggerIgnoresOptionTaps() {
+        #expect(Self.detections(Self.taps(.option), trigger: .command).last == false)
+    }
+
+    /// Holding Command for the overlay while tapping Option is a chord, not a tap.
+    @Test func optionTappedWhileCommandHeldIsNoTap() {
+        let result = Self.detections([
+            Self.press(0),
+            .modifiersChanged([.command, .option], time: 0.05), Self.press(0.1),
+            .modifiersChanged([.command, .option], time: 0.15), Self.press(0.2), Self.release(0.25),
+        ], trigger: .option)
+
+        #expect(!result.contains(true))
+    }
+
+    @Test(arguments: [HeldModifiers.command, .option, .control, .shift])
+    func offNeverDetects(modifier: HeldModifiers) {
+        #expect(!Self.detections(Self.taps(modifier), trigger: .off).contains(true))
+    }
+
+    @Test func defaultDetectorUsesCommand() {
+        #expect(Detector.initial == Detector(trigger: .command))
+    }
+
     @Test func otherInputWhileIdleChangesNothing() {
         let (state, startedAt) = Detector.initial.updated(with: .otherInput)
 

@@ -91,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func apply(_ settings: AppSettings) {
         trigger.setDelay(settings.triggerDelay)
+        trigger.setPaletteTrigger(settings.paletteTrigger)
         overlay.apply(settings)
         exporter.apply(settings)
         practice.apply(settings)

@@ -151,6 +151,36 @@
         }
       }
     },
+    "Double-tap Command" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dobbelttryk på Kommando"
+          }
+        }
+      }
+    },
+    "Double-tap Control" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dobbelttryk på Kontrol"
+          }
+        }
+      }
+    },
+    "Double-tap Option" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dobbelttryk på Alternativ"
+          }
+        }
+      }
+    },
     "Edit Shortcut – %@" : {
       "localizations" : {
         "da" : {
@@ -341,12 +371,32 @@
         }
       }
     },
+    "Off" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fra"
+          }
+        }
+      }
+    },
     "Open Login Items" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Åbn Login-emner"
+          }
+        }
+      }
+    },
+    "Open palette" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn palet"
           }
         }
       }

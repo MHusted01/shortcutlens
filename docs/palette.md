@@ -2,7 +2,8 @@
 
 Double-tap Command (press and release it twice quickly) to open the
 [overlay](overlay.md) as a command palette. It stays open without holding
-Command:
+Command. To use Option or Control instead, or to turn the palette off, see
+**Open palette** in [settings](settings.md#general).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/palette-dark.png">
@@ -22,5 +23,5 @@ selected entry, reads keys as words ("Command Shift S") and lists section
 headings in the rotor.
 
 If macOS Dictation is set to "Press Command Key Twice" (System Settings >
-Keyboard > Dictation > Shortcut), both react to the double tap. Pick another
-Dictation shortcut; a setting for the palette trigger is planned.
+Keyboard > Dictation > Shortcut), both react to the double tap. Set **Open
+palette** to Option or Control, or pick another Dictation shortcut.
