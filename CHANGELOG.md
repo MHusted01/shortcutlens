@@ -6,6 +6,13 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The overlay uses Liquid Glass on macOS 26 and later and a light or dark
+  material on macOS 14-15 that follows the system appearance. It fades in and
+  out, and with Reduce Motion it only fades. Row highlights, section spacing
+  and marker colours follow the new visual spec. (#91)
+
 ## [1.1.0] - 2026-10-19
 
 ### Added

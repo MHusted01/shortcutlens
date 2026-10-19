@@ -243,10 +243,10 @@ final class OverlayController {
         Self.log.notice("palette shown")
     }
 
-    func hide() {
+    func hide(animated: Bool = false) {
         isShown = false
         palette = nil
-        panel.dismiss()
+        panel.dismiss(animated: animated)
     }
 
     private func updatePalette(_ change: (PaletteState<AXUIElement>) -> PaletteState<AXUIElement>) {
