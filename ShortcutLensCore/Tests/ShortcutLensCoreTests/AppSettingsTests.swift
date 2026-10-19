@@ -23,6 +23,8 @@ struct AppSettingsTests {
         #expect(settings.maxMenuDepth == MenuReader<FakeAXClient>.defaultMaxDepth)
         #expect(!settings.showsDisabledItems)
         #expect(settings.showsSystemShortcuts)
+        // Reading containers can show a macOS prompt, so it is opt-in.
+        #expect(!settings.readsSandboxedAppShortcuts)
     }
 
     @Test func clampsTriggerDelayToItsRange() {
@@ -54,7 +56,8 @@ struct AppSettingsTests {
     @Test func savesAndLoadsEverySetting() {
         let store = MemoryStore()
         let settings = AppSettings(
-            triggerDelay: 0.4, maxMenuDepth: 2, showsDisabledItems: true, showsSystemShortcuts: false
+            triggerDelay: 0.4, maxMenuDepth: 2, showsDisabledItems: true, showsSystemShortcuts: false,
+            readsSandboxedAppShortcuts: true
         )
 
         settings.save(to: store)
@@ -69,7 +72,8 @@ struct AppSettingsTests {
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let settings = AppSettings(
-            triggerDelay: 0.65, maxMenuDepth: 3, showsDisabledItems: true, showsSystemShortcuts: false
+            triggerDelay: 0.65, maxMenuDepth: 3, showsDisabledItems: true, showsSystemShortcuts: false,
+            readsSandboxedAppShortcuts: true
         )
 
         settings.save(to: defaults)
@@ -97,6 +101,7 @@ struct AppSettingsTests {
             AppSettings.Key.maxMenuDepth: "deep",
             AppSettings.Key.showsDisabledItems: "yes",
             AppSettings.Key.showsSystemShortcuts: "no",
+            AppSettings.Key.readsSandboxedAppShortcuts: "yes",
         ]
 
         #expect(AppSettings(store: store) == .defaults)
@@ -109,6 +114,7 @@ struct AppSettingsTests {
         #expect(settings.with(maxMenuDepth: 4).maxMenuDepth == 4)
         #expect(settings.with(showsDisabledItems: true).showsDisabledItems)
         #expect(!settings.with(showsSystemShortcuts: false).showsSystemShortcuts)
+        #expect(settings.with(readsSandboxedAppShortcuts: true).readsSandboxedAppShortcuts)
         #expect(settings.with(maxMenuDepth: 99).maxMenuDepth == AppSettings.maxMenuDepthRange.upperBound)
     }
 
@@ -119,6 +125,8 @@ struct AppSettingsTests {
         #expect(!settings.with(triggerDelay: 0.3).changesMenuReads(comparedTo: settings))
         #expect(settings.with(maxMenuDepth: 2).changesMenuReads(comparedTo: settings))
         #expect(settings.with(showsDisabledItems: true).changesMenuReads(comparedTo: settings))
+        // App Shortcut markers are part of the cached read.
+        #expect(settings.with(readsSandboxedAppShortcuts: true).changesMenuReads(comparedTo: settings))
         // System shortcuts are added when the overlay shows, not read from menus.
         #expect(!settings.with(showsSystemShortcuts: false).changesMenuReads(comparedTo: settings))
     }

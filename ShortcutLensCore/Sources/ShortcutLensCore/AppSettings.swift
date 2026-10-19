@@ -20,6 +20,7 @@ public struct AppSettings: Equatable, Sendable {
         public static let maxMenuDepth = "maxMenuDepth"
         public static let showsDisabledItems = "showsDisabledItems"
         public static let showsSystemShortcuts = "showsSystemShortcuts"
+        public static let readsSandboxedAppShortcuts = "readsSandboxedAppShortcuts"
     }
 
     public static let triggerDelayRange: ClosedRange<Double> = 0.1 ... 1.5
@@ -38,18 +39,24 @@ public struct AppSettings: Equatable, Sendable {
     public let showsDisabledItems: Bool
     /// Whether the overlay ends with a "System" section of macOS shortcuts.
     public let showsSystemShortcuts: Bool
+    /// Whether App Shortcuts set for one sandboxed app are read from its
+    /// container. Off by default: macOS asks before ShortcutLens may read
+    /// other apps' data (#54).
+    public let readsSandboxedAppShortcuts: Bool
 
     /// Out-of-range values are clamped; a non-finite delay becomes the default.
     public init(
         triggerDelay: Double = TriggerStateMachine.defaultDelay,
         maxMenuDepth: Int = Self.maxMenuDepthRange.upperBound,
         showsDisabledItems: Bool = false,
-        showsSystemShortcuts: Bool = true
+        showsSystemShortcuts: Bool = true,
+        readsSandboxedAppShortcuts: Bool = false
     ) {
         self.triggerDelay = Self.clampedDelay(triggerDelay)
         self.maxMenuDepth = maxMenuDepth.clamped(to: Self.maxMenuDepthRange)
         self.showsDisabledItems = showsDisabledItems
         self.showsSystemShortcuts = showsSystemShortcuts
+        self.readsSandboxedAppShortcuts = readsSandboxedAppShortcuts
     }
 
     /// The settings in `store`; missing values or values of the wrong type
@@ -61,7 +68,9 @@ public struct AppSettings: Equatable, Sendable {
             showsDisabledItems: store.object(forKey: Key.showsDisabledItems) as? Bool
                 ?? Self.defaults.showsDisabledItems,
             showsSystemShortcuts: store.object(forKey: Key.showsSystemShortcuts) as? Bool
-                ?? Self.defaults.showsSystemShortcuts
+                ?? Self.defaults.showsSystemShortcuts,
+            readsSandboxedAppShortcuts: store.object(forKey: Key.readsSandboxedAppShortcuts) as? Bool
+                ?? Self.defaults.readsSandboxedAppShortcuts
         )
     }
 
@@ -70,6 +79,7 @@ public struct AppSettings: Equatable, Sendable {
         store.set(maxMenuDepth, forKey: Key.maxMenuDepth)
         store.set(showsDisabledItems, forKey: Key.showsDisabledItems)
         store.set(showsSystemShortcuts, forKey: Key.showsSystemShortcuts)
+        store.set(readsSandboxedAppShortcuts, forKey: Key.readsSandboxedAppShortcuts)
     }
 
     public func with(triggerDelay: Double) -> Self {
@@ -88,25 +98,33 @@ public struct AppSettings: Equatable, Sendable {
         copy(showsSystemShortcuts: showsSystemShortcuts)
     }
 
+    public func with(readsSandboxedAppShortcuts: Bool) -> Self {
+        copy(readsSandboxedAppShortcuts: readsSandboxedAppShortcuts)
+    }
+
     private func copy(
         triggerDelay: Double? = nil,
         maxMenuDepth: Int? = nil,
         showsDisabledItems: Bool? = nil,
-        showsSystemShortcuts: Bool? = nil
+        showsSystemShortcuts: Bool? = nil,
+        readsSandboxedAppShortcuts: Bool? = nil
     ) -> Self {
         Self(
             triggerDelay: triggerDelay ?? self.triggerDelay,
             maxMenuDepth: maxMenuDepth ?? self.maxMenuDepth,
             showsDisabledItems: showsDisabledItems ?? self.showsDisabledItems,
-            showsSystemShortcuts: showsSystemShortcuts ?? self.showsSystemShortcuts
+            showsSystemShortcuts: showsSystemShortcuts ?? self.showsSystemShortcuts,
+            readsSandboxedAppShortcuts: readsSandboxedAppShortcuts ?? self.readsSandboxedAppShortcuts
         )
     }
 
     /// True when a menu read with these settings can differ from one with
     /// `other`, so cached menu content must be dropped. System shortcuts are
-    /// not part of a read; they are added when the overlay shows.
+    /// not part of a read; they are added when the overlay shows. App
+    /// Shortcut markers are part of a read.
     public func changesMenuReads(comparedTo other: Self) -> Bool {
         maxMenuDepth != other.maxMenuDepth || showsDisabledItems != other.showsDisabledItems
+            || readsSandboxedAppShortcuts != other.readsSandboxedAppShortcuts
     }
 
     /// True when a read already running with `other` must not be reused:

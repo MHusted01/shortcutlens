@@ -42,6 +42,18 @@ struct SettingsView: View {
                     isOn: binding(\.showsSystemShortcuts) { $0.with(showsSystemShortcuts: $1) }
                 )
             }
+            Section("App Shortcuts") {
+                Toggle(
+                    "Mark App Shortcuts in sandboxed apps",
+                    isOn: binding(\.readsSandboxedAppShortcuts) { $0.with(readsSandboxedAppShortcuts: $1) }
+                )
+                Text(
+                    "Sandboxed apps such as TextEdit and Safari keep their App Shortcuts in their own data. "
+                        + "macOS asks before ShortcutLens may read it. The data is only read, never changed."
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            }
             packsSection
             Section("Startup") {
                 Toggle("Launch at login", isOn: launchAtLogin)

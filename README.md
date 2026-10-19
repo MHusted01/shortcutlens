@@ -16,7 +16,8 @@ grouped by menu. Click an entry to run that command.
 - A System section lists the macOS shortcuts you have turned on in System
   Settings > Keyboard > Keyboard Shortcuts, such as Spotlight and screenshots.
 - App Shortcuts you defined yourself (System Settings > Keyboard > Keyboard
-  Shortcuts > App Shortcuts) are marked with a person icon.
+  Shortcuts > App Shortcuts) are marked with a person icon. For sandboxed
+  apps this needs a setting (below).
 - Conflicts are marked: when two entries use the same keys, both rows say
   which other entry also uses them ("Also used by System > ..."), within the
   app or against a system shortcut.
@@ -64,6 +65,12 @@ apply at once and are stored locally in the app's preferences.
   app's menu right now. They are dimmed and cannot be run.
 - **Show system shortcuts:** end the overlay with the System section (on by
   default). System rows are display-only.
+- **Mark App Shortcuts in sandboxed apps:** off by default. Sandboxed apps
+  such as TextEdit, Safari and Preview keep App Shortcuts set for that one app
+  in their own data, so without this only "All Applications" shortcuts are
+  marked in them. When on, ShortcutLens reads (never changes) that app's
+  preferences file, and macOS asks once whether ShortcutLens may access data
+  from other apps. If you decline, nothing else changes.
 - **Shortcut packs:** how many packs are in use, and any pack file that could
   not be loaded, with the reason. Show Packs Folder opens the folder for your
   own packs. See [docs/packs.md](docs/packs.md) for the format.

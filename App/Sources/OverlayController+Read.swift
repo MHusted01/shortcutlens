@@ -33,7 +33,9 @@ extension OverlayController {
         )
         let groups = reader.read(processID: pid)
         let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts(layout: layout) : []
-        let custom = UserKeyEquivalentSource.equivalents(bundleID: bundleID)
+        let custom = UserKeyEquivalentSource.equivalents(
+            bundleID: bundleID, readsContainer: settings.readsSandboxedAppShortcuts && isSandboxed(pid: pid)
+        )
         let packSections = PackSource.library().sections(for: bundleID)
         let content = OverlayContent(appName: appName, groups: groups, custom: custom)
             .appending(sections: packSections.map { (title: $0.title, shortcuts: $0.shortcuts) })
@@ -45,5 +47,11 @@ extension OverlayController {
         return UncheckedSendable(value: ReadResult(
             content: content, systemShortcuts: system, budgetSpent: expired, settings: settings
         ))
+    }
+
+    /// Reads the code signature of the app on disk, so only call it when the
+    /// answer is needed.
+    private nonisolated static func isSandboxed(pid: pid_t) -> Bool {
+        NSRunningApplication(processIdentifier: pid)?.bundleURL.map(AppSandbox.isSandboxed(bundleURL:)) ?? false
     }
 }
