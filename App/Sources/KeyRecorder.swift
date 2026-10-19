@@ -57,17 +57,31 @@ struct KeyRecorder: NSViewRepresentable {
             window?.makeFirstResponder(self)
         }
 
+        /// Return, keypad Enter and Escape (`kVK_*` codes).
+        private static let dialogKeyCodes: Set<UInt16> = [36, 76, 53]
+
         override func keyDown(with event: NSEvent) {
+            guard !Self.isDialogKey(event) else {
+                return super.keyDown(with: event)
+            }
             onKeys(RecordedKeys(event))
         }
 
         /// Command shortcuts arrive here before `keyDown` and the menus.
         override func performKeyEquivalent(with event: NSEvent) -> Bool {
-            guard window?.firstResponder === self, event.type == .keyDown else {
+            guard window?.firstResponder === self, event.type == .keyDown, !Self.isDialogKey(event) else {
                 return super.performKeyEquivalent(with: event)
             }
             onKeys(RecordedKeys(event))
             return true
+        }
+
+        /// Return and Escape without modifiers go to the Save and Cancel
+        /// buttons; they are named keys the recorder rejects anyway.
+        private static func isDialogKey(_ event: NSEvent) -> Bool {
+            let modifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
+            return dialogKeyCodes.contains(event.keyCode)
+                && event.modifierFlags.isDisjoint(with: modifiers)
         }
     }
 }

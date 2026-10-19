@@ -50,6 +50,8 @@ final class ShortcutEditor {
     /// Whether the app's own preferences have an entry to remove.
     private(set) var hasCustomEntry = false
     private(set) var relaunch = Relaunch.idle
+    /// Counts relaunches, so only the latest one reports its outcome.
+    @ObservationIgnored private var relaunchGeneration = 0
     @ObservationIgnored private var window: NSWindow?
 
     func show(_ request: ShortcutEditRequest) {
@@ -59,6 +61,7 @@ final class ShortcutEditor {
         conflict = nil
         status = .editing
         relaunch = .idle
+        relaunchGeneration += 1
         refreshCustomEntry()
         let window = window ?? makeWindow()
         self.window = window
@@ -133,12 +136,14 @@ final class ShortcutEditor {
             return
         }
         relaunch = .running
+        relaunchGeneration += 1
+        let generation = relaunchGeneration
         Task {
             let outcome = await AppRelauncher.relaunch(
                 processID: request.processID, bundleID: bundleID, bundleURL: bundleURL
             )
             // The window may show another item by now.
-            guard self.request?.processID == request.processID, relaunch == .running else {
+            guard generation == relaunchGeneration, relaunch == .running else {
                 return
             }
             finishRelaunch(outcome, appName: request.appName)
