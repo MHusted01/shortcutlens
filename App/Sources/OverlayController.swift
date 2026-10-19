@@ -166,8 +166,9 @@ final class OverlayController {
     private func startRead(key: AppKey, target: Target) -> ReadTask {
         let (pid, bundleID, appName) = (key.pid, target.bundleID, target.name)
         let settings = readSettings
+        let layout = settings.showsSystemShortcuts ? KeyboardLayout.current() : .none
         let task = Task.detached(priority: .userInitiated) {
-            Self.readContent(pid: pid, bundleID: bundleID, appName: appName, settings: settings)
+            Self.readContent(pid: pid, bundleID: bundleID, appName: appName, settings: settings, layout: layout)
         }
         inFlight = (key, task)
         return task

@@ -13,13 +13,13 @@ enum SystemHotKeySource {
     private static let key = "AppleSymbolicHotKeys"
 
     /// The enabled system shortcuts. A missing or unreadable store yields the
-    /// built-in defaults.
-    static func shortcuts() -> [MenuShortcut] {
+    /// built-in defaults. Character keys are labelled for `layout`.
+    static func shortcuts(layout: KeyLabels) -> [MenuShortcut] {
         let domain = domain as CFString
         // Drops this process's cached copy, so changes made in System
         // Settings since the last read are picked up.
         CFPreferencesAppSynchronize(domain)
         let value = CFPreferencesCopyAppValue(key as CFString, domain) as? [String: Any] ?? [:]
-        return SystemHotKeyCatalog.shortcuts(from: SymbolicHotKeyParser.parse(value))
+        return SystemHotKeyCatalog.shortcuts(from: SymbolicHotKeyParser.parse(value), layout: layout)
     }
 }

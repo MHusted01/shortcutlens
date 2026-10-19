@@ -84,10 +84,12 @@ final class PracticeController {
     private func read(_ target: FrontmostApp, generation: Int) {
         // System shortcuts are always read: their keys are left out.
         let settings = settings.with(showsSystemShortcuts: true)
+        let layout = KeyboardLayout.current()
         Task { [weak self] in
             let read = await Task.detached(priority: .userInitiated) {
                 OverlayController.readContent(
-                    pid: target.pid, bundleID: target.bundleID, appName: target.name, settings: settings
+                    pid: target.pid, bundleID: target.bundleID, appName: target.name, settings: settings,
+                    layout: layout
                 )
             }.value.value
             guard let self, generation == self.generation else {
