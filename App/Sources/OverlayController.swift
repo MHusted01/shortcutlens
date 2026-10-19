@@ -131,6 +131,7 @@ final class OverlayController {
     /// Drops system shortcuts labelled for the previous layout and stops
     /// reusing a read started before the switch. Menu content stays cached.
     func keyboardLayoutChanged() {
+        Self.log.notice("keyboard layout changed, dropping system shortcut labels")
         layoutEpoch += 1
         inFlight = nil
         systemShortcuts = []
