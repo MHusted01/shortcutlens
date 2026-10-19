@@ -13,7 +13,7 @@ env:
 jobs:
   release:
     name: release
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -28,6 +28,10 @@ jobs:
       - run: brew install xcodegen
       - name: Build, ad-hoc sign and package
         run: make release VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="$GITHUB_RUN_NUMBER"
+      - name: Translations are compiled into the app
+        run: |
+          test -d build/Build/Products/Release/ShortcutLens.app/Contents/Resources/da.lproj
+          test -d build/Build/Products/Release/ShortcutLens.app/Contents/Resources/ShortcutLensCore_ShortcutLensCore.bundle/Contents/Resources/da.lproj
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

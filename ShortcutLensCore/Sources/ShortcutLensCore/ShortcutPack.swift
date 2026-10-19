@@ -1,3 +1,5 @@
+import Foundation
+
 /// Shortcuts for one app that are not in its menus, read from a local JSON
 /// file. See `docs/packs.md` for the file format.
 public struct ShortcutPack: Hashable, Sendable {
@@ -33,21 +35,49 @@ public enum PackError: Error, Hashable, Sendable {
     case tooLarge
     case unsupportedVersion(Int)
     case missingField(String)
-    case invalidValue(field: String, reason: String)
+    case invalidValue(field: String, reason: Reason)
+
+    /// What is wrong with a value. Kept apart from the text so errors compare
+    /// equal in any language.
+    public enum Reason: Hashable, Sendable {
+        case empty
+        case wrongType
+        case unknownKey(String)
+        case unknownModifier(String)
+
+        var text: String {
+            switch self {
+            case .empty:
+                String(localized: "must not be empty", bundle: .module)
+            case .wrongType:
+                String(localized: "wrong type", bundle: .module)
+            case let .unknownKey(key):
+                String(localized: "unknown key \"\(key)\"", bundle: .module)
+            case let .unknownModifier(name):
+                String(localized: "unknown modifier \"\(name)\"", bundle: .module)
+            }
+        }
+    }
+
+    /// The schema version this build reads.
+    private static let readable = ShortcutPackParser.schemaVersion
 
     /// A sentence for the Settings window.
     public var message: String {
         switch self {
         case .invalidJSON:
-            "Not valid JSON."
+            String(localized: "Not valid JSON.", bundle: .module)
         case .tooLarge:
-            "File is larger than \(ShortcutPackParser.maxFileSize / 1024) KB."
+            String(localized: "File is larger than \(ShortcutPackParser.maxFileSize / 1024) KB.", bundle: .module)
         case let .unsupportedVersion(version):
-            "Unsupported schemaVersion \(version); this version reads \(ShortcutPackParser.schemaVersion)."
+            String(
+                localized: "Unsupported schemaVersion \(version); this version reads \(Self.readable).",
+                bundle: .module
+            )
         case let .missingField(field):
-            "Missing field \"\(field)\"."
+            String(localized: "Missing field \"\(field)\".", bundle: .module)
         case let .invalidValue(field, reason):
-            "Invalid \"\(field)\": \(reason)."
+            String(localized: "Invalid \"\(field)\": \(reason.text).", bundle: .module)
         }
     }
 }

@@ -71,16 +71,20 @@ struct PracticeView: View {
         case .correct:
             Label("Right: \(card.keys)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case let .wrong(pressed):
-            Label(
-                "Not quite\(pressed.map { ": you pressed \($0)" } ?? ""). The answer is \(card.keys).",
-                systemImage: "xmark.circle.fill"
-            )
-            .foregroundStyle(.red)
+            Label(Self.wrongAnswer(pressed: pressed, answer: card.keys), systemImage: "xmark.circle.fill")
+                .foregroundStyle(.red)
         case .revealed:
             Text("The answer is \(card.keys).")
         case .asking, .finished:
             EmptyView()
         }
+    }
+
+    private static func wrongAnswer(pressed: String?, answer: String) -> String {
+        guard let pressed else {
+            return String(localized: "Not quite. The answer is \(answer).")
+        }
+        return String(localized: "Not quite: you pressed \(pressed). The answer is \(answer).")
     }
 
     private var actions: some View {

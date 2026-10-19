@@ -14,9 +14,15 @@ build: generate
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -configuration Debug \
 		-derivedDataPath $(DERIVED) build
 
+# xcodebuild, not `swift test`: SwiftPM before Xcode 27 copies Core's
+# .xcstrings instead of compiling it. Tests run in English on any machine.
 test:
-	cd $(CORE) && swift test --enable-code-coverage
-	python3 -I scripts/check-coverage.py "$$(cd $(CORE) && swift test --show-codecov-path)" $(COVERAGE_MIN)
+	rm -rf $(DERIVED)/CoreTests.xcresult
+	cd $(CORE) && xcodebuild test -scheme $(CORE) -destination 'platform=macOS' \
+		-derivedDataPath ../$(DERIVED)/core -enableCodeCoverage YES -testLanguage en -testRegion US \
+		-resultBundlePath ../$(DERIVED)/CoreTests.xcresult -quiet
+	xcrun xccov view --report --json $(DERIVED)/CoreTests.xcresult > $(DERIVED)/coverage.json
+	python3 -I scripts/check-coverage.py $(DERIVED)/coverage.json $(COVERAGE_MIN)
 
 # Local only: needs the Accessibility permission for ShortcutLens.app.
 integration: generate

@@ -27,9 +27,10 @@ struct SearchField: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSTextField {
         let field = FocusingTextField()
-        field.placeholderString = "Search shortcuts"
+        let label = String(localized: "Search shortcuts")
+        field.placeholderString = label
         // VoiceOver reads the placeholder only while the field is empty.
-        field.setAccessibilityLabel("Search shortcuts")
+        field.setAccessibilityLabel(label)
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none

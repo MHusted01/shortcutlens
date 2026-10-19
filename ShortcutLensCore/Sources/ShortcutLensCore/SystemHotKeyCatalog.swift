@@ -1,3 +1,5 @@
+import Foundation
+
 /// A system shortcut ShortcutLens knows by ID, with the built-in default the
 /// system uses while `com.apple.symbolichotkeys` has no entry for it.
 public struct SystemHotKeyDefinition: Sendable {
@@ -14,7 +16,7 @@ public struct SystemHotKeyDefinition: Sendable {
 /// the store has no names and many IDs are obsolete or hidden.
 public enum SystemHotKeyCatalog {
     /// The section and menu path name for system shortcuts.
-    public static let sectionTitle = "System"
+    public static let sectionTitle = String(localized: "System", bundle: .module)
 
     /// Enabled shortcuts that have a displayable key, in catalog order. A
     /// store entry's flag and keys win over the defaults; a missing flag or
@@ -41,16 +43,19 @@ public enum SystemHotKeyCatalog {
     private static let command = EventFlag.command
 
     private static func entry(
-        _ id: Int, _ title: String, _ character: Character?, _ keyCode: Int, _ flags: Int, enabled: Bool = true
+        _ id: Int, _ title: String.LocalizationValue, _ character: Character?, _ keyCode: Int, _ flags: Int,
+        enabled: Bool = true
     ) -> SystemHotKeyDefinition {
         let binding = SymbolicHotKeyBinding(
             character: character, keyCode: keyCode, modifiers: ModifierMask(eventFlags: flags)
         )
-        return SystemHotKeyDefinition(id: id, title: title, isEnabledByDefault: enabled, defaultBinding: binding)
+        let name = String(localized: title, bundle: .module)
+        return SystemHotKeyDefinition(id: id, title: name, isEnabledByDefault: enabled, defaultBinding: binding)
     }
 
-    private static func unassigned(_ id: Int, _ title: String) -> SystemHotKeyDefinition {
-        SystemHotKeyDefinition(id: id, title: title, isEnabledByDefault: false, defaultBinding: nil)
+    private static func unassigned(_ id: Int, _ title: String.LocalizationValue) -> SystemHotKeyDefinition {
+        let name = String(localized: title, bundle: .module)
+        return SystemHotKeyDefinition(id: id, title: name, isEnabledByDefault: false, defaultBinding: nil)
     }
 
     /// Grouped like System Settings > Keyboard Shortcuts.

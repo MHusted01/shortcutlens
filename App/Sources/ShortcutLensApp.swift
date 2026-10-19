@@ -14,7 +14,7 @@ struct ShortcutLensApp: App {
                 }
                 Divider()
             }
-            Text("ShortcutLens \(version.displayString)")
+            Text(verbatim: "ShortcutLens \(version.displayString)")
             Button("Settings…") {
                 appDelegate.settings.showWindow()
             }

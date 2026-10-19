@@ -1,0 +1,746 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ did not quit. Quit it yourself and open it again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ blev ikke afsluttet. Afslut den selv, og åbn den igen."
+          }
+        }
+      }
+    },
+    "%@ has no bundle identifier, so progress is not saved." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ har intet bundle-id, så fremskridt gemmes ikke."
+          }
+        }
+      }
+    },
+    "%@ has no bundle identifier." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ har intet bundle-id."
+          }
+        }
+      }
+    },
+    "%@ has no menu shortcuts to practise." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ har ingen menugenveje at øve."
+          }
+        }
+      }
+    },
+    "%@ is sandboxed. macOS does not let ShortcutLens edit its App Shortcuts." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kører i en sandkasse. macOS lader ikke ShortcutLens redigere dens appgenveje."
+          }
+        }
+      }
+    },
+    "%@ quit but could not be opened again." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ blev afsluttet, men kunne ikke åbnes igen."
+          }
+        }
+      }
+    },
+    "%lld of %lld right" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld af %lld rigtige"
+          }
+        }
+      }
+    },
+    "Add to Favourites" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Føj til Favoritter"
+          }
+        }
+      }
+    },
+    "Allow ShortcutLens in Login Items." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad ShortcutLens under Login-emner."
+          }
+        }
+      }
+    },
+    "Answer" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svar"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuller"
+          }
+        }
+      }
+    },
+    "Could not be read." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke læses."
+          }
+        }
+      }
+    },
+    "Current: %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuværende: %@"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Færdig"
+          }
+        }
+      }
+    },
+    "Edit Shortcut – %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rediger genvej – %@"
+          }
+        }
+      }
+    },
+    "Edit Shortcut…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rediger genvej…"
+          }
+        }
+      }
+    },
+    "Export Shortcuts as Markdown…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter genveje som Markdown…"
+          }
+        }
+      }
+    },
+    "Hold Command for" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold Kommando nede i"
+          }
+        }
+      }
+    },
+    "In Favourites" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I Favoritter"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senere"
+          }
+        }
+      }
+    },
+    "Launch at login" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn ved login"
+          }
+        }
+      }
+    },
+    "Menu depth: %lld" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menudybde: %lld"
+          }
+        }
+      }
+    },
+    "Menus" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menuer"
+          }
+        }
+      }
+    },
+    "New shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny genvej"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Næste"
+          }
+        }
+      }
+    },
+    "No app to export" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen app at eksportere"
+          }
+        }
+      }
+    },
+    "No app to practise" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen app at øve"
+          }
+        }
+      }
+    },
+    "No keyboard shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen tastaturgenveje"
+          }
+        }
+      }
+    },
+    "No matching shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen matchende genveje"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen"
+          }
+        }
+      }
+    },
+    "Not a readable file." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke en læsbar fil."
+          }
+        }
+      }
+    },
+    "Not quite. The answer is %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke helt. Svaret er %@."
+          }
+        }
+      }
+    },
+    "Not quite: you pressed %@. The answer is %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke helt: Du trykkede %@. Svaret er %@."
+          }
+        }
+      }
+    },
+    "Open Login Items" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn Login-emner"
+          }
+        }
+      }
+    },
+    "Packs in use" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakker i brug"
+          }
+        }
+      }
+    },
+    "Practice Shortcuts…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Øv genveje…"
+          }
+        }
+      }
+    },
+    "Practice – %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Øvelse – %@"
+          }
+        }
+      }
+    },
+    "Practise Again" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Øv igen"
+          }
+        }
+      }
+    },
+    "Press the new shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryk på den nye genvej"
+          }
+        }
+      }
+    },
+    "Press the shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryk på genvejen"
+          }
+        }
+      }
+    },
+    "Print Shortcuts…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udskriv genveje…"
+          }
+        }
+      }
+    },
+    "Question %lld of %lld" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spørgsmål %lld af %lld"
+          }
+        }
+      }
+    },
+    "Quit ShortcutLens" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afslut ShortcutLens"
+          }
+        }
+      }
+    },
+    "Reading the menus of %@…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Læser menuerne i %@…"
+          }
+        }
+      }
+    },
+    "Relaunch %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genstart %@"
+          }
+        }
+      }
+    },
+    "Reload" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genindlæs"
+          }
+        }
+      }
+    },
+    "Remove Custom Shortcut" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fjern tilpasset genvej"
+          }
+        }
+      }
+    },
+    "Remove from Favourites" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fjern fra Favoritter"
+          }
+        }
+      }
+    },
+    "Removed. Relaunch %@ to use the default shortcut." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fjernet. Genstart %@ for at bruge standardgenvejen."
+          }
+        }
+      }
+    },
+    "Reset Progress" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nulstil fremskridt"
+          }
+        }
+      }
+    },
+    "Right: %@" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rigtigt: %@"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem"
+          }
+        }
+      }
+    },
+    "Save Anyway" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem alligevel"
+          }
+        }
+      }
+    },
+    "Saved. Relaunch %@ to use %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemt. Genstart %@ for at bruge %@."
+          }
+        }
+      }
+    },
+    "Saved. Relaunch %@ to use it." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemt. Genstart %@ for at bruge den."
+          }
+        }
+      }
+    },
+    "Search shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Søg i genveje"
+          }
+        }
+      }
+    },
+    "Set in App Shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indstillet i Appgenveje"
+          }
+        }
+      }
+    },
+    "Settings…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indstillinger…"
+          }
+        }
+      }
+    },
+    "Shortcut packs" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genvejspakker"
+          }
+        }
+      }
+    },
+    "ShortcutLens" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ShortcutLens"
+          }
+        }
+      }
+    },
+    "ShortcutLens Settings" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ShortcutLens-indstillinger"
+          }
+        }
+      }
+    },
+    "Shortcuts macOS uses can't be recorded. Turn them off in System Settings > Keyboard > Keyboard Shortcuts first." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genveje, som macOS bruger, kan ikke optages. Slå dem først fra i Systemindstillinger > Tastatur > Tastaturgenveje."
+          }
+        }
+      }
+    },
+    "Show Answer" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis svar"
+          }
+        }
+      }
+    },
+    "Show Packs Folder" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis pakkemappen"
+          }
+        }
+      }
+    },
+    "Show disabled items" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis deaktiverede punkter"
+          }
+        }
+      }
+    },
+    "Show system shortcuts" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vis systemgenveje"
+          }
+        }
+      }
+    },
+    "Startup" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        }
+      }
+    },
+    "Switch to the app whose shortcuts you want to learn, then choose this again from the menu bar." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skift til den app, hvis genveje du vil lære, og vælg dette igen i menulinjen."
+          }
+        }
+      }
+    },
+    "Switch to the app whose shortcuts you want, then choose this again from the menu bar." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skift til den app, hvis genveje du vil have, og vælg dette igen i menulinjen."
+          }
+        }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        }
+      }
+    },
+    "The answer is %@." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svaret er %@."
+          }
+        }
+      }
+    },
+    "The shortcut could not be saved." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genvejen kunne ikke gemmes."
+          }
+        }
+      }
+    },
+    "Trigger" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udløser"
+          }
+        }
+      }
+    },
+    "s" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "s"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

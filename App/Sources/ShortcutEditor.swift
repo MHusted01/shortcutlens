@@ -65,7 +65,7 @@ final class ShortcutEditor {
         refreshCustomEntry()
         let window = window ?? makeWindow()
         self.window = window
-        window.title = "Edit Shortcut – \(request.appName)"
+        window.title = String(localized: "Edit Shortcut – \(request.appName)")
         NSApp.activate()
         window.center()
         window.makeKeyAndOrderFront(nil)
@@ -77,9 +77,11 @@ final class ShortcutEditor {
             return nil
         }
         if request.isSandboxed {
-            return "\(request.appName) is sandboxed. macOS does not let ShortcutLens edit its App Shortcuts."
+            return String(
+                localized: "\(request.appName) is sandboxed. macOS does not let ShortcutLens edit its App Shortcuts."
+            )
         }
-        return request.bundleID == nil ? "\(request.appName) has no bundle identifier." : nil
+        return request.bundleID == nil ? String(localized: "\(request.appName) has no bundle identifier.") : nil
     }
 
     /// The recorded keys as menus show them, e.g. `⌥⌘S`.
@@ -162,10 +164,10 @@ final class ShortcutEditor {
             close()
         case .didNotQuit:
             Self.log.error("app did not quit")
-            relaunch = .failed("\(appName) did not quit. Quit it yourself and open it again.")
+            relaunch = .failed(String(localized: "\(appName) did not quit. Quit it yourself and open it again."))
         case .didNotOpen:
             Self.log.error("app did not open")
-            relaunch = .failed("\(appName) quit but could not be opened again.")
+            relaunch = .failed(String(localized: "\(appName) quit but could not be opened again."))
         }
     }
 

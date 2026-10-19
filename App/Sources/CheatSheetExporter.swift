@@ -80,8 +80,10 @@ final class CheatSheetExporter {
 
     private func showNoAppAlert() {
         let alert = NSAlert()
-        alert.messageText = "No app to export"
-        alert.informativeText = "Switch to the app whose shortcuts you want, then choose this again from the menu bar."
+        alert.messageText = String(localized: "No app to export")
+        alert.informativeText = String(
+            localized: "Switch to the app whose shortcuts you want, then choose this again from the menu bar."
+        )
         NSApp.activate()
         alert.runModal()
     }
