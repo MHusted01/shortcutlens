@@ -9,6 +9,8 @@ struct SearchBox: View {
     private static let fillOpacity = 0.06
     private static let horizontalPadding: CGFloat = 8
     private static let verticalPadding: CGFloat = 5
+    /// Between the magnifying glass and the field.
+    private static let symbolSpacing: CGFloat = 6
     private static let focusStrokeWidth: CGFloat = 1
     /// Under Increase Contrast the focus stroke is thicker.
     private static let contrastFocusStrokeWidth: CGFloat = 2
@@ -27,7 +29,7 @@ struct SearchBox: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: Self.cornerRadius)
-        HStack(spacing: 6) {
+        HStack(spacing: Self.symbolSpacing) {
             Image(systemName: Self.symbol)
                 .foregroundStyle(.secondary)
                 // The field has its own label.
