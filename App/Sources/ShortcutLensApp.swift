@@ -56,6 +56,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let trigger = TriggerController()
     private let overlay = OverlayController()
     private let editor = ShortcutEditor()
+    /// Lives as long as the app, so it is never removed.
+    private var layoutObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_: Notification) {
         apply(settings.settings)
@@ -66,6 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         trigger.onShowPalette = { [overlay] in overlay.showPalette() }
         overlay.onClosePalette = { [trigger] in trigger.closePalette() }
         overlay.onEditShortcut = { [editor] in editor.show($0) }
+        layoutObserver = KeyboardLayout.observeChanges { [overlay] in overlay.keyboardLayoutChanged() }
         permission.onChange = { [trigger] in trigger.setEnabled($0.isGranted) }
         permission.start()
     }

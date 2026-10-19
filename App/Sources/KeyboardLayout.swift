@@ -1,4 +1,5 @@
 import Carbon
+import Foundation
 import os
 import ShortcutLensCore
 
@@ -28,6 +29,17 @@ enum KeyboardLayout {
                 return .none
             }
             return KeyLabels(keyCodes: keyCodes) { translate(UInt16($0), layout: layout, keyboardType: kind) }
+        }
+    }
+
+    /// Calls `handler` on the main actor whenever the user selects another
+    /// input source. Keep the returned token for as long as it should run.
+    static func observeChanges(_ handler: @escaping @MainActor @Sendable () -> Void) -> NSObjectProtocol {
+        DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
+            object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated(handler)
         }
     }
 
