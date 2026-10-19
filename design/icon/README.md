@@ -9,7 +9,7 @@ in the lens. Chosen in #85 from three concepts. No CheatSheet assets are used.
 | --- | --- |
 | `App/Resources/AppIcon.icon/` | The icon the app ships. Icon Composer format: `icon.json` plus one SVG per layer in `Assets/`. |
 | `design/icon/ShortcutLens.svg` | Flat master on the classic 1024 grid (824 pt rounded square). Use it for the README, the social preview and anything outside the app. |
-| `App/Resources/MenuBarIcon.xcassets/` | The menu bar icon: one 18 x 18 pt SVG (`MenuBarIcon.svg`), kept as vector and marked as a template image so macOS tints it for light, dark and tinted menu bars. |
+| `App/Resources/MenuBarIcon.xcassets/` | The menu bar icon: two 18 x 18 pt SVGs (`MenuBarIcon.svg` for 2x, `MenuBarIcon-1x.svg` for 1x), marked as a template image so macOS tints it for light, dark and tinted menu bars. |
 | `design/icon/concepts/` | The three concepts from #85 (`a-keycap`, `b-lens`, `c-overlay`) and `sheet.png`, the comparison sheet. Kept for reference only. |
 
 ## Layers
@@ -37,9 +37,12 @@ are committed.
 `MenuBarIcon.svg` is the lens, handle and Command symbol from the master in
 one colour (black on transparent; the colour is ignored because it is a
 template). The strokes are thicker than a straight scale-down so the Command
-symbol stays readable at 2x. The lens alone would look like Spotlight, so keep
-the symbol. The app swaps it for the `exclamationmark.triangle` symbol while
-the Accessibility permission is missing.
+symbol stays readable at 2x. At 1x even that blurs into a blob, so
+`MenuBarIcon-1x.svg` draws a 7 x 7 px Command symbol on the pixel grid
+(`shape-rendering="crispEdges"` rects). Change both files together. The lens
+alone would look like Spotlight, so keep the symbol. The app swaps it for the
+`exclamationmark.triangle` symbol while the Accessibility permission is
+missing.
 
 ## Changing the icon
 
