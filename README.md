@@ -6,15 +6,24 @@ ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,
 grouped by menu. Click an entry to run that command.
 
-**Status:** v0.2.0. It covers:
+**Status:** v0.3.0. It covers:
 
 - Holding Command shows the overlay; pressing another key, clicking or a
   system shortcut such as Cmd+Space cancels it.
 - Shortcuts are read from the frontmost app's menu bar and grouped by menu.
 - Clicking an entry runs that menu command.
 - Double-tapping Command opens a searchable command palette (below).
-- A settings window for the trigger delay, menu depth, disabled items and
-  launch at login.
+- A System section lists the macOS shortcuts you have turned on in System
+  Settings > Keyboard > Keyboard Shortcuts, such as Spotlight and screenshots.
+- App Shortcuts you defined yourself (System Settings > Keyboard > Keyboard
+  Shortcuts > App Shortcuts) are marked with a person icon.
+- Conflicts are marked: when two entries use the same keys, both rows say
+  which other entry also uses them ("Also used by System > ..."), within the
+  app or against a system shortcut.
+- Shortcut packs add shortcuts that an app has but does not show in its
+  menus, from local JSON files. See [docs/packs.md](docs/packs.md).
+- A settings window for the trigger delay, menu depth, disabled items, system
+  shortcuts, shortcut packs and launch at login.
 - Onboarding walks you through granting the Accessibility permission.
 
 Favourites are planned for a later release.
@@ -45,6 +54,8 @@ apply at once and are stored locally in the app's preferences.
   Lower it if an app with very deep menus is slow to show.
 - **Show disabled items:** also list commands that are greyed out in the
   app's menu right now. They are dimmed and cannot be run.
+- **Show system shortcuts:** end the overlay with the System section (on by
+  default). System rows are display-only.
 - **Shortcut packs:** how many packs are in use, and any pack file that could
   not be loaded, with the reason. Show Packs Folder opens the folder for your
   own packs. See [docs/packs.md](docs/packs.md) for the format.
