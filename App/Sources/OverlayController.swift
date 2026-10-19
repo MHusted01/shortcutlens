@@ -74,6 +74,8 @@ final class OverlayController {
     private let panel = OverlayPanel()
     private var inFlight: (key: AppKey, task: ReadTask)?
     private var generation = 0
+    /// Bumped on a keyboard layout switch; older reads have stale system labels.
+    private var layoutEpoch = 0
     private(set) var target: Target?
     private(set) var content: OverlayContent<AXUIElement>?
     private var cache = MenuCache<AppKey, OverlayContent<AXUIElement>>(capacity: cacheCapacity)
@@ -126,6 +128,14 @@ final class OverlayController {
         systemShortcuts = settings.showsSystemShortcuts ? systemShortcuts : []
     }
 
+    /// Drops system shortcuts labelled for the previous layout and stops
+    /// reusing a read started before the switch. Menu content stays cached.
+    func keyboardLayoutChanged() {
+        layoutEpoch += 1
+        inFlight = nil
+        systemShortcuts = []
+    }
+
     /// Starts reading the frontmost app's menus and shows its cached content
     /// until the read finishes. ShortcutLens itself is skipped.
     func prepare() {
@@ -151,9 +161,10 @@ final class OverlayController {
     /// Reads `key`'s menus for `target`, reusing a running read.
     private func read(_ key: AppKey, for target: Target) {
         let read = runningRead(for: key) ?? startRead(key: key, target: target)
+        let epoch = layoutEpoch
         Task { [weak self] in
             let result = await read.value
-            self?.finishRead(result.value, generation: target.generation, key: key)
+            self?.finishRead(result.value, generation: target.generation, key: key, layoutEpoch: epoch)
         }
     }
 
@@ -266,10 +277,10 @@ final class OverlayController {
         }
     }
 
-    private func finishRead(_ result: ReadResult, generation: Int, key: AppKey) {
-        // A read made with older settings is not the one in flight
-        // (`apply(_:)` dropped it), and is neither cached nor shown.
-        let isCurrent = !readSettings.restartsReads(comparedTo: result.settings)
+    private func finishRead(_ result: ReadResult, generation: Int, key: AppKey, layoutEpoch: Int) {
+        // A read made with older settings or layout is not the one in flight
+        // (`apply(_:)` or `keyboardLayoutChanged()` dropped it), and is neither cached nor shown.
+        let isCurrent = !readSettings.restartsReads(comparedTo: result.settings) && layoutEpoch == self.layoutEpoch
         if isCurrent, inFlight?.key == key {
             inFlight = nil
         }
@@ -281,7 +292,7 @@ final class OverlayController {
             return
         }
         guard isCurrent else {
-            // Settings changed during this read; read again so an open panel
+            // Settings or layout changed during this read; read again so an open panel
             // does not stay on the loading state.
             if let target {
                 read(key, for: target)
