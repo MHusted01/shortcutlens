@@ -1,0 +1,73 @@
+import AppKit
+import ShortcutLensCore
+import SwiftUI
+
+/// A pressed key as an App Shortcut needs it: the character the key types
+/// without modifiers, in the current layout, and the modifiers held.
+struct RecordedKeys: Equatable {
+    let key: String
+    let modifiers: ModifierMask
+
+    init(_ event: NSEvent) {
+        key = event.characters(byApplyingModifiers: []) ?? ""
+        let flags = event.modifierFlags
+        let held: [(NSEvent.ModifierFlags, ModifierMask)] = [(.shift, .shift), (.option, .option), (.control, .control)]
+        let base: ModifierMask = flags.contains(.command) ? [] : .noCommand
+        modifiers = held.filter { flags.contains($0.0) }.reduce(base) { $0.union($1.1) }
+    }
+}
+
+/// Takes the keyboard focus and reports every key pressed with it, Command
+/// shortcuts included, so they reach neither ShortcutLens's menus nor the
+/// window. Draws nothing itself; the view on top shows what was recorded.
+struct KeyRecorder: NSViewRepresentable {
+    let onKeys: (RecordedKeys) -> Void
+
+    func makeNSView(context _: Context) -> RecorderView {
+        let view = RecorderView()
+        view.onKeys = onKeys
+        return view
+    }
+
+    func updateNSView(_ view: RecorderView, context _: Context) {
+        view.onKeys = onKeys
+    }
+
+    final class RecorderView: NSView {
+        var onKeys: (RecordedKeys) -> Void = { _ in }
+
+        override var acceptsFirstResponder: Bool {
+            true
+        }
+
+        override var focusRingMaskBounds: NSRect {
+            bounds
+        }
+
+        override func drawFocusRingMask() {
+            NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill()
+        }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            window?.makeFirstResponder(self)
+        }
+
+        override func mouseDown(with _: NSEvent) {
+            window?.makeFirstResponder(self)
+        }
+
+        override func keyDown(with event: NSEvent) {
+            onKeys(RecordedKeys(event))
+        }
+
+        /// Command shortcuts arrive here before `keyDown` and the menus.
+        override func performKeyEquivalent(with event: NSEvent) -> Bool {
+            guard window?.firstResponder === self, event.type == .keyDown else {
+                return super.performKeyEquivalent(with: event)
+            }
+            onKeys(RecordedKeys(event))
+            return true
+        }
+    }
+}
