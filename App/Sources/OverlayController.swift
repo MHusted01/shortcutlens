@@ -86,7 +86,8 @@ final class OverlayController {
 
     private var readSettings = AppSettings.defaults
     private var systemShortcuts: [MenuShortcut] = []
-    private var favourites = Favourites(store: UserDefaults.standard)
+    /// Changed by `toggleFavourite(_:)`.
+    var favourites = Favourites(store: UserDefaults.standard)
 
     init() {
         panel.onResignKey = { [weak self] in self?.onClosePalette() }
@@ -199,7 +200,7 @@ final class OverlayController {
         let view = OverlayView(
             appName: target.name, icon: target.icon, content: .loading, palette: model, onSelect: select,
             onEdit: { [weak self] id, row in self?.edit(row, id: id) },
-            onFavourite: { [weak self] row in self?.toggleFavourite(row) }
+            onFavourite: favouriteHandler
         )
         let size = refreshPalette()
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
@@ -292,7 +293,7 @@ final class OverlayController {
     }
 
     /// Makes `content` the shown content and updates an open panel or palette.
-    private func display(_ content: OverlayContent<AXUIElement>) {
+    func display(_ content: OverlayContent<AXUIElement>) {
         self.content = content
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
@@ -301,17 +302,6 @@ final class OverlayController {
         } else if isShown {
             render()
         }
-    }
-
-    /// Adds the row's menu item to the target app's favourites, or removes
-    /// it, saves them and shows the content again with the change.
-    private func toggleFavourite(_ row: OverlayRow<AXUIElement>) {
-        guard let target, let content, row.canBeFavourite else {
-            return
-        }
-        favourites = favourites.toggling(row.menuPath, bundleID: target.bundleID)
-        favourites.save(to: UserDefaults.standard)
-        display(content.pinning(favourites.paths(for: target.bundleID)))
     }
 
     private func render() {
@@ -323,7 +313,7 @@ final class OverlayController {
             appName: target.name, icon: target.icon, content: body,
             onSelect: { [weak self] row in self?.run(row) },
             onEdit: { [weak self] id, row in self?.edit(row, id: id) },
-            onFavourite: { [weak self] row in self?.toggleFavourite(row) }
+            onFavourite: favouriteHandler
         )
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
     }

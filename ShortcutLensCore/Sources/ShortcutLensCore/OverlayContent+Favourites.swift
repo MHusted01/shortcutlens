@@ -10,10 +10,16 @@ public extension OverlayContent {
     /// left, no section is added. A previous Favourites section is replaced,
     /// so this can be applied again after the favourites change.
     func pinning(_ paths: [[String]]) -> Self {
-        let wanted = Set(paths)
-        let base = sections.filter { !$0.isPinned }.map { section in
+        let unpinned = sections.filter { !$0.isPinned }
+        // Only the first row with a path is pinned, so only it gets the star.
+        let starred = Set(paths.compactMap { path in
+            unpinned.lazy.compactMap { section in
+                section.rows.first { $0.canBeFavourite && $0.menuPath == path }.map { [section.id, $0.id] }
+            }.first
+        })
+        let base = unpinned.map { section in
             OverlaySection(id: section.id, title: section.title, rows: section.rows.map { row in
-                row.with(isFavourite: row.canBeFavourite && wanted.contains(row.menuPath))
+                row.with(isFavourite: starred.contains([section.id, row.id]))
             })
         }
         let rows = base.flatMap(\.rows)

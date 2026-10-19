@@ -48,6 +48,20 @@ struct OverlayContentFavouritesTests {
         #expect(pinned.sections.allSatisfy { !$0.isPinned })
     }
 
+    @Test func starsOnlyTheRowItPinsWhenPathsRepeat() {
+        let repeated = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "Edit", items: [
+                entry("Edit", "Copy", key: "c", element: 1),
+                entry("Edit", "Copy", key: "k", element: 2),
+            ]),
+        ])
+
+        let pinned = repeated.pinning([["Edit", "Copy"]])
+
+        #expect(pinned.sections[0].rows.map(\.element) == [1])
+        #expect(pinned.sections[1].rows.map(\.isFavourite) == [true, false])
+    }
+
     @Test func doesNotPinDisplayOnlyRows() {
         let withSystem = content.appending(sectionTitle: "System", shortcuts: [
             MenuShortcut(title: "Lock", keyCharacter: "q", modifiers: [.control], menuPath: ["System", "Lock"]),
