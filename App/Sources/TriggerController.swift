@@ -3,8 +3,8 @@ import os
 import ShortcutLensCore
 
 /// Feeds modifier, key and mouse events into `TriggerStateMachine` and runs
-/// its timer. The same events go to `DoubleTapDetector`, whose double tap
-/// opens the palette.
+/// its timer. The same events go to `DoubleTapDetector`, whose double tap of
+/// the chosen `PaletteTrigger` opens the palette.
 ///
 /// Uses `NSEvent` monitors, not a `CGEventTap`: a global monitor sees events
 /// sent to other apps (key events only with the Accessibility permission), a
@@ -39,10 +39,11 @@ final class TriggerController {
     /// Called when the overlay should appear or disappear.
     var onShow: () -> Void = { TriggerController.log.notice("show overlay") }
     var onHide: () -> Void = { TriggerController.log.notice("hide overlay") }
-    /// Called when a double tap of Command opens the palette.
+    /// Called when a double tap of the palette trigger opens the palette.
     var onShowPalette: () -> Void = { TriggerController.log.notice("show palette") }
 
     private var machine = TriggerStateMachine.initial
+    private var paletteTrigger = PaletteTrigger.command
     private var doubleTap = DoubleTapDetector.initial
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
@@ -63,13 +64,22 @@ final class TriggerController {
             observers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
             observers = []
             handle(.reset)
-            doubleTap = .initial
+            doubleTap = DoubleTapDetector(trigger: paletteTrigger)
         }
     }
 
     /// Seconds Command must be held, from the next countdown on.
     func setDelay(_ delay: TimeInterval) {
         machine = machine.with(delay: delay)
+    }
+
+    /// The modifier to double-tap for the palette. A tap in progress is dropped.
+    func setPaletteTrigger(_ trigger: PaletteTrigger) {
+        guard trigger != paletteTrigger else {
+            return
+        }
+        paletteTrigger = trigger
+        doubleTap = DoubleTapDetector(trigger: trigger)
     }
 
     /// Closes the palette, for example after Escape or running an item.

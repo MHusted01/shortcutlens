@@ -6,6 +6,12 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Settings > General > Open palette: open the command palette by
+  double-tapping Command, Option or Control, or turn it off, so it does not
+  clash with Dictation's "Press Command Key Twice" (#97).
+
 ## [1.2.0] - 2026-10-20
 
 This release polishes the overlay, palette, settings and onboarding. The

@@ -8,7 +8,7 @@
 /// Each countdown gets a token; a timer that fires with an older token is
 /// ignored, so a late timer from a cancelled countdown cannot show the overlay.
 ///
-/// A double tap of Command (see `DoubleTapDetector`) opens palette mode: the
+/// A double tap (see `DoubleTapDetector`) opens palette mode: the
 /// overlay stays open without Command held and takes typed keys. Only an
 /// explicit close, a click outside the panel, an interruption or a reset
 /// closes it.
@@ -35,7 +35,7 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case interrupted
         /// Monitoring stopped (for example the permission was revoked).
         case reset
-        /// Command was double-tapped.
+        /// The palette trigger was double-tapped.
         case doubleTap
         /// The palette asked to close: Escape on an empty query, an item was
         /// run, or the panel lost key status.

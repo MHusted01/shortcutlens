@@ -9,11 +9,15 @@ The window has four tabs and opens on the one you used last.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/settings-general-dark.png">
-  <img src="images/settings-general-light.png" width="450" alt="The General tab of ShortcutLens Settings with the Hold Command for slider at 0.45 seconds and the Launch at login switch">
+  <img src="images/settings-general-light.png" width="450" alt="The General tab of ShortcutLens Settings with the Hold Command for slider at 0.45 seconds, the Open palette menu set to Double-tap Command and the Launch at login switch">
 </picture>
 
 - **Hold Command for:** how long Command must be held before the overlay
   shows, 0.1 to 1.5 s (default 1.0 s).
+- **Open palette:** which key to double-tap for the
+  [command palette](palette.md): Command (default), Option or Control, or Off.
+  Choose Option or Control if Dictation uses "Press Command Key Twice".
+  Holding Command for the overlay works the same with every choice.
 - **Launch at login:** start ShortcutLens when you log in. If macOS asks for
   approval, allow it in System Settings > General > Login Items.
 

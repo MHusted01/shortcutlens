@@ -42,6 +42,15 @@ private struct GeneralSettings: View {
                     Text("s")
                 }
             }
+            Picker(
+                "Open palette",
+                selection: controller.binding(\.paletteTrigger) { $0.with(paletteTrigger: $1) }
+            ) {
+                Text("Double-tap Command").tag(PaletteTrigger.command)
+                Text("Double-tap Option").tag(PaletteTrigger.option)
+                Text("Double-tap Control").tag(PaletteTrigger.control)
+                Text("Off").tag(PaletteTrigger.off)
+            }
         }
         Section("Startup") {
             Toggle("Launch at login", isOn: launchAtLogin)
