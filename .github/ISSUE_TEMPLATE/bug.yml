@@ -1,0 +1,63 @@
+name: Bug report
+description: Something in ShortcutLens does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Security issues go through private reporting instead,
+        see [SECURITY.md](https://github.com/MHusted01/shortcutlens/blob/main/SECURITY.md).
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: ShortcutLens version
+      description: Menu bar icon > About ShortcutLens.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      description: Apple menu > About This Mac.
+      placeholder: "macOS 26.1"
+    validations:
+      required: true
+  - type: input
+    id: target-app
+    attributes:
+      label: Affected app
+      description: The app whose shortcuts are wrong or missing, with its version, if the bug is app-specific.
+      placeholder: "Safari 26.1"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Hold Command
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: |
+        Optional. Logs from the last two minutes:
+        `/usr/bin/log show --last 2m --predicate 'subsystem == "dev.shortcutlens"'`
+      render: text
