@@ -14,4 +14,4 @@
 - [ ] No network code, analytics or third-party runtime dependencies
 - [ ] Tests written before the implementation (Core logic)
 - [ ] Docs updated if behaviour or setup changed
-- [ ] All CodeRabbit comments addressed and resolved
+- [ ] All review comments addressed and resolved

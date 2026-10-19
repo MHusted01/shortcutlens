@@ -8,11 +8,10 @@
 2. Keep the PR to one feature or fix.
 3. Title the PR as a conventional commit, e.g. `feat: add overlay panel`.
    The title becomes the squash commit on `main`.
-4. These checks must pass: `lint`, `test`, `build`, `no-telemetry`, `pr-title`
-   and `CodeRabbit`.
-5. CodeRabbit reviews the PR. Address every comment and resolve all
-   conversations before merging. Comment `@coderabbitai review` to request a
-   new review after changes.
+4. These checks must pass: `lint`, `test`, `build`, `no-telemetry` and
+   `pr-title`.
+5. The `claude-review` workflow reviews every push to the PR. Address every
+   comment and resolve all conversations before merging.
 6. Merge with **Squash and merge**. The branch is deleted automatically.
 
 ## Rules
