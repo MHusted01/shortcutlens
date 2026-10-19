@@ -10,7 +10,7 @@ struct ShortcutLensApp: App {
         MenuBarExtra {
             if !appDelegate.permission.permission.isGranted {
                 Button(OnboardingText.menuItem) {
-                    appDelegate.permission.showOnboarding()
+                    appDelegate.permission.showOnboarding(at: .accessibility)
                 }
                 Divider()
             }
@@ -20,6 +20,9 @@ struct ShortcutLensApp: App {
             Button("About ShortcutLens") {
                 NSApp.activate()
                 NSApp.orderFrontStandardAboutPanel(nil)
+            }
+            Button("Welcome to ShortcutLens…") {
+                appDelegate.permission.showOnboarding()
             }
             Button("Settings…") {
                 appDelegate.settings.showWindow()
