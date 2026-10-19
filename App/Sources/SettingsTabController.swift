@@ -43,12 +43,25 @@ final class SettingsTabController: NSTabViewController {
         fitWindow(to: tabViewItem?.viewController, animated: true)
     }
 
+    /// The restored tab was selected before the window existed; fit it now.
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        fitWindow(to: selectedViewController, animated: false)
+    }
+
     override func preferredContentSizeDidChange(for viewController: NSViewController) {
         super.preferredContentSizeDidChange(for: viewController)
-        guard viewController === tabViewItems[selectedTabViewItemIndex].viewController else {
+        guard viewController === selectedViewController else {
             return
         }
         fitWindow(to: viewController, animated: false)
+    }
+
+    /// Nil while no tab is selected, for example while the tabs are added.
+    private var selectedViewController: NSViewController? {
+        tabViewItems.indices.contains(selectedTabViewItemIndex)
+            ? tabViewItems[selectedTabViewItemIndex].viewController
+            : nil
     }
 
     /// Resizes the window to the tab's content, keeping its top edge in place.
