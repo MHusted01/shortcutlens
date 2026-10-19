@@ -12,6 +12,10 @@ All notable changes to ShortcutLens are listed here. The format follows
   material on macOS 14-15 that follows the system appearance. It fades in and
   out, and with Reduce Motion it only fades. Row highlights, section spacing
   and marker colours follow the new visual spec. (#91)
+- The command palette's search field sits in a rounded container with a
+  magnifying glass and an accent focus outline, thicker under Increase
+  Contrast. When nothing matches, the palette shows a "No matching
+  shortcuts" state, which VoiceOver announces. (#92)
 
 ## [1.1.0] - 2026-10-19
 
