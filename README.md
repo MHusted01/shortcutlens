@@ -6,7 +6,7 @@ ShortcutLens is a small, native macOS menu bar app. While you hold the
 Command key, it shows an overlay with the frontmost app's menu shortcuts,
 grouped by menu. Click an entry to run that command.
 
-**Status:** v0.3.0. It covers:
+**Status:** v0.4.0. It covers:
 
 - Holding Command shows the overlay; pressing another key, clicking or a
   system shortcut such as Cmd+Space cancels it.
@@ -15,6 +15,7 @@ grouped by menu. Click an entry to run that command.
 - Double-tapping Command opens a searchable command palette (below).
 - A System section lists the macOS shortcuts you have turned on in System
   Settings > Keyboard > Keyboard Shortcuts, such as Spotlight and screenshots.
+  Their keys are labelled for your current keyboard layout.
 - App Shortcuts you defined yourself (System Settings > Keyboard > Keyboard
   Shortcuts > App Shortcuts) are marked with a person icon. In sandboxed
   apps such as TextEdit, Safari and Preview, only shortcuts set for "All
@@ -25,11 +26,17 @@ grouped by menu. Click an entry to run that command.
   app or against a system shortcut.
 - Shortcut packs add shortcuts that an app has but does not show in its
   menus, from local JSON files. See [docs/packs.md](docs/packs.md).
+- Right-click a menu entry to change its shortcut (below) or add it to
+  your favourites. Favourites appear in a Favourites section at the top of
+  the overlay and are starred where they are in the app's menus.
+- Export to Markdown or PDF, and a practice mode that quizzes you on an
+  app's shortcuts (both below).
 - A settings window for the trigger delay, menu depth, disabled items, system
   shortcuts, shortcut packs and launch at login.
 - Onboarding walks you through granting the Accessibility permission.
 
-Favourites are planned for a later release.
+Favourites and practice progress are matched by menu titles, which macOS
+translates. They only match in the system language they were made in.
 
 ## Command palette
 
@@ -53,6 +60,35 @@ ShortcutLens menu bar icon to export the frontmost app's shortcuts. The
 export has every section the overlay shows, without a search filter, and
 marks App Shortcuts and conflicts. To get a PDF, choose Save as PDF in the
 print panel. Files are only written where you save them.
+
+## Editing shortcuts
+
+Right-click a menu entry and choose Edit Shortcut… (most reliable in the
+command palette). Press the new keys, then Save. Character keys need
+Command, Option or Control; named keys such as arrows, Return or Tab work
+too, and F1 to F19 may be used alone or with Shift. If the keys are already
+used in the app or by a system shortcut, you are warned and can choose Save
+Anyway. Remove Custom Shortcut restores the menu's own shortcut.
+
+The change is stored as an App Shortcut in the app's own preferences, the
+same place System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts
+uses; "All Applications" entries are never changed. The app reads it at
+launch, so ShortcutLens offers to relaunch it (the app asks about unsaved
+documents as usual). Notes:
+
+- Shortcuts that macOS itself uses never reach the editor and cannot be
+  recorded.
+- Sandboxed apps such as TextEdit, Safari and Preview cannot be edited; use
+  System Settings for them.
+
+## Practice
+
+Choose Practice Shortcuts… from the ShortcutLens menu bar icon to be quizzed
+on the shortcuts of the app that was in front. Each round asks up to 10
+menu shortcuts: press the keys, or choose Show Answer. Shortcuts you miss
+and new ones come first, then ones you know less well; favourites come first
+among equals. Progress is saved per app and stays on your Mac; Reset Progress
+starts over. Shortcut packs and system shortcuts are not asked.
 
 ## Settings
 
