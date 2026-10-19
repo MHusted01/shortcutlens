@@ -11,7 +11,9 @@ extension OverlayController {
         }
         let request = ShortcutEditRequest(
             appName: target.name,
+            processID: target.processID,
             bundleID: target.bundleID,
+            bundleURL: target.bundleURL,
             isSandboxed: target.bundleURL.map(AppSandbox.isSandboxed(bundleURL:)) ?? false,
             title: row.title,
             menuPath: row.menuPath,

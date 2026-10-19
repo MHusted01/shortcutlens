@@ -44,6 +44,7 @@ final class OverlayController {
     struct Target {
         let generation: Int
         let name: String
+        let processID: pid_t
         let bundleID: String?
         let bundleURL: URL?
         let icon: NSImage?
@@ -136,7 +137,8 @@ final class OverlayController {
         let key = AppKey(app)
         content = cache.value(for: key).map(withSystemShortcuts)
         let target = Target(
-            generation: generation, name: app.localizedName ?? "", bundleID: app.bundleIdentifier,
+            generation: generation, name: app.localizedName ?? "", processID: app.processIdentifier,
+            bundleID: app.bundleIdentifier,
             bundleURL: app.bundleURL, icon: app.icon
         )
         self.target = target

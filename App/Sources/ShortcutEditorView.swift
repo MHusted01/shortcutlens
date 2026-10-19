@@ -78,13 +78,22 @@ struct ShortcutEditorView: View {
     private func outcome(_ request: ShortcutEditRequest) -> some View {
         switch editor.status {
         case .saved:
-            Text("Saved. Quit and reopen \(request.appName) to use \(editor.recordedLabel ?? "it").")
+            Text("Saved. Relaunch \(request.appName) to use \(editor.recordedLabel ?? "it").")
+            relaunchFailure
         case .removed:
-            Text("Removed. Quit and reopen \(request.appName) to use the default shortcut.")
+            Text("Removed. Relaunch \(request.appName) to use the default shortcut.")
+            relaunchFailure
         case .failed:
             Text("The shortcut could not be saved.").foregroundStyle(.red)
         case .editing:
             EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var relaunchFailure: some View {
+        if case let .failed(reason) = editor.relaunch {
+            Text(reason).foregroundStyle(.red)
         }
     }
 
@@ -100,6 +109,15 @@ struct ShortcutEditorView: View {
                 Button(editor.conflict == nil ? "Save" : "Save Anyway") { editor.save() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(!editor.canSave)
+            } else if [.saved, .removed].contains(editor.status), let request = editor.request {
+                if editor.relaunch == .running {
+                    ProgressView().controlSize(.small)
+                }
+                Button("Later") { editor.close() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Relaunch \(request.appName)") { editor.relaunchApp() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!editor.canRelaunch)
             } else {
                 Button("Done") { editor.close() }
                     .keyboardShortcut(.defaultAction)

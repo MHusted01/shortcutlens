@@ -8,7 +8,9 @@ import SwiftUI
 /// chosen from for the conflict check.
 struct ShortcutEditRequest {
     let appName: String
+    let processID: pid_t
     let bundleID: String?
+    let bundleURL: URL?
     let isSandboxed: Bool
     let title: String
     let menuPath: [String]
@@ -30,6 +32,13 @@ final class ShortcutEditor {
         case failed
     }
 
+    enum Relaunch: Equatable {
+        case idle
+        case running
+        /// Why the app was not relaunched, shown under the outcome.
+        case failed(String)
+    }
+
     private static let log = Logger(subsystem: "dev.shortcutlens", category: "editor")
 
     private(set) var request: ShortcutEditRequest?
@@ -40,6 +49,7 @@ final class ShortcutEditor {
     private(set) var status = Status.editing
     /// Whether the app's own preferences have an entry to remove.
     private(set) var hasCustomEntry = false
+    private(set) var relaunch = Relaunch.idle
     @ObservationIgnored private var window: NSWindow?
 
     func show(_ request: ShortcutEditRequest) {
@@ -48,6 +58,7 @@ final class ShortcutEditor {
         problem = nil
         conflict = nil
         status = .editing
+        relaunch = .idle
         refreshCustomEntry()
         let window = window ?? makeWindow()
         self.window = window
@@ -111,8 +122,46 @@ final class ShortcutEditor {
             ? .removed : .failed
     }
 
+    /// After a change, while no relaunch runs and the app can be opened again.
+    var canRelaunch: Bool {
+        [.saved, .removed].contains(status) && relaunch != .running && request?.bundleURL != nil
+    }
+
+    /// Quits and reopens the app so it uses the change, then closes the window.
+    func relaunchApp() {
+        guard canRelaunch, let request, let bundleID = request.bundleID, let bundleURL = request.bundleURL else {
+            return
+        }
+        relaunch = .running
+        Task {
+            let outcome = await AppRelauncher.relaunch(
+                processID: request.processID, bundleID: bundleID, bundleURL: bundleURL
+            )
+            // The window may show another item by now.
+            guard self.request?.processID == request.processID, relaunch == .running else {
+                return
+            }
+            finishRelaunch(outcome, appName: request.appName)
+        }
+    }
+
     func close() {
         window?.close()
+    }
+
+    private func finishRelaunch(_ outcome: AppRelauncher.Outcome, appName: String) {
+        switch outcome {
+        case .relaunched:
+            Self.log.notice("app relaunched")
+            relaunch = .idle
+            close()
+        case .didNotQuit:
+            Self.log.error("app did not quit")
+            relaunch = .failed("\(appName) did not quit. Quit it yourself and open it again.")
+        case .didNotOpen:
+            Self.log.error("app did not open")
+            relaunch = .failed("\(appName) quit but could not be opened again.")
+        }
     }
 
     /// Runs one write; false when it failed.
