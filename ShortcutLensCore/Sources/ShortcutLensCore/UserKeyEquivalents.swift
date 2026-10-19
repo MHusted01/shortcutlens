@@ -37,12 +37,10 @@ public struct UserKeyEquivalents: Sendable {
         return candidates.contains { $0.map { Self.keys(of: $0, match: shortcut) } ?? false }
     }
 
-    /// Items with a glyph are matched by modifiers alone: the store holds a
-    /// function-key code there, which the menu reports as a glyph instead.
+    /// Compared as displayed: the store holds a named key as a character (F1
+    /// is U+F704), which the menu reports as a glyph instead.
     private static func keys(of entry: UserKeyEquivalent, match shortcut: MenuShortcut) -> Bool {
-        guard entry.modifiers == shortcut.modifiers else {
-            return false
-        }
-        return shortcut.glyph != nil || shortcut.keyCharacter?.lowercased() == entry.key
+        let stored = MenuShortcut(title: entry.title, keyCharacter: entry.key, modifiers: entry.modifiers)
+        return KeyCombo(stored).map { $0 == KeyCombo(shortcut) } ?? false
     }
 }

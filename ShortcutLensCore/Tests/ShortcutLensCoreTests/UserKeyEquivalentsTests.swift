@@ -35,11 +35,20 @@ struct UserKeyEquivalentsTests {
         #expect(!custom.isCustom(shortcut(["File", "Save"], key: "D", modifiers: .shift)))
     }
 
-    @Test func glyphItemIsMatchedByModifiers() throws {
+    /// The store holds F1 as a private-use character, the menu reports a glyph.
+    @Test func glyphItemIsMatchedByItsKeyAndModifiers() throws {
         let custom = try UserKeyEquivalents(global: [], app: [entry("Zoom", "@~\u{F704}")])
 
-        #expect(custom.isCustom(shortcut(["View", "Zoom"], key: nil, modifiers: .option, glyph: 111)))
-        #expect(!custom.isCustom(shortcut(["View", "Zoom"], key: nil, glyph: 111)))
+        #expect(custom.isCustom(shortcut(["View", "Zoom"], key: nil, modifiers: .option, glyph: 0x6F)))
+        #expect(!custom.isCustom(shortcut(["View", "Zoom"], key: nil, glyph: 0x6F)))
+        #expect(!custom.isCustom(shortcut(["View", "Zoom"], key: nil, modifiers: .option, glyph: 0x70)))
+    }
+
+    @Test(arguments: [("\u{F700}", 0x68), ("\r", 0x0B), ("\t", 0x02), (" ", 0x09), ("\u{7F}", 0x17), ("\u{1B}", 0x1B)])
+    func namedKeyEntryMarksTheItemShowingItsGlyph(_ key: String, _ glyph: Int) throws {
+        let custom = try UserKeyEquivalents(global: [], app: [entry("Zoom", "^" + key)])
+
+        #expect(custom.isCustom(shortcut(["View", "Zoom"], key: nil, modifiers: [.control, .noCommand], glyph: glyph)))
     }
 
     @Test func globalEntriesApplyToEveryApp() throws {

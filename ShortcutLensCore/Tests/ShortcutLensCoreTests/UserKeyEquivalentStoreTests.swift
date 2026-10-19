@@ -38,6 +38,23 @@ struct UserKeyEquivalentStoreTests {
         #expect(parsed?.title == menuPath.last)
     }
 
+    /// F1, F19, the arrows, Forward Delete, Home, End, Page Up and Down, Help,
+    /// Return, keypad Enter, Tab, Space, Delete and Escape.
+    @Test(arguments: [
+        ("\u{F704}", "F1"), ("\u{F716}", "F19"), ("\u{F700}", "↑"), ("\u{F701}", "↓"), ("\u{F702}", "←"),
+        ("\u{F703}", "→"), ("\u{F728}", "⌦"), ("\u{F729}", "↖"), ("\u{F72B}", "↘"), ("\u{F72C}", "⇞"),
+        ("\u{F72D}", "⇟"), ("\u{F746}", "Help"), ("\r", "↩"), ("\u{3}", "⌤"), ("\t", "⇥"), (" ", "Space"),
+        ("\u{7F}", "⌫"), ("\u{1B}", "⎋"),
+    ])
+    func roundTripsNamedKeysAndShowsTheirSymbol(_ key: String, _ symbol: String) throws {
+        let entry = try #require(UserKeyEquivalent(menuPath: ["View", "Zoom"], key: key, modifiers: .option))
+
+        let parsed = try #require(UserKeyEquivalent.parse(UserKeyEquivalent.setting(entry, in: [:])).first)
+        let shown = MenuShortcut(title: "Zoom", keyCharacter: parsed.key, modifiers: parsed.modifiers)
+        #expect(parsed == entry)
+        #expect(ShortcutFormatter.string(for: shown) == "⌥⌘" + symbol)
+    }
+
     @Test func uppercaseKeyIsStoredLowercaseWithShift() {
         let entry = UserKeyEquivalent(menuPath: ["File", "Save"], key: "S", modifiers: [])
 
