@@ -33,6 +33,9 @@ targets:
       - path: App/Resources/AppIcon.icon
         type: file
         buildPhase: resources
+      # Menu bar template image (SVG, kept as vector). Source: design/icon/.
+      - path: App/Resources/MenuBarIcon.xcassets
+        buildPhase: resources
       # Example shortcut packs, copied as Contents/Resources/Packs.
       - path: App/Resources/Packs
         type: folder
