@@ -29,8 +29,8 @@ enum PackSource {
     }
 
     private static func read(_ directory: URL, isBundled: Bool) -> (files: [PackFile], problems: [PackProblem]) {
-        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
-        let urls = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys))
+        // No prefetched keys: each file's values are read after resolving symlinks.
+        let urls = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: []))
             ?? []
         let results = urls
             .filter { $0.pathExtension.lowercased() == fileExtension }
@@ -60,21 +60,24 @@ enum PackSource {
         }
     }
 
-    /// Checks the size before reading, so a huge file is never loaded.
+    /// Reads at most one byte past the size limit, so a huge file is never
+    /// loaded, even one that grew after it was listed; the parser rejects
+    /// the oversized data. Only regular files are opened, so a FIFO cannot
+    /// block the read.
     private static func read(file url: URL, isBundled: Bool) -> FileRead {
         let name = url.lastPathComponent
         let resolved = url.resolvingSymlinksInPath()
-        guard let values = try? resolved.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
-              values.isRegularFile == true
+        guard let values = try? resolved.resourceValues(forKeys: [.isRegularFileKey]), values.isRegularFile == true
         else {
             return .failed(PackProblem(fileName: name, message: "Not a readable file."))
         }
-        guard (values.fileSize ?? 0) <= ShortcutPackParser.maxFileSize else {
-            return .failed(PackProblem(fileName: name, message: PackError.tooLarge.message))
-        }
-        guard let data = try? Data(contentsOf: resolved) else {
+        do {
+            let handle = try FileHandle(forReadingFrom: resolved)
+            defer { try? handle.close() }
+            let data = try handle.read(upToCount: ShortcutPackParser.maxFileSize + 1) ?? Data()
+            return .loaded(PackFile(name: name, data: data, isBundled: isBundled))
+        } catch {
             return .failed(PackProblem(fileName: name, message: "Could not be read."))
         }
-        return .loaded(PackFile(name: name, data: data, isBundled: isBundled))
     }
 }

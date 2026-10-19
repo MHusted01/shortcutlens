@@ -23,6 +23,8 @@ final class SettingsController {
     private(set) var packs = PackLibrary.empty
     /// Why the packs folder could not be created, if it failed.
     private(set) var packsFolderError: String?
+    /// Counts reloads, so only the latest one is shown.
+    @ObservationIgnored private var packsGeneration = 0
     /// Called with the new settings after every change.
     @ObservationIgnored var onChange: (AppSettings) -> Void = { _ in }
     @ObservationIgnored private let store: UserDefaults
@@ -72,10 +74,19 @@ final class SettingsController {
         SMAppService.openSystemSettingsLoginItems()
     }
 
-    /// Reads the pack files again. The overlay reads them on its own with
-    /// every menu read; this only updates what the window lists.
+    /// Reads the pack files again, off the main actor. The overlay reads them
+    /// on its own with every menu read; this only updates what the window
+    /// lists. A slower earlier reload cannot overwrite a later one.
     func reloadPacks() {
-        packs = PackSource.library()
+        packsGeneration += 1
+        let generation = packsGeneration
+        Task {
+            let library = await Task.detached(priority: .userInitiated) { PackSource.library() }.value
+            guard generation == packsGeneration else {
+                return
+            }
+            packs = library
+        }
     }
 
     /// Opens the user's packs folder in Finder, creating it first.

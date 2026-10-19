@@ -56,7 +56,8 @@ struct SettingsView: View {
     private var packsSection: some View {
         Section("Shortcut packs") {
             LabeledContent("Packs in use", value: "\(controller.packs.packs.count)")
-            ForEach(controller.packs.problems, id: \.self) { problem in
+            // By position: two files may report the same name and message.
+            ForEach(Array(controller.packs.problems.enumerated()), id: \.offset) { _, problem in
                 VStack(alignment: .leading) {
                     Text(problem.fileName)
                         .font(.callout.bold())

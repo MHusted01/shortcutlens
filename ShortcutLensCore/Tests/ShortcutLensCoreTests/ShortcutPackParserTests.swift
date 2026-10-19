@@ -94,6 +94,26 @@ struct ShortcutPackParserTests {
         #expect(error(pack(shortcuts: #"{"title": null, "key": "a"}"#)) == .missingField("\(shortcut).title"))
     }
 
+    @Test func sectionFieldsAreChecked() {
+        let base = #"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": "#
+
+        #expect(error(base + #"[{"shortcuts": []}]}"#) == .missingField("sections[0].title"))
+        #expect(error(base + #"[{"title": "X"}]}"#) == .missingField("sections[0].shortcuts"))
+        #expect(
+            error(base + #"[{"title": "", "shortcuts": []}]}"#)
+                == .invalidValue(field: "sections[0].title", reason: "must not be empty")
+        )
+        #expect(error(base + #"{}}"#) == .invalidValue(field: "sections", reason: "wrong type"))
+    }
+
+    @Test func repeatedModifiersCountOnce() throws {
+        #expect(try keys(#"{"title": "A", "key": "k", "modifiers": ["shift", "shift", "command"]}"#) == ["⇧⌘K"])
+    }
+
+    @Test func extraFieldsAreIgnored() throws {
+        #expect(try keys(#"{"title": "A", "key": "k", "note": "mine"}"#) == ["K"])
+    }
+
     @Test func wrongTypesAreReported() {
         #expect(error(#"{"schemaVersion": "1"}"#) == .invalidValue(field: "schemaVersion", reason: "wrong type"))
         #expect(
