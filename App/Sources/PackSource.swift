@@ -62,18 +62,22 @@ enum PackSource {
 
     /// Reads at most one byte past the size limit, so a huge file is never
     /// loaded, even one that grew after it was listed; the parser rejects
-    /// the oversized data. Only regular files are opened, so a FIFO cannot
-    /// block the read.
+    /// the oversized data. The file is opened non-blocking and checked to be
+    /// a regular file on the open descriptor, so a FIFO swapped in at any
+    /// moment can neither block the open nor be read.
     private static func read(file url: URL, isBundled: Bool) -> FileRead {
         let name = url.lastPathComponent
-        let resolved = url.resolvingSymlinksInPath()
-        guard let values = try? resolved.resourceValues(forKeys: [.isRegularFileKey]), values.isRegularFile == true
-        else {
+        let descriptor = open(url.path, O_RDONLY | O_NONBLOCK | O_CLOEXEC)
+        guard descriptor >= 0 else {
+            return .failed(PackProblem(fileName: name, message: "Could not be read."))
+        }
+        let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
+        defer { try? handle.close() }
+        var info = stat()
+        guard fstat(descriptor, &info) == 0, info.st_mode & S_IFMT == S_IFREG else {
             return .failed(PackProblem(fileName: name, message: "Not a readable file."))
         }
         do {
-            let handle = try FileHandle(forReadingFrom: resolved)
-            defer { try? handle.close() }
             let data = try handle.read(upToCount: ShortcutPackParser.maxFileSize + 1) ?? Data()
             return .loaded(PackFile(name: name, data: data, isBundled: isBundled))
         } catch {
