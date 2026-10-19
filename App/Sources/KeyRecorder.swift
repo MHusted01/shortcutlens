@@ -79,7 +79,7 @@ struct KeyRecorder: NSViewRepresentable {
         }
 
         /// Return and Escape without modifiers go to the Save and Cancel
-        /// buttons; they are named keys the recorder rejects anyway.
+        /// buttons; as App Shortcuts they would need a modifier anyway.
         private static func isDialogKey(_ event: NSEvent) -> Bool {
             let modifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
             return dialogKeyCodes.contains(event.keyCode)

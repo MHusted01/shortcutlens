@@ -25,6 +25,14 @@ struct KeyComboTests {
         #expect(KeyCombo(character) == KeyCombo(glyph))
     }
 
+    /// A recorded or stored F1 is a character, the menu reports it as a glyph.
+    @Test func aFunctionKeyCharacterAndItsGlyphAreOneCombo() {
+        let character = MenuShortcut(title: "Zoom", keyCharacter: "\u{F704}", modifiers: .option)
+        let glyph = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: .option, glyph: 0x6F)
+
+        #expect(KeyCombo(character) == KeyCombo(glyph))
+    }
+
     @Test func isNilWithoutADisplayableKey() {
         #expect(KeyCombo(MenuShortcut(title: "None", keyCharacter: nil, modifiers: [])) == nil)
     }

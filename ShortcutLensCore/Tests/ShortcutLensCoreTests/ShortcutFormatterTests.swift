@@ -27,6 +27,20 @@ struct ShortcutFormatterTests {
         #expect(ShortcutFormatter.keySymbol(for: shortcut) == expected)
     }
 
+    /// AppKit's function-key characters (`NSF1FunctionKey` and so on), which
+    /// App Shortcuts store and key events report.
+    @Test(arguments: [
+        ("\u{F704}", "F1"), ("\u{F70E}", "F11"), ("\u{F716}", "F19"),
+        ("\u{F700}", "↑"), ("\u{F701}", "↓"), ("\u{F702}", "←"), ("\u{F703}", "→"),
+        ("\u{F728}", "⌦"), ("\u{F729}", "↖"), ("\u{F72B}", "↘"), ("\u{F72C}", "⇞"), ("\u{F72D}", "⇟"),
+        ("\u{F746}", "Help"),
+    ])
+    func rendersFunctionKeyCharactersAsKeySymbols(keyCharacter: String, expected: String) {
+        let shortcut = makeShortcut(keyCharacter: keyCharacter, modifiers: 8)
+
+        #expect(ShortcutFormatter.keySymbol(for: shortcut) == expected)
+    }
+
     @Test func treatsCombiningSequenceAsOneKey() {
         let shortcut = makeShortcut(keyCharacter: "e\u{301}", modifiers: 0)
 
@@ -67,8 +81,9 @@ struct ShortcutFormatterTests {
         (String?.none, Int?.none),
         (String?.some(""), Int?.none),
         (String?.none, Int?.some(0x7B)),
-        (String?.some("\u{F704}"), Int?.some(0x7B)),
-        (String?.some("\u{F704}"), Int?.none),
+        (String?.some("\u{F727}"), Int?.some(0x7B)),
+        (String?.some("\u{F727}"), Int?.none),
+        (String?.some("\u{E000}"), Int?.none),
         (String?.some("\u{0}"), Int?.none),
         (String?.some("  "), Int?.none),
         (String?.some("ab"), Int?.none),
