@@ -81,7 +81,10 @@ final class OverlayController {
     private var cache = MenuCache<AppKey, OverlayContent<AXUIElement>>(capacity: cacheCapacity)
     private var terminationObserver: NSObjectProtocol?
     private var isShown = false
-    private var palette: OpenPalette?
+    private var palette: OpenPalette? {
+        didSet { announce(from: oldValue?.state, to: palette?.state) }
+    }
+
     var isPaletteOpen: Bool {
         palette != nil
     }
