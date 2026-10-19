@@ -10,6 +10,14 @@ public enum MenuGlyph {
         symbols[code]
     }
 
+    /// The code that displays as `symbol`, e.g. `F5` or `↩`; the reverse of
+    /// `symbol(for:)`.
+    public static func code(for symbol: String) -> Int? {
+        codes[symbol]
+    }
+
+    private static let codes = Dictionary(uniqueKeysWithValues: symbols.map { ($0.value, $0.key) })
+
     private static let symbols: [Int: String] = {
         let functionKeys = functionKeyCodes.enumerated().map { index, code in (code, "F\(index + 1)") }
         // Traps if a code appears twice, so the two tables cannot silently overlap.
