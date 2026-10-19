@@ -13,7 +13,7 @@ extension OverlayContent {
                 guard counts[row.title, default: 0] > 1 else {
                     return row.with(displayTitle: row.title)
                 }
-                return row.with(displayTitle: Self.pathTitle(of: row, isPinned: section.isPinned))
+                return row.with(displayTitle: Self.pathTitle(of: row, in: section))
             }
             return OverlaySection(id: section.id, title: section.title, rows: rows, isPinned: section.isPinned)
         }
@@ -21,9 +21,11 @@ extension OverlayContent {
     }
 
     /// The row's path joined with ` > `, as conflicts name rows; the title
-    /// when the row has no path below its section.
-    private static func pathTitle(of row: OverlayRow<Element>, isPinned: Bool) -> String {
-        let path = isPinned ? row.menuPath : Array(row.menuPath.dropFirst())
+    /// when the row has no path below its section. The section's own title
+    /// is left out only when the path starts with it.
+    private static func pathTitle(of row: OverlayRow<Element>, in section: OverlaySection<Element>) -> String {
+        let startsWithSection = !section.isPinned && row.menuPath.first == section.title
+        let path = startsWithSection ? Array(row.menuPath.dropFirst()) : row.menuPath
         return path.isEmpty ? row.title : path.joined(separator: " > ")
     }
 }

@@ -115,4 +115,22 @@ struct OverlayContentPathsTests {
 
         #expect(titles(filtered.sections[0]) == ["Find > Find Next", "Spelling > Find Next"])
     }
+
+    @Test func searchFindsARowByTheSubmenuInItsLabel() throws {
+        let filtered = ShortcutMatcher.filter(findNext, query: "spelling")
+
+        let section = try #require(filtered.sections.first)
+        #expect(titles(section) == ["Spelling > Find Next"])
+    }
+
+    @Test func showsTheFullPathWhenItDoesNotStartWithTheSection() {
+        let content = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "Tools", items: [
+                entry(["Format", "Font", "Bigger"], key: "+", element: 1),
+                entry(["Tools", "Zoom", "Bigger"], key: "=", element: 2),
+            ]),
+        ])
+
+        #expect(titles(content.sections[0]) == ["Format > Font > Bigger", "Zoom > Bigger"])
+    }
 }

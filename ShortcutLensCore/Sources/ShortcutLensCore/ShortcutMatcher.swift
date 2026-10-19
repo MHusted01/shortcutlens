@@ -46,7 +46,10 @@ public enum ShortcutMatcher {
         // names like "File" would pull in whole menus for most queries.
         let sectionRank: Rank? = contiguousRank(normalized(section.title), needle) == nil ? nil : .section
         let candidates = section.rows.enumerated().compactMap { offset, row -> Candidate<Element>? in
-            guard let rank = rank(normalized(row.title), needle) ?? sectionRank else { return nil }
+            // A shown menu path, e.g. "Spelling > Find Next", matches like a
+            // section title: contiguously, so " > " cannot join fuzzy matches.
+            let pathRank = contiguousRank(normalized(row.displayTitle), needle)
+            guard let rank = rank(normalized(row.title), needle) ?? pathRank ?? sectionRank else { return nil }
             return Candidate(rank: rank, offset: offset, row: row)
         }
         guard !candidates.isEmpty else { return nil }
