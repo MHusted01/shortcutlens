@@ -5,7 +5,7 @@ contact_links:
     about: Report security issues privately, not in a public issue.
   - name: FAQ and troubleshooting
     url: https://github.com/MHusted01/shortcutlens/blob/main/docs/faq.md
-    about: Permission lost after an update, overlay does not appear, CheatSheet and Chromium apps.
+    about: Permission lost after an update, overlay does not appear, conflicts with other apps.
   - name: Search existing issues
     url: https://github.com/MHusted01/shortcutlens/issues?q=is%3Aissue
     about: Your question or bug may already be answered.

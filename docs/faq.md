@@ -44,11 +44,11 @@ no longer bypasses Gatekeeper there. On macOS 14 right-click > Open also works.
 - If an app with very deep menus is slow to show, lower **Menu depth** in
   [Settings](settings.md).
 
-## It conflicts with CheatSheet
+## The overlay opens together with another app
 
-CheatSheet also opens when you hold Command, so both apps react at once. Quit
-CheatSheet, or remove it from System Settings > General > Login Items, while
-you use ShortcutLens.
+Other apps that react to holding Command, such as CheatSheet, open at the
+same time as ShortcutLens. Quit the other app or change its trigger while you
+use ShortcutLens.
 
 ## Double-tapping Command also starts Dictation
 
