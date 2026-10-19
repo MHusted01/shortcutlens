@@ -77,7 +77,7 @@ final class ShortcutEditor {
             return nil
         }
         if request.isSandboxed {
-            return "\(request.appName) is sandboxed. Editing its App Shortcuts is not supported yet."
+            return "\(request.appName) is sandboxed. macOS does not let ShortcutLens edit its App Shortcuts."
         }
         return request.bundleID == nil ? "\(request.appName) has no bundle identifier." : nil
     }

@@ -16,7 +16,10 @@ grouped by menu. Click an entry to run that command.
 - A System section lists the macOS shortcuts you have turned on in System
   Settings > Keyboard > Keyboard Shortcuts, such as Spotlight and screenshots.
 - App Shortcuts you defined yourself (System Settings > Keyboard > Keyboard
-  Shortcuts > App Shortcuts) are marked with a person icon.
+  Shortcuts > App Shortcuts) are marked with a person icon. In sandboxed
+  apps such as TextEdit, Safari and Preview, only shortcuts set for "All
+  Applications" are marked: macOS keeps their per-app settings in the app's
+  own data and does not let ShortcutLens read or edit them.
 - Conflicts are marked: when two entries use the same keys, both rows say
   which other entry also uses them ("Also used by System > ..."), within the
   app or against a system shortcut.
