@@ -220,7 +220,8 @@ Implemented by #91.
   view's `contentView`, and on 14/15 in the effect view. `OverlayPanel` picks
   one when it is created.
 - **Header:** app icon 28 x 28, app name `.title3` semibold, height 40. A
-  `Divider()` sits below it, inset to the content padding.
+  The existing divider below it (`dividerHeight` 1) stays the same height and
+  is only restyled: inset to the content padding.
 - **Layout:** `PanelLayout.Metrics.standard` keeps padding 20, column width
   260, column spacing 24, row height 20 and section title height 24. Section
   spacing changes to 16. Update `PanelLayoutTests` in the same PR.
@@ -281,7 +282,13 @@ Implemented by #93.
   - A SwiftUI `Settings` scene with a `TabView`, which gives toolbar tabs with
     a symbol and a label.
   - The menu opens it with `SettingsLink` or `openSettings`. It activates the
-    app first, because the app is an `LSUIElement`.
+    app first, because the app is an `LSUIElement` with a `MenuBarExtra`.
+  - A `Settings` scene is known to be unreliable in menu bar apps: the window
+    may not come to the front, or may not open. Before building on it, #93
+    proves the open path on macOS 14, 15 and 26.
+  - If that fails, keep `SettingsController` and its `NSWindow`, with an
+    `NSTabViewController` (`tabStyle = .toolbar`) whose tabs host the SwiftUI
+    forms. A SwiftUI `TabView` in a plain window does not give toolbar tabs.
   - The window title is the tab name.
   - The scene remembers the last tab with `@AppStorage`.
 - **Tabs and contents.** The settings stay the same and are only regrouped:
@@ -314,13 +321,15 @@ Implemented by #94.
   3. *Allow Accessibility*: a `hand.raised` symbol in `.tint`, then today's
      explanation, the no-data line and the instructions. When the permission
      is detected, the step shows a `checkmark.circle.fill` in `.green` with
-     "Ready", and the window closes after 1 s.
+     "Ready". VoiceOver announces "Accessibility allowed", and the default
+     button becomes Done. The window stays open until the user closes it, so
+     nobody misses the status.
 - **Navigation:**
   - Footer left: "Step N of 3" in `.callout` `.secondary`. VoiceOver reads
     it, and it replaces page dots, so the position is not shown by colour
     only.
   - Footer right, spacing 8: Skip (cancel action), Back (from step 2), and
-    Continue or Open System Settings (default action).
+    Continue, Open System Settings or Done (default action).
 - **Transition:** as in the animation table. VoiceOver focus moves to the new
   step's title.
 
