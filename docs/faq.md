@@ -17,6 +17,29 @@ The last onboarding step explains the permission and opens that pane. Reopen
 it with "Welcome to ShortcutLens…" in the menu bar menu, or with
 "Accessibility Permission Required…" while the permission is missing.
 
+<table>
+  <tr>
+    <td>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="images/onboarding-1-dark.png">
+        <img src="images/onboarding-1-light.png" width="300" alt="Onboarding step 1 of 3, Welcome to ShortcutLens: see every keyboard shortcut of the app you're using">
+      </picture>
+    </td>
+    <td>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="images/onboarding-2-dark.png">
+        <img src="images/onboarding-2-light.png" width="300" alt="Onboarding step 2 of 3, How to use it: hold Command to show the shortcuts, press Command twice to search them">
+      </picture>
+    </td>
+    <td>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="images/onboarding-3-dark.png">
+        <img src="images/onboarding-3-light.png" width="300" alt="Onboarding step 3 of 3 after access is granted: a green checkmark and ShortcutLens is ready">
+      </picture>
+    </td>
+  </tr>
+</table>
+
 ## The permission is gone after an update
 
 The app is ad-hoc signed, so its signature changes with every release and
