@@ -16,6 +16,8 @@ All notable changes to ShortcutLens are listed here. The format follows
   magnifying glass and an accent focus outline, thicker under Increase
   Contrast. When nothing matches, the palette shows a "No matching
   shortcuts" state, which VoiceOver announces. (#92)
+- Settings has toolbar tabs: General, Overlay, Packs and Advanced. The window
+  fits each tab and opens on the tab you used last. (#93)
 
 ## [1.1.0] - 2026-10-19
 

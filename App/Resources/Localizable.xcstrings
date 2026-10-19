@@ -611,16 +611,6 @@
         }
       }
     },
-    "ShortcutLens Settings" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ShortcutLens-indstillinger"
-          }
-        }
-      }
-    },
     "Shortcuts macOS uses can't be recorded. Turn them off in System Settings > Keyboard > Keyboard Shortcuts first." : {
       "localizations" : {
         "da" : {
@@ -697,16 +687,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Skift til den app, hvis genveje du vil have, og vælg dette igen i menulinjen."
-          }
-        }
-      }
-    },
-    "System" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System"
           }
         }
       }
