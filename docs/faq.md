@@ -13,6 +13,10 @@ The setting is in System Settings > Privacy & Security > Accessibility. Newer
 macOS versions name the pane after device control and data access (Danish:
 "Styring af enhed og adgang til data").
 
+The last onboarding step explains the permission and opens that pane. Reopen
+it with "Welcome to ShortcutLens…" in the menu bar menu, or with
+"Accessibility Permission Required…" while the permission is missing.
+
 ## The permission is gone after an update
 
 The app is ad-hoc signed, so its signature changes with every release and

@@ -721,6 +721,16 @@
         }
       }
     },
+    "Welcome to ShortcutLens…" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velkommen til ShortcutLens…"
+          }
+        }
+      }
+    },
     "s" : {
       "localizations" : {
         "da" : {

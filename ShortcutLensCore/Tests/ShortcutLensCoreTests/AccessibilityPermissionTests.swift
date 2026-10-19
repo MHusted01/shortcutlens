@@ -33,12 +33,12 @@ struct AccessibilityPermissionTests {
         #expect(action == .none)
     }
 
-    @Test func closesOnboardingWhenGranted() {
+    @Test func keepsOnboardingOpenWhenGranted() {
         let (missing, _) = AccessibilityPermission.initial.updated(isTrusted: false)
         let (state, action) = missing.updated(isTrusted: true)
 
         #expect(state.status == .granted)
-        #expect(action == .closeOnboarding)
+        #expect(action == .none)
     }
 
     @Test func staysQuietWhileGranted() {
@@ -57,7 +57,7 @@ struct AccessibilityPermissionTests {
 
         #expect(revoked.status == .missing)
         #expect(firstAction == .showOnboarding)
-        #expect(regrantAction == .closeOnboarding)
+        #expect(regrantAction == .none)
         #expect(repeatAction == .none)
     }
 

@@ -53,8 +53,10 @@ xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
 Without that, macOS 15 and later refuse to open the app; right-click > Open
 no longer bypasses Gatekeeper there. On macOS 14 right-click > Open also works.
 
-On first launch, onboarding walks you through granting the Accessibility
-permission in System Settings > Privacy & Security > Accessibility.
+On first launch, a short onboarding in three steps shows what the app does
+and how to use it, then walks you through granting the Accessibility
+permission in System Settings > Privacy & Security > Accessibility. Reopen it
+any time with "Welcome to ShortcutLens…" in the menu bar menu.
 
 Because the signature changes with every release, macOS asks for the
 Accessibility permission again after each update. Remove the old entry in

@@ -71,6 +71,16 @@
         }
       }
     },
+    "Accessibility allowed" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilgængelighed er tilladt"
+          }
+        }
+      }
+    },
     "Add Command, Option or Control." : {
       "localizations" : {
         "da" : {
@@ -141,6 +151,16 @@
         }
       }
     },
+    "Back" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilbage"
+          }
+        }
+      }
+    },
     "Back Tab" : {
       "localizations" : {
         "da" : {
@@ -201,6 +221,16 @@
         }
       }
     },
+    "Continue" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsæt"
+          }
+        }
+      }
+    },
     "Control" : {
       "localizations" : {
         "da" : {
@@ -237,6 +267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Slet"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Færdig"
           }
         }
       }
@@ -351,12 +391,32 @@
         }
       }
     },
+    "Hold Command to show the shortcuts. Click one to use it." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold Command nede for at se genvejene. Klik på en for at bruge den."
+          }
+        }
+      }
+    },
     "Home" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Home"
+          }
+        }
+      }
+    },
+    "How to use it" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sådan bruger du den"
           }
         }
       }
@@ -377,16 +437,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inverter farver"
-          }
-        }
-      }
-    },
-    "Later" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Senere"
           }
         }
       }
@@ -571,22 +621,22 @@
         }
       }
     },
-    "Open Accessibility Settings" : {
+    "Open System Settings" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Åbn indstillinger for Tilgængelighed"
+            "value" : "Åbn Systemindstillinger"
           }
         }
       }
     },
-    "Open System Settings and turn on ShortcutLens under Privacy & Security > Accessibility. This window closes by itself once access is granted." : {
+    "Open System Settings and turn on ShortcutLens under Privacy & Security > Accessibility, then come back here." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Åbn Systemindstillinger, og slå ShortcutLens til under Anonymitet og sikkerhed > Tilgængelighed. Vinduet lukker af sig selv, når adgangen er givet."
+            "value" : "Åbn Systemindstillinger, slå ShortcutLens til under Anonymitet og sikkerhed > Tilgængelighed, og vend så tilbage hertil."
           }
         }
       }
@@ -661,12 +711,32 @@
         }
       }
     },
+    "Press Command twice to search them." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryk to gange på Command for at søge i dem."
+          }
+        }
+      }
+    },
     "Question Mark" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spørgsmålstegn"
+          }
+        }
+      }
+    },
+    "Ready" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klar"
           }
         }
       }
@@ -727,6 +797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indstillinger til skærmbilleder og optagelse"
+          }
+        }
+      }
+    },
+    "See the keyboard shortcuts of the app in front, read from its menu bar." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se tastaturgenvejene i appen forrest, læst fra dens menulinje."
           }
         }
       }
@@ -881,6 +961,16 @@
         }
       }
     },
+    "Skip" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spring over"
+          }
+        }
+      }
+    },
     "Slash" : {
       "localizations" : {
         "da" : {
@@ -897,6 +987,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mellemrum"
+          }
+        }
+      }
+    },
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trin %lld af %lld"
           }
         }
       }
@@ -1007,6 +1107,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pil op"
+          }
+        }
+      }
+    },
+    "Welcome to ShortcutLens" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velkommen til ShortcutLens"
           }
         }
       }
