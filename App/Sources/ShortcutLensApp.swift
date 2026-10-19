@@ -56,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let trigger = TriggerController()
     private let overlay = OverlayController()
     private let editor = ShortcutEditor()
+    /// Lives as long as the app, so it is never removed.
     private var layoutObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_: Notification) {

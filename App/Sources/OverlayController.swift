@@ -130,11 +130,31 @@ final class OverlayController {
 
     /// Drops system shortcuts labelled for the previous layout and stops
     /// reusing a read started before the switch. Menu content stays cached.
+    /// Without system shortcuts no label depends on the layout.
     func keyboardLayoutChanged() {
+        guard readSettings.showsSystemShortcuts else {
+            return
+        }
         Self.log.notice("keyboard layout changed, dropping system shortcut labels")
         layoutEpoch += 1
         inFlight = nil
         systemShortcuts = []
+        rereadOpenPanel()
+    }
+
+    /// An open panel or palette drops the old system section at once and
+    /// shows the new one when the read finishes.
+    private func rereadOpenPanel() {
+        guard isShown || palette != nil, let target,
+              let app = NSRunningApplication(processIdentifier: target.processID)
+        else {
+            return
+        }
+        let key = AppKey(app)
+        if let cached = cache.value(for: key) {
+            display(decorated(cached, bundleID: target.bundleID))
+        }
+        read(key, for: target)
     }
 
     /// Starts reading the frontmost app's menus and shows its cached content
@@ -251,31 +271,6 @@ final class OverlayController {
     private func runFromPalette(_ row: OverlayRow<AXUIElement>) {
         onClosePalette()
         run(row)
-    }
-
-    /// Hides the panel and presses the row's menu item in the target app. Beeps
-    /// when the item was not run (disabled, stale or an AX error).
-    ///
-    /// The press runs off the main actor because it can wait up to the AX
-    /// messaging timeout. The target app stays frontmost throughout: the panel
-    /// never activates ShortcutLens.
-    private func run(_ row: OverlayRow<AXUIElement>) {
-        guard row.isEnabled, let element = row.element.map(UncheckedSendable.init) else {
-            return
-        }
-        hide()
-        Task.detached(priority: .userInitiated) {
-            let outcome = MenuItemRunner(client: SystemAXClient()).run(element.value)
-            // A fixed outcome string only, never the menu title.
-            let description = outcome.logDescription
-            guard outcome != .pressed else {
-                Self.log.notice("menu item \(description, privacy: .public)")
-                return
-            }
-            Self.log.error("menu item not run: \(description, privacy: .public)")
-            // The panel is already hidden, so the beep is the only sign the click did nothing.
-            await MainActor.run { NSSound.beep() }
-        }
     }
 
     private func finishRead(_ result: ReadResult, generation: Int, key: AppKey, layoutEpoch: Int) {
