@@ -16,22 +16,35 @@ public struct ContainerReads: Equatable, Sendable {
     }
 
     private let denied: Set<String>
+    /// Changes each time the denials are forgotten, so a read that started
+    /// before cannot record its denial into the fresh state.
+    public let generation: Int
 
     public init() {
-        self.init(denied: [])
+        self.init(denied: [], generation: 0)
     }
 
-    private init(denied: Set<String>) {
+    private init(denied: Set<String>, generation: Int) {
         self.denied = denied
+        self.generation = generation
     }
 
     public func shouldRead(bundleID: String) -> Bool {
         !denied.contains(bundleID)
     }
 
-    /// A copy that remembers a denial for `bundleID`; other outcomes change nothing.
-    public func recording(_ outcome: Outcome, for bundleID: String) -> Self {
-        outcome == .denied ? Self(denied: denied.union([bundleID])) : self
+    /// A copy that remembers a denial for `bundleID`; other outcomes, and a
+    /// read started in an earlier `generation`, change nothing.
+    public func recording(_ outcome: Outcome, for bundleID: String, generation: Int? = nil) -> Self {
+        guard outcome == .denied, (generation ?? self.generation) == self.generation else {
+            return self
+        }
+        return Self(denied: denied.union([bundleID]), generation: self.generation)
+    }
+
+    /// A copy in a new generation that reads every app again.
+    public func forgettingDenials() -> Self {
+        Self(denied: [], generation: generation &+ 1)
     }
 
     /// The app's own entries: the container's when it was read, otherwise the

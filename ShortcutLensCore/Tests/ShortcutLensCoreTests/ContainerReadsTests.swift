@@ -28,6 +28,31 @@ struct ContainerReadsTests {
         #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
     }
 
+    @Test func forgettingDenialsReadsEveryAppAgain() {
+        let reads = ContainerReads().recording(.denied, for: "com.apple.TextEdit").forgettingDenials()
+
+        #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
+    }
+
+    /// A read that started before the denials were forgotten must not block
+    /// the app again in the fresh state.
+    @Test func ignoresADenialFromAReadStartedBeforeForgetting() {
+        let before = ContainerReads()
+        let generation = before.generation
+
+        let reads = before.forgettingDenials().recording(.denied, for: "com.apple.TextEdit", generation: generation)
+
+        #expect(reads.shouldRead(bundleID: "com.apple.TextEdit"))
+    }
+
+    @Test func recordsADenialFromTheCurrentGeneration() {
+        let reads = ContainerReads().forgettingDenials()
+
+        let denied = reads.recording(.denied, for: "com.apple.TextEdit", generation: reads.generation)
+
+        #expect(!denied.shouldRead(bundleID: "com.apple.TextEdit"))
+    }
+
     @Test func usesTheContainerEntriesWhenRead() {
         let entries = ContainerReads.appEntries(.read(container)) { fallback }
 

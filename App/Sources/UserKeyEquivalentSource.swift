@@ -33,16 +33,20 @@ enum UserKeyEquivalentSource {
     /// Lets every app's container be tried again, e.g. after the user
     /// changed the permission and toggled the setting.
     static func forgetContainerDenials() {
-        containerReads.withLock { $0 = ContainerReads() }
+        containerReads.withLock { $0 = $0.forgettingDenials() }
     }
 
-    /// Reads the container unless it was denied before, and remembers a denial.
+    /// Reads the container unless it was denied before, and remembers a
+    /// denial. The read runs outside the lock, because opening the file may
+    /// wait on the macOS prompt; the generation drops a denial that arrives
+    /// after the denials were forgotten.
     private static func containerOutcome(of bundleID: String) -> ContainerReads.Outcome? {
-        guard containerReads.withLock({ $0.shouldRead(bundleID: bundleID) }) else {
+        let generation: Int? = containerReads.withLock { $0.shouldRead(bundleID: bundleID) ? $0.generation : nil }
+        guard let generation else {
             return nil
         }
         let outcome = readContainer(of: bundleID)
-        containerReads.withLock { $0 = $0.recording(outcome, for: bundleID) }
+        containerReads.withLock { $0 = $0.recording(outcome, for: bundleID, generation: generation) }
         return outcome
     }
 
