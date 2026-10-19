@@ -51,6 +51,6 @@ struct OnboardingStepTests {
     @Test func primaryButtonTitlesAreEnglishByDefault() {
         let buttons: [OnboardingStep.PrimaryButton] = [.continue, .openSettings, .done]
 
-        #expect(buttons.map(\.title) == ["Continue", "Open System Settings", "Done"])
+        #expect(buttons.map(\.title) == ["Continue", "Open Accessibility Settings", "Done"])
     }
 }

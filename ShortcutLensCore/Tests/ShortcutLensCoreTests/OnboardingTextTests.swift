@@ -29,7 +29,7 @@ struct OnboardingTextTests {
             OnboardingText.title, OnboardingText.welcome, OnboardingText.holdCommand,
             OnboardingText.pressCommandTwice, OnboardingText.instructions, OnboardingText.ready,
             OnboardingText.grantedAnnouncement, OnboardingText.skipButton, OnboardingText.backButton,
-            OnboardingText.menuItem,
+            OnboardingText.openSettingsButton, OnboardingText.menuItem,
         ]
 
         #expect(texts.filter(\.isEmpty) == [])

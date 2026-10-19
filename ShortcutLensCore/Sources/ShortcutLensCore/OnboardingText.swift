@@ -8,7 +8,7 @@ public enum OnboardingText {
 
     /// The one-line description on the first step.
     public static let welcome = String(
-        localized: "See the keyboard shortcuts of the app in front, read from its menu bar.",
+        localized: "See every keyboard shortcut of the app you're using.",
         bundle: .module
     )
 
@@ -20,10 +20,9 @@ public enum OnboardingText {
     public static let pressCommandTwice = String(localized: "Press Command twice to search them.", bundle: .module)
 
     public static let explanation = String(localized: """
-    ShortcutLens reads the menu bar of the app in front (menu titles and their \
-    keyboard shortcuts) through the macOS Accessibility API, and presses a menu \
-    item when you click it in the overlay. It does not read window contents, \
-    typed text or other apps' documents, and it does not store what it reads.
+    ShortcutLens needs Accessibility to read the menus of the app you're using and \
+    to click a menu item when you choose it. It doesn't read what's in your \
+    windows or what you type, and it doesn't save what it reads.
     """, bundle: .module)
 
     public static let noData = String(localized: "ShortcutLens collects nothing and sends nothing.", bundle: .module)
@@ -33,13 +32,17 @@ public enum OnboardingText {
     Accessibility, then come back here.
     """, bundle: .module)
 
-    /// Shown in place of `instructions` once the permission is granted.
-    public static let ready = String(localized: "Ready", bundle: .module)
+    /// Shown in place of the explanation once the permission is granted.
+    public static let ready = String(
+        localized: "ShortcutLens is ready. Hold down Command in any app to try it.",
+        bundle: .module
+    )
     /// Spoken by VoiceOver when the permission is granted.
     public static let grantedAnnouncement = String(localized: "Accessibility allowed", bundle: .module)
 
     public static let skipButton = String(localized: "Skip", bundle: .module)
     public static let backButton = String(localized: "Back", bundle: .module)
+    public static let openSettingsButton = String(localized: "Open Accessibility Settings", bundle: .module)
     /// Menu bar entry shown while the permission is missing.
     public static let menuItem = String(localized: "Accessibility Permission Required…", bundle: .module)
 }

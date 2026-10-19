@@ -34,9 +34,9 @@ struct OnboardingView: View {
                 // Every step, hidden, so the window keeps the height of the
                 // tallest one instead of jumping between steps.
                 ForEach(OnboardingStep.allCases, id: \.self) { step in
-                    content(for: step, isGranted: false).hidden()
+                    content(for: step, isGranted: false, isVisible: false).hidden()
                 }
-                content(for: model.step, isGranted: model.isGranted)
+                content(for: model.step, isGranted: model.isGranted, isVisible: true)
                     .id(model.step)
                     .transition(transition)
             }
@@ -46,24 +46,42 @@ struct OnboardingView: View {
         .frame(width: Self.width)
         .fixedSize(horizontal: false, vertical: true)
         .onChange(of: model.step) {
-            // After the new step's title is in the view tree.
+            // Reset first: setting `true` again would not move focus. Set it
+            // after the new step's title is in the view tree.
+            isTitleFocused = false
             DispatchQueue.main.async { isTitleFocused = true }
         }
     }
 
-    private func content(for step: OnboardingStep, isGranted: Bool) -> some View {
+    /// `isVisible` is false for the hidden copies that only set the height;
+    /// only the visible title takes VoiceOver focus.
+    private func content(for step: OnboardingStep, isGranted: Bool, isVisible: Bool) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             visual(for: step, isGranted: isGranted)
                 .frame(width: Self.visualSize, height: Self.visualSize)
                 .accessibilityHidden(true)
-            Text(step.title)
-                .font(.title2.weight(.semibold))
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityFocused($isTitleFocused)
+            title(of: step, isVisible: isVisible)
             paragraphs(for: step, isGranted: isGranted)
+            // A shortcut past the guide while the permission is missing.
+            if step != .accessibility, !isGranted {
+                Button(OnboardingText.openSettingsButton, action: openSettings)
+                    .buttonStyle(.link)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func title(of step: OnboardingStep, isVisible: Bool) -> some View {
+        let title = Text(step.title)
+            .font(.title2.weight(.semibold))
+            .accessibilityAddTraits(.isHeader)
+        if isVisible {
+            title.accessibilityFocused($isTitleFocused)
+        } else {
+            title
+        }
     }
 
     @ViewBuilder
@@ -92,14 +110,12 @@ struct OnboardingView: View {
         case .howToUse:
             Text(OnboardingText.holdCommand)
             Text(OnboardingText.pressCommandTwice)
+        case .accessibility where isGranted:
+            Text(OnboardingText.ready)
         case .accessibility:
             Text(OnboardingText.explanation)
             Text(OnboardingText.noData)
-            if isGranted {
-                Text(OnboardingText.ready).font(.headline)
-            } else {
-                Text(OnboardingText.instructions).foregroundStyle(.secondary)
-            }
+            Text(OnboardingText.instructions).foregroundStyle(.secondary)
         }
     }
 
@@ -109,15 +125,30 @@ struct OnboardingView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button(OnboardingText.skipButton, action: close)
-                .keyboardShortcut(.cancelAction)
-            if let previous = model.step.previous {
+            let primary = model.step.primaryButton(isGranted: model.isGranted)
+            // Done also closes, so Skip next to it would be a second Done.
+            if primary == .done {
+                escapeCloses
+            } else {
+                Button(OnboardingText.skipButton, action: close)
+                    .keyboardShortcut(.cancelAction)
+            }
+            if model.step.showsBack, let previous = model.step.previous {
                 Button(OnboardingText.backButton) { move(to: previous, forward: false) }
             }
-            let primary = model.step.primaryButton(isGranted: model.isGranted)
             Button(primary.title) { perform(primary) }
                 .keyboardShortcut(.defaultAction)
         }
+    }
+
+    /// Keeps Escape closing the window while Skip is not shown.
+    private var escapeCloses: some View {
+        Button(action: close) { EmptyView() }
+            .keyboardShortcut(.cancelAction)
+            .buttonStyle(.plain)
+            .frame(width: 0, height: 0)
+            .opacity(0)
+            .accessibilityHidden(true)
     }
 
     /// Slides 8 pt in the direction of travel while cross-fading; only

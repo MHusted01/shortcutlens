@@ -621,12 +621,12 @@
         }
       }
     },
-    "Open System Settings" : {
+    "Open Accessibility Settings" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Åbn Systemindstillinger"
+            "value" : "Åbn indstillinger for Tilgængelighed"
           }
         }
       }
@@ -731,16 +731,6 @@
         }
       }
     },
-    "Ready" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Klar"
-          }
-        }
-      }
-    },
     "Return" : {
       "localizations" : {
         "da" : {
@@ -801,12 +791,12 @@
         }
       }
     },
-    "See the keyboard shortcuts of the app in front, read from its menu bar." : {
+    "See every keyboard shortcut of the app you're using." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se tastaturgenvejene i appen forrest, læst fra dens menulinje."
+            "value" : "Se alle tastaturgenveje i den app, du bruger."
           }
         }
       }
@@ -871,12 +861,22 @@
         }
       }
     },
-    "ShortcutLens reads the menu bar of the app in front (menu titles and their keyboard shortcuts) through the macOS Accessibility API, and presses a menu item when you click it in the overlay. It does not read window contents, typed text or other apps' documents, and it does not store what it reads." : {
+    "ShortcutLens is ready. Hold down Command in any app to try it." : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ShortcutLens læser menulinjen i appen forrest (menutitler og deres tastaturgenveje) via macOS' Tilgængelighed-API og vælger et menupunkt, når du klikker på det i oversigten. Den læser ikke indholdet af vinduer, indtastet tekst eller andre appers dokumenter, og den gemmer ikke det, den læser."
+            "value" : "ShortcutLens er klar. Hold Command nede i en app for at prøve den."
+          }
+        }
+      }
+    },
+    "ShortcutLens needs Accessibility to read the menus of the app you're using and to click a menu item when you choose it. It doesn't read what's in your windows or what you type, and it doesn't save what it reads." : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ShortcutLens skal bruge Tilgængelighed for at læse menuerne i den app, du bruger, og for at vælge et menupunkt, når du klikker på det. Den læser ikke indholdet af dine vinduer eller det, du skriver, og den gemmer ikke det, den læser."
           }
         }
       }

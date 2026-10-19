@@ -19,7 +19,7 @@ public enum OnboardingStep: Int, CaseIterable, Sendable {
         public var title: String {
             switch self {
             case .continue: String(localized: "Continue", bundle: .module)
-            case .openSettings: String(localized: "Open System Settings", bundle: .module)
+            case .openSettings: OnboardingText.openSettingsButton
             case .done: String(localized: "Done", bundle: .module)
             }
         }
