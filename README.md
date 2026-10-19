@@ -153,7 +153,8 @@ System Settings and add the new app.
 
 ## Development
 
-Requirements: Xcode 16 or later, plus `brew install xcodegen swiftlint swiftformat`.
+Requirements: Xcode 27 or later (older SwiftPM does not compile the string
+catalogs), plus `brew install xcodegen swiftlint swiftformat`.
 
 ```sh
 make generate   # create ShortcutLens.xcodeproj from project.yml
