@@ -14,15 +14,36 @@ enum UserKeyEquivalentSource {
     /// A string, not `CFString`: a `CFString` static is not `Sendable`.
     private static let key = "NSUserKeyEquivalents"
     private static let log = Logger(subsystem: "dev.shortcutlens", category: "appshortcuts")
+    /// Shared by concurrent background reads.
+    private static let containerReads = OSAllocatedUnfairLock(initialState: ContainerReads())
 
     /// The global entries plus those of `bundleID`; empty when none are set.
     /// With `readsContainer`, the app's entries come from its sandbox
-    /// container, falling back to the plain read when that fails.
+    /// container, falling back to the plain read when that fails. An app
+    /// whose container was denied once is not asked again.
     static func equivalents(bundleID: String?, readsContainer: Bool = false) -> UserKeyEquivalents {
         let app = bundleID.map { id in
-            (readsContainer ? containerEntries(of: id) : nil) ?? entries(in: id as CFString)
+            ContainerReads.appEntries(readsContainer ? containerOutcome(of: id) : nil) {
+                entries(in: id as CFString)
+            }
         } ?? []
         return UserKeyEquivalents(global: entries(in: kCFPreferencesAnyApplication), app: app)
+    }
+
+    /// Lets every app's container be tried again, e.g. after the user
+    /// changed the permission and toggled the setting.
+    static func forgetContainerDenials() {
+        containerReads.withLock { $0 = ContainerReads() }
+    }
+
+    /// Reads the container unless it was denied before, and remembers a denial.
+    private static func containerOutcome(of bundleID: String) -> ContainerReads.Outcome? {
+        guard containerReads.withLock({ $0.shouldRead(bundleID: bundleID) }) else {
+            return nil
+        }
+        let outcome = readContainer(of: bundleID)
+        containerReads.withLock { $0 = $0.recording(outcome, for: bundleID) }
+        return outcome
     }
 
     /// The entries stored in exactly this domain, without the global fallback
@@ -35,14 +56,13 @@ enum UserKeyEquivalentSource {
         return UserKeyEquivalent.parse(value as? [String: Any] ?? [:])
     }
 
-    /// The entries in the app's container preferences; nil when the file is
-    /// missing, not permitted, not a regular file or not a valid plist.
-    /// Opening it is what may show the macOS "access data from other apps"
-    /// prompt; a denial fails with `EPERM` and is logged without the app.
-    private static func containerEntries(of bundleID: String) -> [UserKeyEquivalent]? {
+    /// The entries in the app's container preferences. Opening the file is
+    /// what may show the macOS "access data from other apps" prompt; a denial
+    /// fails with `EPERM` and is logged without the app.
+    private static func readContainer(of bundleID: String) -> ContainerReads.Outcome {
         let home = FileManager.default.homeDirectoryForCurrentUser
         guard let url = SandboxContainer.preferencesFile(bundleID: bundleID, home: home) else {
-            return nil
+            return .unavailable
         }
         // Non-blocking and checked on the descriptor, like `PackSource`, so a
         // FIFO or other special file can neither block nor be read.
@@ -50,9 +70,10 @@ enum UserKeyEquivalentSource {
         guard descriptor >= 0 else {
             let code = errno
             log.notice("container preferences not read, errno \(code, privacy: .public)")
-            return nil
+            return code == EPERM || code == EACCES ? .denied : .unavailable
         }
-        let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
+        // Closed once, by the `defer`.
+        let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: false)
         defer { try? handle.close() }
         var info = stat()
         guard fstat(descriptor, &info) == 0, info.st_mode & S_IFMT == S_IFREG,
@@ -60,8 +81,8 @@ enum UserKeyEquivalentSource {
               let entries = SandboxContainer.equivalents(fromPreferences: data)
         else {
             log.notice("container preferences not usable")
-            return nil
+            return .unavailable
         }
-        return entries
+        return .read(entries)
     }
 }

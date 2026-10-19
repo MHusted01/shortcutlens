@@ -39,6 +39,9 @@ final class SettingsController {
         guard newSettings != settings else {
             return
         }
+        if newSettings.readsSandboxedAppShortcuts != settings.readsSandboxedAppShortcuts {
+            UserKeyEquivalentSource.forgetContainerDenials()
+        }
         settings = newSettings
         newSettings.save(to: store)
         onChange(newSettings)

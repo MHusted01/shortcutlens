@@ -70,7 +70,8 @@ apply at once and are stored locally in the app's preferences.
   in their own data, so without this only "All Applications" shortcuts are
   marked in them. When on, ShortcutLens reads (never changes) that app's
   preferences file, and macOS asks once whether ShortcutLens may access data
-  from other apps. If you decline, nothing else changes.
+  from other apps. If you decline, nothing else changes,
+  and ShortcutLens stops asking for that app until you toggle the setting.
 - **Shortcut packs:** how many packs are in use, and any pack file that could
   not be loaded, with the reason. Show Packs Folder opens the folder for your
   own packs. See [docs/packs.md](docs/packs.md) for the format.
