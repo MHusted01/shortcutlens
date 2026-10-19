@@ -4,7 +4,8 @@ import Observation
 import ShortcutLensCore
 import SwiftUI
 
-/// Watches the Accessibility permission and drives the onboarding window.
+/// Watches the Accessibility permission and drives the onboarding window,
+/// which shows the permission's live status on its last step.
 ///
 /// Uses `AXIsProcessTrusted`, which never shows the system prompt; the
 /// onboarding window is the only place the permission is asked for. macOS posts
@@ -25,21 +26,41 @@ final class PermissionController {
     @ObservationIgnored var onChange: (AccessibilityPermission) -> Void = { _ in }
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var window: NSWindow?
+    @ObservationIgnored private let onboarding = OnboardingModel()
 
     func start() {
         check()
     }
 
-    func showOnboarding() {
-        let window = window ?? makeWindow()
-        self.window = window
+    /// Opens onboarding on `step`; the window is centred only the first time.
+    func showOnboarding(at step: OnboardingStep = .welcome) {
+        onboarding.step = step
+        if window == nil {
+            let window = makeWindow()
+            window.center()
+            self.window = window
+        }
         NSApp.activate()
-        window.center()
-        window.makeKeyAndOrderFront(nil)
+        window?.makeKeyAndOrderFront(nil)
     }
 
     private func closeOnboarding() {
         window?.close()
+    }
+
+    /// Tells VoiceOver users on the onboarding window that the permission arrived.
+    private func announceGrant() {
+        guard window?.isVisible == true, NSWorkspace.shared.isVoiceOverEnabled else {
+            return
+        }
+        NSAccessibility.post(
+            element: NSApp as Any,
+            notification: .announcementRequested,
+            userInfo: [
+                .announcement: OnboardingText.grantedAnnouncement,
+                .priority: NSAccessibilityPriorityLevel.high.rawValue,
+            ]
+        )
     }
 
     private func openSettings() {
@@ -52,16 +73,16 @@ final class PermissionController {
     private func check() {
         let (state, action) = permission.updated(isTrusted: AXIsProcessTrusted())
         if state != permission {
+            let wasGranted = permission.isGranted
             permission = state
+            onboarding.isGranted = state.isGranted
             onChange(state)
+            if state.isGranted, !wasGranted {
+                announceGrant()
+            }
         }
-        switch action {
-        case .showOnboarding:
+        if action == .showOnboarding {
             showOnboarding()
-        case .closeOnboarding:
-            closeOnboarding()
-        case .none:
-            break
         }
         updatePolling()
     }
@@ -84,13 +105,17 @@ final class PermissionController {
 
     private func makeWindow() -> NSWindow {
         let view = OnboardingView(
+            model: onboarding,
             openSettings: { [weak self] in self?.openSettings() },
-            later: { [weak self] in self?.closeOnboarding() }
+            close: { [weak self] in self?.closeOnboarding() }
         )
-        let window = NSWindow(contentViewController: NSHostingController(rootView: view))
+        let hosting = NSHostingController(rootView: view)
+        let window = NSWindow(contentViewController: hosting)
         window.title = "ShortcutLens"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
+        // The final size before the window is centred, so it is centred on that.
+        window.setContentSize(hosting.view.fittingSize)
         return window
     }
 }

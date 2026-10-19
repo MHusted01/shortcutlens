@@ -25,10 +25,17 @@ struct OnboardingTextTests {
     }
 
     @Test func textsAreNotEmpty() {
-        #expect(!OnboardingText.title.isEmpty)
-        #expect(!OnboardingText.instructions.isEmpty)
-        #expect(!OnboardingText.openSettingsButton.isEmpty)
-        #expect(!OnboardingText.laterButton.isEmpty)
-        #expect(!OnboardingText.menuItem.isEmpty)
+        let texts = [
+            OnboardingText.title, OnboardingText.welcome, OnboardingText.holdCommand,
+            OnboardingText.pressCommandTwice, OnboardingText.instructions, OnboardingText.ready,
+            OnboardingText.grantedAnnouncement, OnboardingText.skipButton, OnboardingText.backButton,
+            OnboardingText.openSettingsButton, OnboardingText.menuItem,
+        ]
+
+        #expect(texts.filter(\.isEmpty) == [])
+    }
+
+    @Test func instructionsNoLongerPromiseTheWindowCloses() {
+        #expect(!OnboardingText.instructions.contains("closes"))
     }
 }
