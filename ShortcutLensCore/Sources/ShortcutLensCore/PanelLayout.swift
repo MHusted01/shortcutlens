@@ -3,7 +3,8 @@ import CoreGraphics
 /// The overlay's column split and panel size for a screen.
 ///
 /// Rows and section titles have fixed heights, so everything is computed
-/// before rendering. Sections are separated by `sectionSpacing`; the last
+/// before rendering. A row is one line, or two with a conflict note; see
+/// `OverlaySection.lineCount`. Sections are separated by `sectionSpacing`; the last
 /// section of a column has none below it.
 public enum PanelLayout {
     /// Fixed sizes of the overlay, in points.
@@ -70,16 +71,16 @@ public enum PanelLayout {
         public let scrolls: Bool
     }
 
-    /// The layout for sections with `rowCounts` rows on a screen whose
+    /// The layout for sections `lineCounts` rows tall on a screen whose
     /// visible area is `visible`.
-    public static func layout(rowCounts: [Int], metrics: Metrics, visible: CGSize) -> Result {
+    public static func layout(lineCounts: [Int], metrics: Metrics, visible: CGSize) -> Result {
         let maxWidth = visible.width * metrics.screenFraction - metrics.padding * 2
         let maxHeight = visible.height * metrics.screenFraction - metrics.chromeHeight
         // Each section counts the spacing below it, so one spacing is added
         // to the limit and taken off the result for the last section.
         let spacing = Int(metrics.sectionSpacing)
-        let heights = rowCounts.map { rows in
-            Int(metrics.sectionTitleHeight + Double(rows) * metrics.rowHeight) + spacing
+        let heights = lineCounts.map { lines in
+            Int(metrics.sectionTitleHeight + Double(lines) * metrics.rowHeight) + spacing
         }
         let maxColumns = ColumnLayout.columnCount(
             availableWidth: maxWidth,
@@ -96,9 +97,9 @@ public enum PanelLayout {
         return Result(columns: columns, size: size, scrolls: tallest > maxHeight)
     }
 
-    /// The layout for sections with `rowCounts` rows inside a panel of
+    /// The layout for sections `lineCounts` rows tall inside a panel of
     /// `size`, such as filtered rows in the panel sized for all rows.
-    public static func layout(rowCounts: [Int], metrics: Metrics, fitting size: CGSize) -> Result {
+    public static func layout(lineCounts: [Int], metrics: Metrics, fitting size: CGSize) -> Result {
         // Undo the screen fraction; the half point keeps rounding from
         // dropping a column or a row that fits exactly.
         let tolerance = 0.5
@@ -106,6 +107,6 @@ public enum PanelLayout {
             width: (size.width + tolerance) / metrics.screenFraction,
             height: (size.height + tolerance) / metrics.screenFraction
         )
-        return layout(rowCounts: rowCounts, metrics: metrics, visible: visible)
+        return layout(lineCounts: lineCounts, metrics: metrics, visible: visible)
     }
 }

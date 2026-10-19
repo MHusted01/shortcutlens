@@ -141,6 +141,9 @@ private struct RowView: View {
     private static let disabledOpacity = 0.4
     /// Marks a shortcut the user set in App Shortcuts.
     private static let customSymbol = "person.crop.circle"
+    /// Marks a shortcut whose keys another row also uses.
+    private static let conflictSymbol = "exclamationmark.triangle.fill"
+    private static let conflictColor = Color.orange
 
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
@@ -149,24 +152,18 @@ private struct RowView: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
-                Text(row.title)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Spacer(minLength: 8)
-                if row.isCustom {
-                    Image(systemName: Self.customSymbol)
-                        .foregroundStyle(.tint)
-                        .imageScale(.small)
-                        .help("Set in App Shortcuts")
-                        // The row's label already says "custom shortcut".
-                        .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 0) {
+                line
+                if let conflict = row.conflict {
+                    Text(conflict)
+                        .font(.caption)
+                        .foregroundStyle(Self.conflictColor)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .help(conflict)
+                        .frame(height: metrics.rowHeight)
                 }
-                Text(row.keys)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
             }
-            .frame(height: metrics.rowHeight)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -178,8 +175,43 @@ private struct RowView: View {
                 .fill(highlight)
         }
         .onHover { isHovered = $0 }
-        .accessibilityLabel(row.isCustom ? "\(row.title), \(row.keys), custom shortcut" : "\(row.title), \(row.keys)")
+        .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    /// Title, markers and keys; a conflict adds a caption line below it.
+    private var line: some View {
+        HStack(spacing: 8) {
+            Text(row.title)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer(minLength: 8)
+            if row.isCustom {
+                Image(systemName: Self.customSymbol)
+                    .foregroundStyle(.tint)
+                    .imageScale(.small)
+                    .help("Set in App Shortcuts")
+                    // The row's label already says "custom shortcut".
+                    .accessibilityHidden(true)
+            }
+            if row.conflict != nil {
+                Image(systemName: Self.conflictSymbol)
+                    .foregroundStyle(Self.conflictColor)
+                    .imageScale(.small)
+                    // The row's label already includes the conflict.
+                    .accessibilityHidden(true)
+            }
+            Text(row.keys)
+                .foregroundStyle(row.conflict == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(Self.conflictColor))
+                .monospacedDigit()
+        }
+        .frame(height: metrics.rowHeight)
+    }
+
+    private var accessibilityLabel: String {
+        let custom = row.isCustom ? ["custom shortcut"] : []
+        let conflict = row.conflict.map { [$0] } ?? []
+        return ([row.title, row.keys] + custom + conflict).joined(separator: ", ")
     }
 
     private var highlight: Color {

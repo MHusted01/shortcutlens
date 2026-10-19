@@ -14,7 +14,7 @@ extension OverlayController {
             return (.empty, placeholderSize)
         }
         let result = PanelLayout.layout(
-            rowCounts: content.sections.map(\.rows.count),
+            lineCounts: content.sections.map(\.lineCount),
             metrics: .standard,
             visible: visible.size
         )
@@ -31,7 +31,7 @@ extension OverlayController {
             return .noMatches
         }
         let result = PanelLayout.layout(
-            rowCounts: visible.sections.map(\.rows.count),
+            lineCounts: visible.sections.map(\.lineCount),
             metrics: .standard,
             fitting: size
         )
