@@ -43,5 +43,9 @@ translations, no code:
 
 ## Releases
 
-Maintainers tag a commit on `main` with `vX.Y.Z`. The release workflow builds,
-ad-hoc signs and zips the app and publishes it with a SHA-256 checksum.
+Changes go under `## [Unreleased]` in `CHANGELOG.md`. Before a release, that
+section is renamed to `## [X.Y.Z] - YYYY-MM-DD` in a PR. Maintainers then tag
+the merged commit on `main` with `vX.Y.Z`. The release workflow builds, ad-hoc
+signs and zips the app and publishes it with a SHA-256 checksum, using the
+version's `CHANGELOG.md` section as the release notes. A tag without a
+matching section fails before the build.
