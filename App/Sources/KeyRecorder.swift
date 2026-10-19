@@ -3,8 +3,9 @@ import ShortcutLensCore
 import SwiftUI
 
 /// A pressed key as an App Shortcut needs it: the character the key types
-/// without modifiers, in the current layout, and the modifiers held. The key
-/// code and the shifted character are kept for practice answers.
+/// without modifiers, in the current layout (AppKit's character for named
+/// keys such as F1), and the modifiers held. The key code and the shifted
+/// character are kept for practice answers.
 struct RecordedKeys: Equatable {
     let key: String
     let modifiers: ModifierMask
@@ -12,7 +13,11 @@ struct RecordedKeys: Equatable {
     let shiftedKey: String?
 
     init(_ event: NSEvent) {
-        key = event.characters(byApplyingModifiers: []) ?? ""
+        key = ShortcutRecording.key(
+            keyCode: Int(event.keyCode),
+            layoutCharacter: event.characters(byApplyingModifiers: []) ?? "",
+            appKitCharacter: event.charactersIgnoringModifiers ?? ""
+        )
         modifiers = ModifierMask(eventFlags: Int(event.modifierFlags.rawValue))
         keyCode = Int(event.keyCode)
         shiftedKey = event.characters(byApplyingModifiers: .shift)
@@ -79,7 +84,7 @@ struct KeyRecorder: NSViewRepresentable {
         }
 
         /// Return and Escape without modifiers go to the Save and Cancel
-        /// buttons; they are named keys the recorder rejects anyway.
+        /// buttons; as App Shortcuts they would need a modifier anyway.
         private static func isDialogKey(_ event: NSEvent) -> Bool {
             let modifiers: NSEvent.ModifierFlags = [.command, .option, .control, .shift]
             return dialogKeyCodes.contains(event.keyCode)
