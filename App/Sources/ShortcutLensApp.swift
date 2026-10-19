@@ -20,6 +20,16 @@ struct ShortcutLensApp: App {
             }
             .keyboardShortcut(",")
             Divider()
+            // Exports the app that was frontmost when the menu opened.
+            Button("Export Shortcuts as Markdown…") {
+                appDelegate.exporter.exportMarkdown()
+            }
+            .disabled(!appDelegate.permission.permission.isGranted)
+            Button("Print Shortcuts…") {
+                appDelegate.exporter.printSheet()
+            }
+            .disabled(!appDelegate.permission.permission.isGranted)
+            Divider()
             Button("Quit ShortcutLens") {
                 NSApplication.shared.terminate(nil)
             }
@@ -36,6 +46,7 @@ struct ShortcutLensApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let permission = PermissionController()
     let settings = SettingsController()
+    let exporter = CheatSheetExporter()
     private let trigger = TriggerController()
     private let overlay = OverlayController()
     private let editor = ShortcutEditor()
@@ -56,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func apply(_ settings: AppSettings) {
         trigger.setDelay(settings.triggerDelay)
         overlay.apply(settings)
+        exporter.apply(settings)
     }
 }
 
