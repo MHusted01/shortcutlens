@@ -46,6 +46,9 @@ struct OverlayView: View {
     let onSelect: (OverlayRow<AXUIElement>) -> Void
     /// Opens the shortcut editor for a menu item row; nil hides "Edit Shortcut…".
     var onEdit: ((RowID, OverlayRow<AXUIElement>) -> Void)?
+    /// Adds a menu item row to the favourites or removes it; nil hides the
+    /// menu entry.
+    var onFavourite: ((OverlayRow<AXUIElement>) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -106,7 +109,8 @@ struct OverlayView: View {
                 VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
                     ForEach(columns[column], id: \.self) { index in
                         SectionView(
-                            section: sections[index], selection: palette?.selection, onSelect: onSelect, onEdit: onEdit
+                            section: sections[index], selection: palette?.selection, onSelect: onSelect, onEdit: onEdit,
+                            onFavourite: onFavourite
                         )
                     }
                 }
@@ -121,6 +125,7 @@ private struct SectionView: View {
     let selection: RowID?
     let onSelect: (OverlayRow<AXUIElement>) -> Void
     let onEdit: ((RowID, OverlayRow<AXUIElement>) -> Void)?
+    let onFavourite: ((OverlayRow<AXUIElement>) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -130,14 +135,20 @@ private struct SectionView: View {
                 .frame(height: metrics.sectionTitleHeight, alignment: .topLeading)
             ForEach(section.rows) { row in
                 let id = RowID(section: section.id, row: row.id)
-                RowView(row: row, isSelected: id == selection) { onSelect(row) }
-                    .id(id)
-                    .contextMenu {
-                        // Only menu items have an App Shortcut to edit.
-                        if let onEdit, row.element != nil {
-                            Button("Edit Shortcut…") { onEdit(id, row) }
-                        }
+                // Every row in Favourites is one, so the star would only repeat the title.
+                RowView(row: row, isSelected: id == selection, showsStar: row.isFavourite && !section.isPinned) {
+                    onSelect(row)
+                }
+                .id(id)
+                .contextMenu {
+                    // Only menu items have an App Shortcut to edit.
+                    if let onEdit, row.element != nil {
+                        Button("Edit Shortcut…") { onEdit(id, row) }
                     }
+                    if let onFavourite, row.canBeFavourite {
+                        Button(row.isFavourite ? "Remove from Favourites" : "Add to Favourites") { onFavourite(row) }
+                    }
+                }
             }
         }
     }
@@ -155,9 +166,13 @@ private struct RowView: View {
     /// Marks a shortcut whose keys another row also uses.
     private static let conflictSymbol = "exclamationmark.triangle.fill"
     private static let conflictColor = Color.orange
+    /// Marks a row the user added to the favourites.
+    private static let favouriteSymbol = "star.fill"
+    private static let favouriteColor = Color.yellow
 
     let row: OverlayRow<AXUIElement>
     let isSelected: Bool
+    let showsStar: Bool
     let action: () -> Void
     @State private var isHovered = false
 
@@ -197,6 +212,14 @@ private struct RowView: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 8)
+            if showsStar {
+                Image(systemName: Self.favouriteSymbol)
+                    .foregroundStyle(Self.favouriteColor)
+                    .imageScale(.small)
+                    .help("In Favourites")
+                    // The row's label already says "favourite".
+                    .accessibilityHidden(true)
+            }
             if row.isCustom {
                 Image(systemName: Self.customSymbol)
                     .foregroundStyle(.tint)
@@ -220,9 +243,10 @@ private struct RowView: View {
     }
 
     private var accessibilityLabel: String {
+        let favourite = showsStar ? ["favourite"] : []
         let custom = row.isCustom ? ["custom shortcut"] : []
         let conflict = row.conflict.map { [$0] } ?? []
-        return ([row.title, row.keys] + custom + conflict).joined(separator: ", ")
+        return ([row.title, row.keys] + favourite + custom + conflict).joined(separator: ", ")
     }
 
     private var highlight: Color {

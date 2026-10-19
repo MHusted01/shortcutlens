@@ -94,11 +94,15 @@ public struct OverlaySection<Element>: Identifiable {
     public let id: Int
     public let title: String
     public let rows: [OverlayRow<Element>]
+    /// True for the Favourites section, whose rows are copies of rows in
+    /// other sections; see `pinning(_:)`.
+    public let isPinned: Bool
 
-    public init(id: Int, title: String, rows: [OverlayRow<Element>]) {
+    public init(id: Int, title: String, rows: [OverlayRow<Element>], isPinned: Bool = false) {
         self.id = id
         self.title = title
         self.rows = rows
+        self.isPinned = isPinned
     }
 
     /// The height of the rows in row heights; see `OverlayRow.lineCount`.
@@ -119,6 +123,8 @@ public struct OverlayRow<Element>: Identifiable {
     public let isEnabled: Bool
     /// True when the user set this shortcut in App Shortcuts.
     public let isCustom: Bool
+    /// True when the user pinned the item to the Favourites section.
+    public let isFavourite: Bool
     /// The keys, for finding conflicts; nil when built without them.
     public let combo: KeyCombo?
     /// What else uses these keys, e.g. "Also used by System > Lock Screen".
@@ -135,6 +141,7 @@ public struct OverlayRow<Element>: Identifiable {
         keys: String,
         isEnabled: Bool = true,
         isCustom: Bool = false,
+        isFavourite: Bool = false,
         combo: KeyCombo? = nil,
         conflict: String? = nil,
         menuPath: [String] = [],
@@ -145,6 +152,7 @@ public struct OverlayRow<Element>: Identifiable {
         self.keys = keys
         self.isEnabled = isEnabled
         self.isCustom = isCustom
+        self.isFavourite = isFavourite
         self.combo = combo
         self.conflict = conflict
         self.menuPath = menuPath
@@ -153,10 +161,31 @@ public struct OverlayRow<Element>: Identifiable {
 
     /// A copy with `conflict` replaced.
     public func with(conflict: String?) -> Self {
+        copy(conflict: conflict)
+    }
+
+    /// A copy with `id` replaced.
+    func with(id: Int) -> Self {
+        copy(id: id)
+    }
+
+    /// A copy with `isFavourite` replaced.
+    func with(isFavourite: Bool) -> Self {
+        copy(isFavourite: isFavourite)
+    }
+
+    private func copy(id: Int? = nil, isFavourite: Bool? = nil, conflict: String?? = nil) -> Self {
         Self(
-            id: id, title: title, keys: keys, isEnabled: isEnabled, isCustom: isCustom,
-            combo: combo, conflict: conflict, menuPath: menuPath, element: element
+            id: id ?? self.id, title: title, keys: keys, isEnabled: isEnabled, isCustom: isCustom,
+            isFavourite: isFavourite ?? self.isFavourite, combo: combo, conflict: conflict ?? self.conflict,
+            menuPath: menuPath, element: element
         )
+    }
+
+    /// Whether the row can be pinned: only menu items have a path to find
+    /// them by again.
+    public var canBeFavourite: Bool {
+        element != nil && !menuPath.isEmpty
     }
 
     /// Rows have a fixed height; a conflict adds a second line for its

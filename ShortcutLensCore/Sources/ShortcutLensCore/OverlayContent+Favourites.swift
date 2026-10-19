@@ -1,0 +1,32 @@
+public extension OverlayContent {
+    /// The title of the section that lists the favourites.
+    static var favouritesTitle: String {
+        "Favourites"
+    }
+
+    /// A copy with a first Favourites section that lists the menu rows at
+    /// `paths`, in that order. The originals stay in their sections and are
+    /// marked `isFavourite`. Paths without a menu row are skipped; with none
+    /// left, no section is added. A previous Favourites section is replaced,
+    /// so this can be applied again after the favourites change.
+    func pinning(_ paths: [[String]]) -> Self {
+        let wanted = Set(paths)
+        let base = sections.filter { !$0.isPinned }.map { section in
+            OverlaySection(id: section.id, title: section.title, rows: section.rows.map { row in
+                row.with(isFavourite: row.canBeFavourite && wanted.contains(row.menuPath))
+            })
+        }
+        let rows = base.flatMap(\.rows)
+        let pinned = paths
+            .compactMap { path in rows.first { $0.isFavourite && $0.menuPath == path } }
+            .enumerated()
+            .map { $0.element.with(id: $0.offset) }
+        let favourites = pinned.isEmpty
+            ? []
+            : [OverlaySection(id: 0, title: Self.favouritesTitle, rows: pinned, isPinned: true)]
+        let renumbered = (favourites + base).enumerated().map { offset, section in
+            OverlaySection(id: offset, title: section.title, rows: section.rows, isPinned: section.isPinned)
+        }
+        return Self(appName: appName, sections: renumbered).markingConflicts()
+    }
+}

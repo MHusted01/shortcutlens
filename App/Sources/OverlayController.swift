@@ -20,8 +20,9 @@ import SwiftUI
 /// through `onClosePalette`, so the trigger state machine always knows.
 ///
 /// System shortcuts are read with the menus, off the main actor, and appended
-/// as a last, display-only section. The cache holds menu and pack content
-/// only.
+/// as a last, display-only section. Favourites are pinned as a first section
+/// when content is shown and again when one is toggled. The cache holds menu
+/// and pack content only.
 @MainActor
 final class OverlayController {
     nonisolated static let log = Logger(subsystem: "dev.shortcutlens", category: "overlay")
@@ -85,6 +86,7 @@ final class OverlayController {
 
     private var readSettings = AppSettings.defaults
     private var systemShortcuts: [MenuShortcut] = []
+    private var favourites = Favourites(store: UserDefaults.standard)
 
     init() {
         panel.onResignKey = { [weak self] in self?.onClosePalette() }
@@ -135,7 +137,7 @@ final class OverlayController {
             return
         }
         let key = AppKey(app)
-        content = cache.value(for: key).map(withSystemShortcuts)
+        content = cache.value(for: key).map { decorated($0, bundleID: app.bundleIdentifier) }
         let target = Target(
             generation: generation, name: app.localizedName ?? "", processID: app.processIdentifier,
             bundleID: app.bundleIdentifier,
@@ -196,7 +198,8 @@ final class OverlayController {
         let select: (OverlayRow<AXUIElement>) -> Void = { [weak self] row in self?.runFromPalette(row) }
         let view = OverlayView(
             appName: target.name, icon: target.icon, content: .loading, palette: model, onSelect: select,
-            onEdit: { [weak self] id, row in self?.edit(row, id: id) }
+            onEdit: { [weak self] id, row in self?.edit(row, id: id) },
+            onFavourite: { [weak self] row in self?.toggleFavourite(row) }
         )
         let size = refreshPalette()
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
@@ -285,7 +288,11 @@ final class OverlayController {
         }
         // A read started before the toggle was turned off must not bring them back.
         systemShortcuts = readSettings.showsSystemShortcuts ? result.systemShortcuts : []
-        let content = withSystemShortcuts(cache.value(for: key) ?? result.content)
+        display(decorated(cache.value(for: key) ?? result.content, bundleID: target?.bundleID))
+    }
+
+    /// Makes `content` the shown content and updates an open panel or palette.
+    private func display(_ content: OverlayContent<AXUIElement>) {
         self.content = content
         if let palette {
             self.palette = palette.with(palette.state.with(content: content))
@@ -296,6 +303,17 @@ final class OverlayController {
         }
     }
 
+    /// Adds the row's menu item to the target app's favourites, or removes
+    /// it, saves them and shows the content again with the change.
+    private func toggleFavourite(_ row: OverlayRow<AXUIElement>) {
+        guard let target, let content, row.canBeFavourite else {
+            return
+        }
+        favourites = favourites.toggling(row.menuPath, bundleID: target.bundleID)
+        favourites.save(to: UserDefaults.standard)
+        display(content.pinning(favourites.paths(for: target.bundleID)))
+    }
+
     private func render() {
         guard let target, let visible = Self.visibleFrameUnderPointer() else {
             return
@@ -304,20 +322,16 @@ final class OverlayController {
         let view = OverlayView(
             appName: target.name, icon: target.icon, content: body,
             onSelect: { [weak self] row in self?.run(row) },
-            onEdit: { [weak self] id, row in self?.edit(row, id: id) }
+            onEdit: { [weak self] id, row in self?.edit(row, id: id) },
+            onFavourite: { [weak self] row in self?.toggleFavourite(row) }
         )
         panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
     }
 
-    private func withSystemShortcuts(_ content: OverlayContent<AXUIElement>) -> OverlayContent<AXUIElement> {
+    /// Cached content with the system shortcuts after it and the favourites before it.
+    private func decorated(_ content: OverlayContent<AXUIElement>, bundleID: String?) -> OverlayContent<AXUIElement> {
         content.appending(sectionTitle: SystemHotKeyCatalog.sectionTitle, shortcuts: systemShortcuts)
-    }
-
-    /// The visible frame (without menu bar and Dock) of the screen under the pointer.
-    private static func visibleFrameUnderPointer() -> CGRect? {
-        let screens = NSScreen.screens
-        let index = ScreenPicker.index(for: NSEvent.mouseLocation, in: screens.map(\.frame))
-        return (index.map { screens[$0] } ?? NSScreen.main)?.visibleFrame
+            .pinning(favourites.paths(for: bundleID))
     }
 }
 
