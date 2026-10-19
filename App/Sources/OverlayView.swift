@@ -234,7 +234,7 @@ private struct RowView: View {
     /// Title, markers and keys; a conflict adds a caption line below it.
     private var line: some View {
         HStack(spacing: 8) {
-            Text(row.title)
+            Text(row.displayTitle)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 8)

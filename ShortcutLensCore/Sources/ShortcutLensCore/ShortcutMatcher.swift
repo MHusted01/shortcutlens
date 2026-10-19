@@ -12,6 +12,9 @@ public enum ShortcutMatcher {
         case titlePrefix
         case wordPrefix
         case substring
+        /// The row's shown menu path, e.g. "Spelling > Find Next", contains
+        /// the query; below every contiguous title match.
+        case path
         case subsequence
         /// The row's section title matched, the row itself did not.
         case section
@@ -46,12 +49,22 @@ public enum ShortcutMatcher {
         // names like "File" would pull in whole menus for most queries.
         let sectionRank: Rank? = contiguousRank(normalized(section.title), needle) == nil ? nil : .section
         let candidates = section.rows.enumerated().compactMap { offset, row -> Candidate<Element>? in
-            guard let rank = rank(normalized(row.title), needle) ?? sectionRank else { return nil }
+            guard let rank = rank(of: row, needle) ?? sectionRank else { return nil }
             return Candidate(rank: rank, offset: offset, row: row)
         }
         guard !candidates.isEmpty else { return nil }
         let rows = candidates.sorted { ($0.rank, $0.offset) < ($1.rank, $1.offset) }.map(\.row)
         return OverlaySection(id: section.id, title: section.title, rows: rows, isPinned: section.isPinned)
+    }
+
+    /// The better of the row's title and shown menu path match. A path
+    /// matches like a section title, contiguously, so " > " cannot join fuzzy
+    /// matches; it is only checked when the row shows one.
+    private static func rank(of row: OverlayRow<some Any>, _ needle: String) -> Rank? {
+        let titleRank = rank(normalized(row.title), needle)
+        let showsPath = row.displayTitle != row.title
+        let pathRank: Rank? = showsPath && contiguousRank(normalized(row.displayTitle), needle) != nil ? .path : nil
+        return [titleRank, pathRank].compactMap(\.self).min()
     }
 
     private static func rank(_ title: String, _ needle: String) -> Rank? {

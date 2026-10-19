@@ -52,6 +52,16 @@ struct CheatSheetMarkdownTests {
         #expect(lines.contains(#"| ⌘V | Copy \&amp; Paste |"#))
     }
 
+    @Test func namesRepeatedTitlesByTheirMenuPath() {
+        let rows = [
+            OverlayRow<Int>(id: 0, title: "Find Next", displayTitle: "Find > Find Next", keys: "⌘G", element: nil),
+        ]
+
+        let lines = CheatSheetMarkdown.render(content([("Edit", rows)])).split(separator: "\n")
+
+        #expect(lines.contains("| ⌘G | Find > Find Next |"))
+    }
+
     @Test func escapesTheAppNameAndJoinsLineBreaks() {
         let sheet = content([("Fi\nle", [row(0, "Save\r\nAll", keys: "⌘S")])], appName: "#1 *App*")
 

@@ -21,7 +21,7 @@ public struct OverlayContent<Element> {
             .filter { !$0.rows.isEmpty }
             .enumerated()
             .map { OverlaySection(id: $0.offset, title: $0.element.title, rows: $0.element.rows) }
-        self = Self(appName: appName, sections: sections).markingConflicts()
+        self = Self(appName: appName, sections: sections).disambiguatingTitles().markingConflicts()
     }
 
     /// Content from sections that are already built, e.g. a filtered copy.
@@ -51,7 +51,7 @@ public struct OverlayContent<Element> {
         let new = built.enumerated().map { offset, section in
             OverlaySection(id: sections.count + offset, title: section.title, rows: section.rows)
         }
-        return Self(appName: appName, sections: sections + new).markingConflicts()
+        return Self(appName: appName, sections: sections + new).disambiguatingTitles().markingConflicts()
     }
 
     /// True when the app has no shortcut to show.
@@ -117,6 +117,9 @@ public struct OverlayRow<Element>: Identifiable {
     /// Position within its section.
     public let id: Int
     public let title: String
+    /// What the overlay shows: the title, or the menu path when other rows
+    /// share the title; see `disambiguatingTitles()`.
+    public let displayTitle: String
     /// The formatted shortcut, e.g. `⇧⌘S`.
     public let keys: String
     /// False for a disabled menu item, shown dimmed and not runnable.
@@ -138,6 +141,7 @@ public struct OverlayRow<Element>: Identifiable {
     public init(
         id: Int,
         title: String,
+        displayTitle: String? = nil,
         keys: String,
         isEnabled: Bool = true,
         isCustom: Bool = false,
@@ -149,6 +153,7 @@ public struct OverlayRow<Element>: Identifiable {
     ) {
         self.id = id
         self.title = title
+        self.displayTitle = displayTitle ?? title
         self.keys = keys
         self.isEnabled = isEnabled
         self.isCustom = isCustom
@@ -174,9 +179,17 @@ public struct OverlayRow<Element>: Identifiable {
         copy(isFavourite: isFavourite)
     }
 
-    private func copy(id: Int? = nil, isFavourite: Bool? = nil, conflict: String?? = nil) -> Self {
+    /// A copy with `displayTitle` replaced.
+    func with(displayTitle: String) -> Self {
+        copy(displayTitle: displayTitle)
+    }
+
+    private func copy(
+        id: Int? = nil, displayTitle: String? = nil, isFavourite: Bool? = nil, conflict: String?? = nil
+    ) -> Self {
         Self(
-            id: id ?? self.id, title: title, keys: keys, isEnabled: isEnabled, isCustom: isCustom,
+            id: id ?? self.id, title: title, displayTitle: displayTitle ?? self.displayTitle, keys: keys,
+            isEnabled: isEnabled, isCustom: isCustom,
             isFavourite: isFavourite ?? self.isFavourite, combo: combo, conflict: conflict ?? self.conflict,
             menuPath: menuPath, element: element
         )

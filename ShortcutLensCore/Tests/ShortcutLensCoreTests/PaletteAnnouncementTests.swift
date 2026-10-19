@@ -35,6 +35,12 @@ struct PaletteAnnouncementTests {
         )
     }
 
+    @Test func rowLabelSaysTheMenuPathOfARepeatedTitle() {
+        let row = OverlayRow(id: 0, title: "Find Next", displayTitle: "Find > Find Next", keys: "⌘G", element: 0)
+
+        #expect(PaletteAnnouncement.rowLabel(row, inPinnedSection: false) == "Find > Find Next, Command G")
+    }
+
     @Test func rowLabelLeavesOutFavouriteInThePinnedSection() {
         let row = OverlayRow(id: 0, title: "Save", keys: "⌘S", isFavourite: true, element: 0)
 

@@ -1,13 +1,13 @@
 extension OverlayContent {
     /// A copy whose rows explain which other rows use the same keys. A row is
-    /// named by its section and title, as the overlay shows it, e.g.
-    /// `System > Lock Screen`.
+    /// named by its section and display title, as the overlay shows it, e.g.
+    /// `System > Lock Screen` or `Edit > Find > Find Next`.
     ///
     /// The Favourites section's copies are left out, so a row never clashes
     /// with its own copy; each copy shows its original's conflict instead.
     func markingConflicts() -> Self {
         let located = sections.enumerated().filter { !$0.element.isPinned }.flatMap { index, section in
-            section.rows.map { (section: index, row: $0, location: "\(section.title) > \($0.title)") }
+            section.rows.map { (section: index, row: $0, location: "\(section.title) > \($0.displayTitle)") }
         }
         let clashes = ShortcutConflicts.clashes(among: located.map {
             ShortcutConflicts.Entry(combo: $0.row.combo, location: $0.location)
