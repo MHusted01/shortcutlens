@@ -1,7 +1,7 @@
 /// Tracks the Accessibility permission across checks and decides when the
 /// onboarding window opens. Onboarding opens at most once per launch; the menu
 /// bar can reopen it on request. A grant never closes it: the window shows
-/// "Ready" until the user closes it, so nobody misses the status.
+/// that the app is ready until the user closes it, so nobody misses the status.
 public struct AccessibilityPermission: Equatable, Sendable {
     public enum Status: Equatable, Sendable {
         /// Not checked yet.

@@ -20,7 +20,7 @@ All notable changes to ShortcutLens are listed here. The format follows
   fits each tab and opens on the tab you used last. (#93)
 - Onboarding has three steps: what the app does, how to use it, and the
   Accessibility permission. When the permission is granted, the last step
-  shows "Ready" and stays open until you close it. "Welcome to ShortcutLens…"
+  shows that ShortcutLens is ready and stays open until you close it. "Welcome to ShortcutLens…"
   in the menu bar menu opens it again. (#94)
 
 ## [1.1.0] - 2026-10-19
