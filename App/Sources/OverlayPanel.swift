@@ -98,6 +98,18 @@ final class OverlayPanel: NSPanel {
         }
     }
 
+    /// Replaces the content and lays it out at `frame` while the panel is
+    /// hidden, so a later `present` of the same content has little left to
+    /// do. Does nothing while the panel is visible or fading out.
+    func prepare(_ view: some View, frame: CGRect) {
+        guard !isVisible else {
+            return
+        }
+        hostingView.rootView = AnyView(view)
+        setFrame(frame, display: false)
+        contentView?.layoutSubtreeIfNeeded()
+    }
+
     /// Orders the panel out, or fades it out first with `animated`. A panel
     /// that is key always hides at once: it keeps keyboard focus until it is
     /// ordered out, so a fade would hold typed keys back from the frontmost

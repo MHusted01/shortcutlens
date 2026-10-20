@@ -70,8 +70,11 @@ final class OverlayController {
     /// Called with the menu item the user chose "Edit Shortcut…" for, after
     /// the panel closed.
     var onEditShortcut: (ShortcutEditRequest) -> Void = { _ in }
+    /// Whether a hold-Command countdown is running. A read that finishes
+    /// during it lays the panel out ahead of time, so showing it is quick.
+    var isCountingDown: () -> Bool = { false }
 
-    private let panel = OverlayPanel()
+    let panel = OverlayPanel()
     private var inFlight: (key: AppKey, task: ReadTask)?
     private var generation = 0
     /// Bumped on a keyboard layout switch; older reads have stale system labels.
@@ -312,21 +315,9 @@ final class OverlayController {
             panel.setFrame(ScreenPicker.centeredFrame(size: size, in: palette.screen), display: true)
         } else if isShown {
             render()
+        } else if isCountingDown() {
+            render(prepareOnly: true)
         }
-    }
-
-    private func render() {
-        guard let target, let visible = Self.visibleFrameUnderPointer() else {
-            return
-        }
-        let (body, size) = Self.layout(content, in: visible)
-        let view = OverlayView(
-            appName: target.name, icon: target.icon, content: body,
-            onSelect: { [weak self] row in self?.run(row) },
-            onEdit: { [weak self] id, row in self?.edit(row, id: id) },
-            onFavourite: favouriteHandler
-        )
-        panel.present(view, frame: ScreenPicker.centeredFrame(size: size, in: visible))
     }
 
     /// Cached content with the system shortcuts after it and the favourites before it.

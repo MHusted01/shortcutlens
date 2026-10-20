@@ -12,6 +12,12 @@ All notable changes to ShortcutLens are listed here. The format follows
   double-tapping Command, Option or Control, or turn it off, so it does not
   clash with Dictation's "Press Command Key Twice" (#97).
 
+### Changed
+
+- The overlay appears faster in apps with large menus: it is laid out while
+  Command is held, so it shows in 11-38 ms instead of 100-200 ms (Xcode:
+  12 ms instead of 199 ms) (#100).
+
 ### Fixed
 
 - Arrow keys show as `◀▶▲▼` on macOS 14, 15 and 26 too, as their menus draw

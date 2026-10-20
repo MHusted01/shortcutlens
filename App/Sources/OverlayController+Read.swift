@@ -31,7 +31,9 @@ extension OverlayController {
         let reader = MenuReader(
             client: client, maxDepth: settings.maxMenuDepth, includesDisabled: settings.showsDisabledItems
         )
-        let groups = reader.read(processID: pid)
+        let interval = signposter.beginInterval("read")
+        defer { signposter.endInterval("read", interval) }
+        let groups = signposter.withIntervalSignpost("menu walk") { reader.read(processID: pid) }
         let system = settings.showsSystemShortcuts ? SystemHotKeySource.shortcuts(layout: layout) : []
         let custom = UserKeyEquivalentSource.equivalents(bundleID: bundleID)
         let packSections = PackSource.library().sections(for: bundleID)

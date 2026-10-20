@@ -50,6 +50,11 @@ final class TriggerController {
     private var timer: Timer?
     private var shownPoll: Timer?
 
+    /// True while Command is held and the overlay may still show.
+    var isCountingDown: Bool {
+        machine.phase.isCountingDown
+    }
+
     /// Installs or removes the event monitors.
     func setEnabled(_ enabled: Bool) {
         if enabled, monitors.isEmpty {
