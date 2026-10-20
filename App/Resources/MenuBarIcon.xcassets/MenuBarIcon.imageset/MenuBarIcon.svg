@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
   <!-- Menu bar template image: the app icon's lens, handle and Command symbol
-       in one colour. Drawn from design/icon/ShortcutLens.svg; see design/icon/README.md. -->
+       in one colour. Drawn from docs/images/icon.svg; see CONTRIBUTING.md (Icons). -->
   <circle cx="7" cy="7" r="5.8" fill="none" stroke="#000" stroke-width="1.4"/>
   <line x1="11.3" y1="11.3" x2="16.4" y2="16.4" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
   <g fill="none" stroke="#000" stroke-width="55" stroke-linecap="round" stroke-linejoin="round" transform="translate(7 7) scale(0.0165)">
