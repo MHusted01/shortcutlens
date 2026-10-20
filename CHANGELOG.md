@@ -12,6 +12,11 @@ All notable changes to ShortcutLens are listed here. The format follows
   double-tapping Command, Option or Control, or turn it off, so it does not
   clash with Dictation's "Press Command Key Twice" (#97).
 
+### Fixed
+
+- Arrow keys show as `◀▶▲▼` on macOS 14, 15 and 26 too, as their menus draw
+  them; before, only macOS 27 matched the menus (#99).
+
 ## [1.2.0] - 2026-10-20
 
 This release polishes the overlay, palette, settings and onboarding. The
