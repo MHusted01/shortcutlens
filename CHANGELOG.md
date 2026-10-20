@@ -6,6 +6,8 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-20
+
 ### Added
 
 - Settings > General > Open palette: open the command palette by
@@ -159,7 +161,8 @@ Screenshots are from macOS 26.
 - The overlay closes on system shortcuts such as Cmd+Space instead of staying
   open. (#42)
 
-[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MHusted01/shortcutlens/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MHusted01/shortcutlens/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MHusted01/shortcutlens/compare/v0.4.0...v1.0.0
