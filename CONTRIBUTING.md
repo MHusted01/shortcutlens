@@ -50,3 +50,13 @@ signs and zips the app and publishes it with a SHA-256 checksum, using the
 version's `CHANGELOG.md` section as the release notes. A tag without a
 matching section fails before the build, so pre-release tags such as
 `v1.2.0-rc1` are not supported.
+
+Once the release is published, bump the Homebrew cask in
+[MHusted01/homebrew-tap](https://github.com/MHusted01/homebrew-tap):
+
+```sh
+brew bump-cask-pr --version X.Y.Z mhusted01/tap/shortcutlens
+```
+
+It downloads the release zip, updates `version` and `sha256`, and opens a pull
+request in the tap.
