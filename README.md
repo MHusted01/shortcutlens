@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="design/icon/ShortcutLens.svg" width="128" height="128" alt="ShortcutLens icon">
+  <img src="docs/images/icon.svg" width="128" height="128" alt="ShortcutLens icon">
 </p>
 
 <h1 align="center">ShortcutLens</h1>

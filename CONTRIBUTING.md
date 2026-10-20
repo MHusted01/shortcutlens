@@ -41,6 +41,65 @@ translations, no code:
 
 [#77](https://github.com/MHusted01/shortcutlens/issues/77) has the details.
 
+## Icons
+
+The app icon is original artwork: a magnifying glass with the Command symbol
+in the lens, chosen in
+[#85](https://github.com/MHusted01/shortcutlens/issues/85).
+
+| Path | What |
+| --- | --- |
+| `App/Resources/AppIcon.icon/` | The icon the app ships. Icon Composer format: `icon.json` plus one SVG per layer in `Assets/`. |
+| `docs/images/icon.svg` | Flat master on the classic 1024 grid (824 pt rounded square), used in the README and anywhere outside the app. |
+| `App/Resources/MenuBarIcon.xcassets/` | The menu bar icon: two 18 x 18 pt SVGs (`MenuBarIcon.svg` for 2x, `MenuBarIcon-1x.svg` for 1x), marked as a template image. |
+
+### App icon
+
+`AppIcon.icon` has a system gradient fill (`automatic-gradient`, blue) and two
+groups, front to back:
+
+1. `command.svg` - the Command symbol, opaque.
+2. `lens.svg` and `handle.svg` - the glass and the handle, slightly
+   translucent so Liquid Glass shows through.
+
+Layers are drawn on the full 1024 x 1024 canvas; the system applies the mask,
+so they do not include the rounded square or a background.
+
+`project.yml` adds `AppIcon.icon` to the app's resources and sets
+`ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon`. On build, `actool` compiles it
+into `Assets.car` (Liquid Glass, light, dark and tinted appearances on
+macOS 26+) and an `AppIcon.icns` fallback for macOS 14-15. No exported PNGs
+are committed.
+
+To change it:
+
+- Edit the layer SVGs in `App/Resources/AppIcon.icon/Assets/` and
+  `icon.json`, or open `AppIcon.icon` in Icon Composer
+  (`Xcode.app/Contents/Applications/Icon Composer.app`) to tune glass,
+  shadow and the dark and tinted variants.
+- Keep `docs/images/icon.svg` in step with the layers.
+- Check the result in a build: `make build`, then look at the app in Finder
+  and in the About box (menu bar icon > About ShortcutLens), in light and dark
+  mode.
+
+Preview a layer or the master without Xcode:
+
+```sh
+rsvg-convert -w 512 docs/images/icon.svg -o /tmp/icon.png
+```
+
+### Menu bar icon
+
+`MenuBarIcon.svg` is the lens, handle and Command symbol from the master in
+one colour (black on transparent; macOS ignores the colour of a template
+image and tints it for light, dark and tinted menu bars). The strokes are
+thicker than a straight scale-down so the Command symbol stays readable at 2x.
+At 1x even that blurs, so `MenuBarIcon-1x.svg` draws a 7 x 7 px Command
+symbol on the pixel grid (`shape-rendering="crispEdges"` rects). Change both
+files together. The lens alone would look like Spotlight, so keep the symbol.
+The app swaps the icon for the `exclamationmark.triangle` symbol while the
+Accessibility permission is missing.
+
 ## Releases
 
 Changes go under `## [Unreleased]` in `CHANGELOG.md`. Before a release, that

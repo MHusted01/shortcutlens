@@ -29,11 +29,11 @@ targets:
       - App/Sources
       - App/Resources/Localizable.xcstrings
       # Icon Composer icon; actool compiles it into Assets.car plus an
-      # AppIcon.icns fallback for macOS 14-15. Sources: design/icon/.
+      # AppIcon.icns fallback for macOS 14-15. See CONTRIBUTING.md (Icons).
       - path: App/Resources/AppIcon.icon
         type: file
         buildPhase: resources
-      # Menu bar template image (SVG, kept as vector). Source: design/icon/.
+      # Menu bar template image (SVG, kept as vector). See CONTRIBUTING.md (Icons).
       - path: App/Resources/MenuBarIcon.xcassets
         buildPhase: resources
       # Example shortcut packs, copied as Contents/Resources/Packs.
