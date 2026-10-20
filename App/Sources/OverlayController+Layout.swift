@@ -4,6 +4,31 @@ import ShortcutLensCore
 extension OverlayController {
     private static let placeholderSize = CGSize(width: 360, height: 150)
 
+    /// Shows the panel with the current content. With `prepareOnly` it lays
+    /// the content out in the hidden panel instead: building the views for a
+    /// large menu takes most of the time to show it, and done during the
+    /// countdown, the show that follows only applies what changed since.
+    func render(prepareOnly: Bool = false) {
+        guard let target, let visible = Self.visibleFrameUnderPointer() else {
+            return
+        }
+        Self.measured(prepareOnly ? "prerender" : "render", rows: content?.rowCount ?? 0) {
+            let (body, size) = Self.layout(content, in: visible)
+            let view = OverlayView(
+                appName: target.name, icon: target.icon, content: body,
+                onSelect: { [weak self] row in self?.run(row) },
+                onEdit: { [weak self] id, row in self?.edit(row, id: id) },
+                onFavourite: favouriteHandler
+            )
+            let frame = ScreenPicker.centeredFrame(size: size, in: visible)
+            if prepareOnly {
+                panel.prepare(view, frame: frame)
+            } else {
+                panel.present(view, frame: frame)
+            }
+        }
+    }
+
     /// The visible frame (without menu bar and Dock) of the screen under the pointer.
     static func visibleFrameUnderPointer() -> CGRect? {
         let screens = NSScreen.screens

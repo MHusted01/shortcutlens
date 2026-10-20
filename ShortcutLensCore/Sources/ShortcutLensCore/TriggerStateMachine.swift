@@ -21,6 +21,14 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case suppressed
         /// The overlay is open as a command palette and takes typed keys.
         case palette
+
+        /// True while Command is held and the overlay may still show.
+        public var isCountingDown: Bool {
+            if case .countingDown = self {
+                return true
+            }
+            return false
+        }
     }
 
     public enum Event: Equatable, Sendable {

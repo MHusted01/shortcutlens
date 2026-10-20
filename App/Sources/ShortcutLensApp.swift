@@ -72,6 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         apply(settings.settings)
         settings.onChange = { [weak self] in self?.apply($0) }
         trigger.onArm = { [overlay] in overlay.prepare() }
+        overlay.isCountingDown = { [trigger] in trigger.isCountingDown }
         trigger.onShow = { [overlay] in
             // Time to show: from the trigger until the panel is ordered front.
             let start = ContinuousClock.now
