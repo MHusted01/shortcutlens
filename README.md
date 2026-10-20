@@ -42,37 +42,14 @@ brew install --cask mhusted01/tap/shortcutlens
 xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
 ```
 
-Run the `xattr` line again after each `brew upgrade --cask shortcutlens`.
+Or download the zip from
+[Releases](https://github.com/MHusted01/shortcutlens/releases/latest), check
+its checksum, move the app to `/Applications` and run the same `xattr` line.
 
-Or download the latest `ShortcutLens-x.y.z.zip` from
-[Releases](https://github.com/MHusted01/shortcutlens/releases/latest) and
-verify it:
-
-```sh
-shasum -a 256 -c ShortcutLens-x.y.z.zip.sha256
-```
-
-The app is a universal binary (Apple silicon and Intel), ad-hoc signed and
-not notarized. Unzip it, move it to `/Applications` and remove the
-quarantine flag:
-
-```sh
-ditto -x -k ShortcutLens-x.y.z.zip .
-mv ShortcutLens.app /Applications/
-xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
-```
-
-Without that, macOS 15 and later refuse to open the app; right-click > Open
-no longer bypasses Gatekeeper there. On macOS 14 right-click > Open also works.
-
-On first launch, a short onboarding in three steps shows what the app does
-and how to use it, then walks you through granting the Accessibility
-permission in System Settings > Privacy & Security > Accessibility. Reopen it
-any time with "Welcome to ShortcutLens…" in the menu bar menu.
-
-Because the signature changes with every release, macOS asks for the
-Accessibility permission again after each update. Remove the old entry in
-System Settings and add the new app. More in the [FAQ](docs/faq.md).
+The app is ad-hoc signed and not notarized: macOS blocks it until the
+quarantine flag is removed, and asks for the Accessibility permission again
+after each update. The [install and update guide](docs/install.md) has every
+step, including updating and uninstalling.
 
 ## Features
 

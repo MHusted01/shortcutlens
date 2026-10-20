@@ -47,11 +47,12 @@ macOS asks for the Accessibility permission again after each update. Remove
 the old ShortcutLens entry in System Settings > Privacy & Security >
 Accessibility, then add the new app from `/Applications` and switch it on.
 If the switch is on but nothing happens, remove the entry and add it again.
+Steps: [Update](install.md#update).
 
 ## macOS says the app cannot be opened
 
 The app is not notarized. Remove the quarantine flag after moving it to
-`/Applications`:
+`/Applications`, and again after each `brew upgrade`:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
@@ -59,6 +60,7 @@ xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
 
 macOS 15 and later refuse to open the app without that; right-click > Open
 no longer bypasses Gatekeeper there. On macOS 14 right-click > Open also works.
+Details: [First launch](install.md#first-launch).
 
 ## The overlay does not appear
 
