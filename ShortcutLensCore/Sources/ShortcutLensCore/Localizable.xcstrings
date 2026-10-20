@@ -621,12 +621,12 @@
         }
       }
     },
-    "Open Accessibility Settings" : {
+    "Open System Settings" : {
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Åbn indstillinger for Tilgængelighed"
+            "value" : "Åbn Systemindstillinger"
           }
         }
       }

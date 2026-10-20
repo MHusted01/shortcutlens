@@ -121,9 +121,11 @@ struct OnboardingView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
+            // Only the counter may give way; button titles are never cut off.
             Text(model.step.counter)
                 .font(.callout)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
             Spacer()
             let primary = model.step.primaryButton(isGranted: model.isGranted)
             // Done also closes, so Skip next to it would be a second Done.
@@ -132,12 +134,15 @@ struct OnboardingView: View {
             } else {
                 Button(OnboardingText.skipButton, action: close)
                     .keyboardShortcut(.cancelAction)
+                    .fixedSize()
             }
             if model.step.showsBack, let previous = model.step.previous {
                 Button(OnboardingText.backButton) { move(to: previous, forward: false) }
+                    .fixedSize()
             }
             Button(primary.title) { perform(primary) }
                 .keyboardShortcut(.defaultAction)
+                .fixedSize()
         }
     }
 
