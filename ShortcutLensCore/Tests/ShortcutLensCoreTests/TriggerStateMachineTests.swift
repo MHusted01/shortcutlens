@@ -349,3 +349,11 @@ struct HeldModifiersTests {
         #expect(!HeldModifiers().isCommandAlone)
     }
 }
+
+struct TriggerPhaseTests {
+    @Test func onlyACountdownIsCountingDown() {
+        let phases: [TriggerStateMachine.Phase] = [.idle, .countingDown(token: 1), .shown, .suppressed, .palette]
+
+        #expect(phases.map(\.isCountingDown) == [false, true, false, false, false])
+    }
+}

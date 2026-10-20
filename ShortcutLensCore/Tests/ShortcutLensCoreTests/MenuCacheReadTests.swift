@@ -24,6 +24,14 @@ struct MenuCacheReadTests {
         #expect(titles(cache.value(for: 1)) == ["Save"])
     }
 
+    @Test func completeReadReplacesCachedContent() {
+        let cache = Cache(capacity: 2)
+            .storing(read: content("Save", "Open"), for: 1, budgetSpent: false)
+            .storing(read: content("Save", "Export"), for: 1, budgetSpent: false)
+
+        #expect(titles(cache.value(for: 1)) == ["Save", "Export"])
+    }
+
     @Test func doesNotCacheAnEmptyRead() {
         let empty = OverlayContent<Int>(appName: "App", groups: [])
         let cache = Cache(capacity: 2).storing(read: empty, for: 1, budgetSpent: false)
