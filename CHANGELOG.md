@@ -6,6 +6,11 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Install with Homebrew: `brew install --cask mhusted01/tap/shortcutlens`
+  from the personal tap (#102).
+
 ## [1.3.0] - 2026-10-20
 
 ### Added

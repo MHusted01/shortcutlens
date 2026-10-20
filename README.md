@@ -34,7 +34,17 @@ grouped by menu. Click an entry to run that command.
 Requirements: macOS 14 Sonoma or later, and the Accessibility permission
 ([why](docs/faq.md#why-does-shortcutlens-need-the-accessibility-permission)).
 
-Download the latest `ShortcutLens-x.y.z.zip` from
+With [Homebrew](https://brew.sh), from the
+[MHusted01/tap](https://github.com/MHusted01/homebrew-tap) tap:
+
+```sh
+brew install --cask mhusted01/tap/shortcutlens
+xattr -dr com.apple.quarantine /Applications/ShortcutLens.app
+```
+
+Run the `xattr` line again after each `brew upgrade --cask shortcutlens`.
+
+Or download the latest `ShortcutLens-x.y.z.zip` from
 [Releases](https://github.com/MHusted01/shortcutlens/releases/latest) and
 verify it:
 
