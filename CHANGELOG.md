@@ -6,13 +6,15 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-20
+
 ### Added
 
 - Install with Homebrew: `brew install --cask mhusted01/tap/shortcutlens`
   from the personal tap (#102).
-- [Install and update guide](docs/install.md): checksum, first launch past
-  Gatekeeper, granting Accessibility, updating and uninstalling. Release
-  notes link to it (#103).
+- [Install and update guide](https://github.com/MHusted01/shortcutlens/blob/main/docs/install.md):
+  checksum, first launch past Gatekeeper, granting Accessibility, updating
+  and uninstalling. Release notes link to it (#103).
 
 ## [1.3.0] - 2026-10-20
 
@@ -169,7 +171,8 @@ Screenshots are from macOS 26.
 - The overlay closes on system shortcuts such as Cmd+Space instead of staying
   open. (#42)
 
-[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/MHusted01/shortcutlens/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MHusted01/shortcutlens/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MHusted01/shortcutlens/compare/v1.0.0...v1.1.0
