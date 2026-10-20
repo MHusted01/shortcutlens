@@ -11,7 +11,7 @@ extension OverlayController {
         let start = ContinuousClock.now
         let result = signposter.withIntervalSignpost(name, around: body)
         let elapsed = ContinuousClock.now - start
-        log.notice("\(String(describing: name), privacy: .public) \(rows) rows in \(elapsed, privacy: .public)")
+        log.debug("\(String(describing: name), privacy: .public) \(rows) rows in \(elapsed, privacy: .public)")
         return result
     }
 }
