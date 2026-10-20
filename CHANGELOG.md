@@ -16,6 +16,9 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 - Arrow keys show as `◀▶▲▼` on macOS 14, 15 and 26 too, as their menus draw
   them; before, only macOS 27 matched the menus (#99).
+- The last onboarding step's button is no longer cut off in Danish. It now
+  reads "Open System Settings", like the text above it, and footer buttons
+  always show their full title (#123).
 
 ## [1.2.0] - 2026-10-20
 

@@ -42,7 +42,7 @@ public enum OnboardingText {
 
     public static let skipButton = String(localized: "Skip", bundle: .module)
     public static let backButton = String(localized: "Back", bundle: .module)
-    public static let openSettingsButton = String(localized: "Open Accessibility Settings", bundle: .module)
+    public static let openSettingsButton = String(localized: "Open System Settings", bundle: .module)
     /// Menu bar entry shown while the permission is missing.
     public static let menuItem = String(localized: "Accessibility Permission Required…", bundle: .module)
 }
