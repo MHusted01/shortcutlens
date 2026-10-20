@@ -23,7 +23,14 @@ jobs:
           git fetch origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
       - name: Release notes from CHANGELOG
-        run: scripts/changelog-section.sh "${GITHUB_REF_NAME#v}" > "$RUNNER_TEMP/release-notes.md"
+        run: |
+          scripts/changelog-section.sh "${GITHUB_REF_NAME#v}" > "$RUNNER_TEMP/release-notes.md"
+          cat >> "$RUNNER_TEMP/release-notes.md" <<EOF
+
+          ---
+
+          Install, first launch and update steps: [install and update guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/docs/install.md). The app is not notarized; remove the quarantine flag after installing and after each update, then grant Accessibility again.
+          EOF
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
           xcode-version: latest-stable
