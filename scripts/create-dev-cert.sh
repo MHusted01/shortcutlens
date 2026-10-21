@@ -4,6 +4,7 @@
 # build, so macOS drops the Accessibility permission each time; a stable
 # certificate keeps it. Safe to run again. Nothing is written to the repo
 # except the gitignored Config/Local.xcconfig.
+# Usage: scripts/create-dev-cert.sh   (local only, then `make build`)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
