@@ -14,6 +14,24 @@
    comment and resolve all conversations before merging.
 6. Merge with **Squash and merge**. The branch is deleted automatically.
 
+## Make targets
+
+| Target | What it does | Used by |
+| --- | --- | --- |
+| `generate` | Creates `ShortcutLens.xcodeproj` from `project.yml` | the other targets |
+| `build` | Debug build of the app | CI `build` |
+| `test` | Core unit tests with an 80% line coverage gate | CI `test` |
+| `lint` | SwiftLint and SwiftFormat | CI `lint` |
+| `check` | No-telemetry check (`scripts/check-no-telemetry.sh`) | CI `no-telemetry` |
+| `release` | Release build, zip and SHA-256 in `dist/` (`VERSION=X.Y.Z`) | `release.yml` |
+| `integration` | Reads `Fixtures/MenuFixture` through the AX API | local only |
+| `clean` | Removes `build/`, `dist/` and the generated project | local only |
+
+`make integration` runs inside ShortcutLens.app and needs its Accessibility
+permission, so set up local signing first (README, "Local signing"). CI
+cannot grant that permission, so it does not run this test. Run it after
+changes to the menu reader or the AX layer.
+
 ## Rules
 
 - No telemetry, network code or third-party runtime dependencies (see PRIVACY.md).

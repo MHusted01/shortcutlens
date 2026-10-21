@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Tests scripts/changelog-section.sh against a fixture CHANGELOG.
+# Usage: scripts/test-changelog-section.sh   (run by the CI lint job)
 set -euo pipefail
 
 script="$(cd "$(dirname "$0")" && pwd)/changelog-section.sh"

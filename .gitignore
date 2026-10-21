@@ -32,6 +32,3 @@ Config/Local.xcconfig
 *.p12
 *.cer
 *.pem
-
-# Tool caches
-.ruff_cache/

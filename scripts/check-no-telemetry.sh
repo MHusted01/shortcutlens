@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Enforces the no-telemetry rule: no networking APIs in shipped code and no
 # third-party packages. Fails with a list of offending lines.
+# Usage: scripts/check-no-telemetry.sh   (or `make check`; run by CI)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
