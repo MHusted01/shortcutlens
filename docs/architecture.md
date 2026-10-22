@@ -149,7 +149,7 @@ creates every controller and wires their callbacks together.
 
 Every source file belongs to exactly one area, and each area is a folder:
 `ShortcutLensCore/Sources/ShortcutLensCore/<Area>/` in Core, and
-`App/Sources/<Area>/` in the app (planned for v1.5.0). XcodeGen and SwiftPM
+`App/Sources/<Area>/` in the app. XcodeGen and SwiftPM
 pick up subfolders, so a new area needs no build settings.
 
 Core tests mirror the source folders: the tests for `Menu/MenuReader.swift`
