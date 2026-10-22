@@ -1,8 +1,8 @@
 # Architecture
 
 How the code is organised, how the main features flow through it, and where
-new code goes. The area tables also describe the target structure for the
-feature folders planned for v1.5.0.
+new code goes. The area table also gives the folder each source file lives
+in.
 
 ## Two layers
 
@@ -147,10 +147,22 @@ creates every controller and wires their callbacks together.
 
 ## Areas
 
-Every source file belongs to exactly one area. In v1.5.0 each area becomes a
-folder in both layers, `ShortcutLensCore/Sources/ShortcutLensCore/<Area>/`
-and `App/Sources/<Area>/`. XcodeGen and SwiftPM pick up subfolders, so the
-move changes no build settings.
+Every source file belongs to exactly one area, and each area is a folder:
+`ShortcutLensCore/Sources/ShortcutLensCore/<Area>/` in Core, and
+`App/Sources/<Area>/` in the app (planned for v1.5.0). XcodeGen and SwiftPM
+pick up subfolders, so a new area needs no build settings.
+
+Core tests mirror the source folders: the tests for `Menu/MenuReader.swift`
+are in `ShortcutLensCoreTests/Menu/MenuReaderTests.swift`. A few files serve
+every area and stay at the top of the test target:
+
+- `FakeAXClient`: the in-memory `AXClient` for menu reads and presses.
+- `RepositoryFiles`: finds files in the checkout that tests read, such as
+  the string catalogs, `PRIVACY.md` and the bundled packs.
+- `LocalizationTests`: checks both string catalogs against all sources.
+- `Fixtures/`: files loaded through `Bundle.module`.
+
+`Localizable.xcstrings` stays at the top of the Core sources.
 
 | Area | Core | App |
 | --- | --- | --- |
