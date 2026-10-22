@@ -84,7 +84,9 @@ struct PracticeDeckTests {
         let pack = MenuShortcut(title: "Pack", keyCharacter: "p", modifiers: [], menuPath: ["Pack", "Pack"])
         let extended = content.appending(sectionTitle: "Pack", shortcuts: [pack])
 
-        #expect(paths(PracticeDeck.cards(from: extended, systemShortcuts: [])).count == 3)
+        #expect(paths(PracticeDeck.cards(from: extended, systemShortcuts: [])) == [
+            ["File", "Save"], ["Edit", "Copy"], ["Edit", "Find"],
+        ])
     }
 
     @Test func asksAPinnedItemOnce() {
@@ -110,7 +112,7 @@ struct PracticeDeckTests {
 
     // MARK: - Questions
 
-    @Test func asksWeakAndNewItemsBeforeKnownOnes() {
+    @Test func asksLowerBoxesFirst() {
         let known = ["File", "Known"]
         let learning = ["File", "Learning"]
         let wrong = ["File", "Wrong"]
@@ -168,10 +170,14 @@ struct PracticeDeckTests {
         let short = PracticeDeck.questions(
             from: Array(cards.prefix(3)), progress: .empty, bundleID: "app", favourites: [], count: 5, using: &random
         )
+        let none = PracticeDeck.questions(
+            from: cards, progress: .empty, bundleID: "app", favourites: [], count: -1, using: &random
+        )
 
         #expect(questions.count == PracticeDeck.sessionLength)
         #expect(Set(paths(questions)).count == PracticeDeck.sessionLength)
         #expect(short.count == 3)
+        #expect(none.isEmpty)
     }
 
     @Test func theSameSeedAsksTheSameOrder() {

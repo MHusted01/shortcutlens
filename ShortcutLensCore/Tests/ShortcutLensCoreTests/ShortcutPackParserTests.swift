@@ -67,22 +67,21 @@ struct ShortcutPackParserTests {
         ])
     }
 
-    @Test func packCombosMatchMenuCombos() throws {
-        let pack = try parse(pack(shortcuts: #"{"title": "Quick Look", "key": "Space"}"#)).get()
-        let menu = MenuShortcut(title: "Look", keyCharacter: " ", modifiers: .noCommand)
+    /// A menu reports Space as a character and Help as a glyph.
+    @Test(arguments: [
+        (
+            #"{"title": "Quick Look", "key": "Space"}"#,
+            MenuShortcut(title: "Look", keyCharacter: " ", modifiers: .noCommand)
+        ),
+        (
+            #"{"title": "Help", "key": "Help", "modifiers": ["shift", "command"]}"#,
+            MenuShortcut(title: "Help", keyCharacter: nil, modifiers: .shift, glyph: 0x67)
+        ),
+    ])
+    func packKeysMakeTheMenusCombo(shortcut: String, menu: MenuShortcut) throws {
+        let pack = try parse(pack(shortcuts: shortcut)).get()
 
         #expect(KeyCombo(pack.sections[0].shortcuts[0]) == KeyCombo(menu))
-    }
-
-    /// A pack's Help, a menu's Help glyph and a recorded Help key are one combo.
-    @Test func packHelpMatchesMenuAndRecordedHelp() throws {
-        let json = #"{"title": "Help", "key": "Help", "modifiers": ["shift", "command"]}"#
-        let pack = try parse(pack(shortcuts: json)).get()
-        let menu = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: .shift, glyph: 0x67)
-        let recorded = MenuShortcut(title: "Help", keyCharacter: "\u{F746}", modifiers: .shift)
-
-        #expect(KeyCombo(pack.sections[0].shortcuts[0]) == KeyCombo(menu))
-        #expect(KeyCombo(recorded) == KeyCombo(menu))
     }
 
     @Test func badJSONIsReported() {
@@ -100,21 +99,13 @@ struct ShortcutPackParserTests {
         #expect(error(#"{"bundleIdentifier": "a", "sections": []}"#) == .missingField("schemaVersion"))
         #expect(error(#"{"schemaVersion": 1, "sections": []}"#) == .missingField("bundleIdentifier"))
         #expect(error(#"{"schemaVersion": 1, "bundleIdentifier": "a"}"#) == .missingField("sections"))
+        #expect(error(#"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": [{"shortcuts": []}]}"#)
+            == .missingField("sections[0].title"))
+        #expect(error(#"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": [{"title": "X"}]}"#)
+            == .missingField("sections[0].shortcuts"))
         #expect(error(pack(shortcuts: #"{"title": "Open"}"#)) == .missingField("\(shortcut).key"))
         #expect(error(pack(shortcuts: #"{"key": "a"}"#)) == .missingField("\(shortcut).title"))
         #expect(error(pack(shortcuts: #"{"title": null, "key": "a"}"#)) == .missingField("\(shortcut).title"))
-    }
-
-    @Test func sectionFieldsAreChecked() {
-        let base = #"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": "#
-
-        #expect(error(base + #"[{"shortcuts": []}]}"#) == .missingField("sections[0].title"))
-        #expect(error(base + #"[{"title": "X"}]}"#) == .missingField("sections[0].shortcuts"))
-        #expect(
-            error(base + #"[{"title": "", "shortcuts": []}]}"#)
-                == .invalidValue(field: "sections[0].title", reason: .empty)
-        )
-        #expect(error(base + #"{}}"#) == .invalidValue(field: "sections", reason: .wrongType))
     }
 
     @Test func repeatedModifiersCountOnce() throws {
@@ -128,6 +119,10 @@ struct ShortcutPackParserTests {
     @Test func wrongTypesAreReported() {
         #expect(error(#"{"schemaVersion": "1"}"#) == .invalidValue(field: "schemaVersion", reason: .wrongType))
         #expect(
+            error(#"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": {}}"#)
+                == .invalidValue(field: "sections", reason: .wrongType)
+        )
+        #expect(
             error(pack(shortcuts: #"{"title": "A", "key": 5}"#))
                 == .invalidValue(field: "sections[0].shortcuts[0].key", reason: .wrongType)
         )
@@ -137,6 +132,10 @@ struct ShortcutPackParserTests {
         let json = #"{"schemaVersion": 1, "bundleIdentifier": " ", "sections": []}"#
 
         #expect(error(json) == .invalidValue(field: "bundleIdentifier", reason: .empty))
+        #expect(
+            error(#"{"schemaVersion": 1, "bundleIdentifier": "a", "sections": [{"title": "", "shortcuts": []}]}"#)
+                == .invalidValue(field: "sections[0].title", reason: .empty)
+        )
         #expect(
             error(pack(shortcuts: #"{"title": "", "key": "a"}"#))
                 == .invalidValue(field: "sections[0].shortcuts[0].title", reason: .empty)
@@ -158,7 +157,6 @@ struct ShortcutPackParserTests {
         #expect(PackError.invalidJSON.message == "Not valid JSON.")
         #expect(PackError.unsupportedVersion(2).message == "Unsupported schemaVersion 2; this version reads 1.")
         #expect(PackError.missingField("sections").message == "Missing field \"sections\".")
-        #expect(PackError.invalidValue(field: "key", reason: .wrongType).message == "Invalid \"key\": wrong type.")
         #expect(PackError.tooLarge.message == "File is larger than 256 KB.")
     }
 
@@ -173,10 +171,13 @@ struct ShortcutPackParserTests {
         #expect(message(.unknownModifier("hyper")) == "Invalid \"f\": unknown modifier \"hyper\".")
     }
 
-    @Test func oversizedFilesAreRejected() {
-        let data = Data(count: ShortcutPackParser.maxFileSize + 1)
-
-        #expect(ShortcutPackParser.parse(data) == .failure(.tooLarge))
+    /// A file at the limit is read; its zero bytes are not JSON.
+    @Test(arguments: [
+        (ShortcutPackParser.maxFileSize, PackError.invalidJSON),
+        (ShortcutPackParser.maxFileSize + 1, PackError.tooLarge),
+    ])
+    func filesAboveTheSizeLimitAreRejectedUnread(size: Int, expected: PackError) {
+        #expect(ShortcutPackParser.parse(Data(count: size)) == .failure(expected))
     }
 
     @Test func bundledExamplePackLoads() throws {

@@ -30,10 +30,6 @@ struct SettingsTabTests {
         #expect(SettingsTab.allCases.map(\.title) == ["General", "Overlay", "Packs", "Advanced"])
     }
 
-    @Test func opensOnGeneralWithoutAStoredTab() {
-        #expect(SettingsTab(store: MemoryStore()) == .general)
-    }
-
     @Test func remembersTheLastTab() {
         let store = MemoryStore()
 
@@ -50,16 +46,11 @@ struct SettingsTabTests {
         #expect(store.values[SettingsTab.storeKey] as? String == "advanced")
     }
 
-    @Test func fallsBackToGeneralForAnUnknownName() {
+    /// Nothing stored, a tab that no longer exists, a value of the wrong type.
+    @Test(arguments: [nil, "removed", 2] as [(any Sendable)?])
+    func opensOnGeneralWithoutAKnownStoredTab(stored: (any Sendable)?) {
         let store = MemoryStore()
-        store.values[SettingsTab.storeKey] = "removed"
-
-        #expect(SettingsTab(store: store) == .general)
-    }
-
-    @Test func fallsBackToGeneralForAValueOfTheWrongType() {
-        let store = MemoryStore()
-        store.values[SettingsTab.storeKey] = 2
+        store.values[SettingsTab.storeKey] = stored
 
         #expect(SettingsTab(store: store) == .general)
     }

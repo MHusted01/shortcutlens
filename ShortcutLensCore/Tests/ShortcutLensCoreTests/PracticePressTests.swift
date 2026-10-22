@@ -44,6 +44,7 @@ struct PracticePressTests {
         #expect(press.matches(combo("?")))
         #expect(press.matches(combo("/", .shift)))
         #expect(!press.matches(combo("/")))
+        #expect(!press.matches(combo("?", .option)))
     }
 
     @Test func theShiftedCharacterNeedsShift() {
@@ -53,11 +54,12 @@ struct PracticePressTests {
         #expect(!press.matches(combo("+")))
     }
 
-    @Test func namedKeysMatchByTheirGlyph() {
+    /// The app passes an empty character when AppKit reports none.
+    @Test func namedKeysMatchByTheirKeyCode() {
         let arrow = PracticePress(
             keyCode: leftArrowKey, character: "\u{F702}", shiftedCharacter: "\u{F702}", modifiers: [.option]
         )
-        let function = PracticePress(keyCode: f5Key, character: "\u{F708}", shiftedCharacter: nil, modifiers: [])
+        let function = PracticePress(keyCode: f5Key, character: "", shiftedCharacter: nil, modifiers: [])
 
         #expect(arrow.matches(combo("←", .option)))
         #expect(function.matches(combo("F5")))

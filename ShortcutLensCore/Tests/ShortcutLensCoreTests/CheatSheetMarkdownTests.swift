@@ -41,15 +41,18 @@ struct CheatSheetMarkdownTests {
             row(0, "Show `raw` [1] <b>_x_</b>", keys: "⇧⌘|"),
             row(1, "Back", keys: "⌘\\"),
             row(2, "Copy &amp; Paste", keys: "⌘V"),
+            row(3, "Go to ~/Library", keys: "⇧⌘L"),
         ]
-        let sheet = content([("View *all* | more", rows)])
+        let sheet = content([("View *all* | more", rows)], appName: "#1 *App*")
 
         let lines = CheatSheetMarkdown.render(sheet).split(separator: "\n")
 
+        #expect(lines.first == ##"# \#1 \*App\* shortcuts"##)
         #expect(lines.contains(#"## View \*all\* \| more"#))
         #expect(lines.contains(#"| ⇧⌘\| | Show \`raw\` \[1\] \<b>\_x\_\</b> |"#))
         #expect(lines.contains(#"| ⌘\\ | Back |"#))
         #expect(lines.contains(#"| ⌘V | Copy \&amp; Paste |"#))
+        #expect(lines.contains(#"| ⇧⌘L | Go to \~/Library |"#))
     }
 
     @Test func namesRepeatedTitlesByTheirMenuPath() {
@@ -62,12 +65,11 @@ struct CheatSheetMarkdownTests {
         #expect(lines.contains("| ⌘G | Find > Find Next |"))
     }
 
-    @Test func escapesTheAppNameAndJoinsLineBreaks() {
-        let sheet = content([("Fi\nle", [row(0, "Save\r\nAll", keys: "⌘S")])], appName: "#1 *App*")
+    @Test func joinsLineBreaks() {
+        let sheet = content([("Fi\nle", [row(0, "Save\r\nAll", keys: "⌘S")])])
 
         let lines = CheatSheetMarkdown.render(sheet).split(separator: "\n")
 
-        #expect(lines.first == ##"# \#1 \*App\* shortcuts"##)
         #expect(lines.contains("## Fi le"))
         #expect(lines.contains("| ⌘S | Save All |"))
     }
@@ -92,6 +94,7 @@ struct CheatSheetMarkdownTests {
         ("Safari", "Safari Shortcuts.md"),
         ("Foo/Bar: Baz", "Foo-Bar- Baz Shortcuts.md"),
         (".hidden", "hidden Shortcuts.md"),
+        (". hidden", "hidden Shortcuts.md"),
         ("  ", "Shortcuts.md"),
         ("", "Shortcuts.md"),
     ])

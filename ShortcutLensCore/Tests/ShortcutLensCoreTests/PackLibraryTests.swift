@@ -35,10 +35,10 @@ struct PackLibraryTests {
         #expect(library.sections(for: "com.example.app").map(\.title) == ["Kept"])
     }
 
-    @Test func invalidFilesAreListedAndSkipped() {
+    @Test func problemFilesAreListedByNameAndSkipped() {
         let library = PackLibrary(
             files: [
-                PackFile(name: "z.json", data: Data("{".utf8), isBundled: false),
+                PackFile(name: "bad.json", data: Data("{".utf8), isBundled: false),
                 file("ok.json", bundleID: "com.example.app", section: "Fine"),
             ],
             unreadable: [PackProblem(fileName: "locked.json", message: "Could not be read.")]
@@ -46,8 +46,8 @@ struct PackLibraryTests {
 
         #expect(library.sections(for: "com.example.app").map(\.title) == ["Fine"])
         #expect(library.problems == [
+            PackProblem(fileName: "bad.json", message: "Not valid JSON."),
             PackProblem(fileName: "locked.json", message: "Could not be read."),
-            PackProblem(fileName: "z.json", message: "Not valid JSON."),
         ])
     }
 

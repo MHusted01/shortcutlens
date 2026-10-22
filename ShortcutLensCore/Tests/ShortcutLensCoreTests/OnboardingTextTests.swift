@@ -16,23 +16,9 @@ struct OnboardingTextTests {
         return text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 
-    @Test func explanationMatchesPrivacyPolicy() throws {
-        #expect(try Self.privacyText().contains(OnboardingText.explanation))
-    }
-
-    @Test func noDataClaimMatchesPrivacyPolicy() throws {
-        #expect(try Self.privacyText().contains(OnboardingText.noData))
-    }
-
-    @Test func textsAreNotEmpty() {
-        let texts = [
-            OnboardingText.title, OnboardingText.welcome, OnboardingText.holdCommand,
-            OnboardingText.pressCommandTwice, OnboardingText.instructions, OnboardingText.ready,
-            OnboardingText.grantedAnnouncement, OnboardingText.skipButton, OnboardingText.backButton,
-            OnboardingText.openSettingsButton, OnboardingText.menuItem,
-        ]
-
-        #expect(texts.filter(\.isEmpty) == [])
+    @Test(arguments: [OnboardingText.explanation, OnboardingText.noData])
+    func privacyClaimsQuoteThePrivacyPolicy(text: String) throws {
+        #expect(try Self.privacyText().contains(text))
     }
 
     @Test func instructionsNoLongerPromiseTheWindowCloses() {

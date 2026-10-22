@@ -182,17 +182,12 @@ struct LocalizationTests {
         #expect(Self.withoutPlaceholders("%%@") == "%@")
     }
 
-    @Test func shortcutCountIsEnglishByDefault() {
-        #expect(PaletteAnnouncement.shortcutCount(0) == "0 shortcuts")
-        #expect(PaletteAnnouncement.shortcutCount(1) == "1 shortcut")
-        #expect(PaletteAnnouncement.shortcutCount(3) == "3 shortcuts")
-    }
-
-    @Test func shortcutCountHasDanishPluralForms() {
-        let danish = Locale(identifier: "da_DK")
-
-        #expect(PaletteAnnouncement.shortcutCount(0, locale: danish) == "0 genveje")
-        #expect(PaletteAnnouncement.shortcutCount(1, locale: danish) == "1 genvej")
-        #expect(PaletteAnnouncement.shortcutCount(3, locale: danish) == "3 genveje")
+    /// No locale is the test run's English.
+    @Test(arguments: [
+        (nil, ["0 shortcuts", "1 shortcut", "3 shortcuts"]),
+        (Locale(identifier: "da_DK"), ["0 genveje", "1 genvej", "3 genveje"]),
+    ])
+    func shortcutCountHasPluralForms(locale: Locale?, expected: [String]) {
+        #expect([0, 1, 3].map { PaletteAnnouncement.shortcutCount($0, locale: locale) } == expected)
     }
 }
