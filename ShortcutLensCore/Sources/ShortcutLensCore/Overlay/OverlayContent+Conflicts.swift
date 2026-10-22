@@ -7,7 +7,10 @@ extension OverlayContent {
     /// with its own copy; each copy shows its original's conflict instead.
     func markingConflicts() -> Self {
         let located = sections.enumerated().filter { !$0.element.isPinned }.flatMap { index, section in
-            section.rows.map { (section: index, row: $0, location: "\(section.title) > \($0.displayTitle)") }
+            section.rows.map { row in
+                let location = ShortcutConflicts.location(section: section.title, title: row.displayTitle)
+                return (section: index, row: row, location: location)
+            }
         }
         let clashes = ShortcutConflicts.clashes(among: located.map {
             ShortcutConflicts.Entry(combo: $0.row.combo, location: $0.location)

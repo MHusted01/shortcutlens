@@ -121,6 +121,16 @@
         }
       }
     },
+    "Also used by %@ and %lld more" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruges også af %@ og %lld til"
+          }
+        }
+      }
+    },
     "Apostrophe" : {
       "localizations" : {
         "da" : {

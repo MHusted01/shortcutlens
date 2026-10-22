@@ -26,7 +26,9 @@ without holding Command, double-tap Command for the
   own data and does not let ShortcutLens read or edit them.
 - Conflicts are marked: when two entries use the same keys, both rows say
   which other entry also uses them ("Also used by System > ..."), within the
-  app or against a system shortcut.
+  app or against a system shortcut. When more than three entries share the
+  keys, the row names three and counts the rest ("... and 4 more"); long
+  menu or section titles are shortened.
 - Shortcut packs add shortcuts that an app has but does not show in its
   menus, from local JSON files. See [packs.md](packs.md).
 - Keys are labelled for your current keyboard layout and update when you

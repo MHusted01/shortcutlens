@@ -107,7 +107,7 @@ struct OverlayContentPathsTests {
     @Test func editClashesNameRowsByTheirPath() throws {
         let combo = try #require(KeyCombo(MenuShortcut(title: "", keyCharacter: ";", modifiers: [])))
 
-        #expect(findNext.clashes(with: combo, excludingSection: 0, row: 0) == ["Edit > Spelling > Find Next"])
+        #expect(findNext.clashes(with: combo, excludingSection: 0, row: 0).shown == ["Edit > Spelling > Find Next"])
     }
 
     @Test func searchMatchesThePlainTitleAndKeepsLabels() {

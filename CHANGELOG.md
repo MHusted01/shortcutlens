@@ -6,6 +6,13 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The "Also used by" line under a conflicting shortcut names at most three
+  other entries and counts the rest, and shortens long titles. Before, every
+  entry on the same keys was listed, which made the line unreadable and slow
+  to build when many shortcuts shared keys ([#156](https://github.com/MHusted01/shortcutlens/issues/156)).
+
 ## [1.4.0] - 2026-10-20
 
 ### Added
