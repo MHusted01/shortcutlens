@@ -85,11 +85,17 @@ struct TriggerStateMachinePaletteTests {
 
     // MARK: - Closing
 
+    /// Closing returns to idle with the delay and token counter kept, so the
+    /// next hold works and a stale timer cannot show it.
     @Test(arguments: [.mouseDownOutside, .interrupted, .close, .reset] as [Machine.Event])
     func paletteCloses(event: Machine.Event) {
-        let (state, action) = Self.palette().updated(with: event)
+        let idle = Machine(delay: 0.3).updated(with: .modifiersChanged(.command)).state
+            .updated(with: .modifiersChanged([])).state
+        let palette = idle.updated(with: .doubleTap).state
 
-        #expect(state.phase == .idle)
+        let (state, action) = palette.updated(with: event)
+
+        #expect(state == idle)
         #expect(action == .hide)
     }
 
