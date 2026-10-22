@@ -122,6 +122,8 @@ Project layout:
 - `Fixtures/MenuFixture/` - app with known menus, read by `IntegrationTests/`
 - `project.yml` - XcodeGen spec (the Xcode project is generated, not committed)
 
+[docs/architecture.md](docs/architecture.md) explains how the code is
+organised, how the main features flow through it and where new code goes.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the pull request workflow.
 
 ## License
