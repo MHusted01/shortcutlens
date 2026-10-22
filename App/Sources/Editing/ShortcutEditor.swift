@@ -102,7 +102,7 @@ final class ShortcutEditor {
         let combo = problem == nil ? KeyCombo(Self.shortcut(for: keys)) : nil
         let clashes = combo.map {
             request.content.clashes(with: $0, excludingSection: request.row.section, row: request.row.row)
-        } ?? []
+        } ?? .none
         conflict = ShortcutConflicts.explanation(for: clashes)
     }
 

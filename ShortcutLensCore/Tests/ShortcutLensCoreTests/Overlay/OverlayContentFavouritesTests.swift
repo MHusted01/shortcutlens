@@ -146,7 +146,7 @@ struct OverlayContentFavouritesTests {
 
         #expect(pinned.clashes(with: keys, excludingSection: 0, row: 0).isEmpty)
         #expect(pinned.clashes(with: keys, excludingSection: 1, row: 0).isEmpty)
-        #expect(pinned.clashes(with: KeyCombo(key: "C", modifiers: []), excludingSection: 0, row: 0) == [
+        #expect(pinned.clashes(with: KeyCombo(key: "C", modifiers: []), excludingSection: 0, row: 0).shown == [
             "Edit > Copy",
         ])
     }

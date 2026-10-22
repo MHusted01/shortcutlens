@@ -65,9 +65,15 @@ struct KeyComboTests {
 
 struct ShortcutConflictsTests {
     private typealias Entry = ShortcutConflicts.Entry
+    private typealias Clashes = ShortcutConflicts.Clashes
 
     private func entry(_ location: String, _ key: String, _ modifiers: ModifierMask = []) -> Entry {
         Entry(combo: KeyCombo(key: key, modifiers: modifiers), location: location)
+    }
+
+    /// Clashes that name every location.
+    private func all(_ locations: String...) -> Clashes {
+        Clashes(shown: locations, total: locations.count)
     }
 
     @Test func findsDuplicatesWithinAnApp() {
@@ -77,7 +83,7 @@ struct ShortcutConflictsTests {
             entry("File > Save", "S"),
         ])
 
-        #expect(clashes == [["Window > Close Tab"], ["File > Close"], []])
+        #expect(clashes == [all("Window > Close Tab"), all("File > Close"), .none])
     }
 
     @Test func differentModifiersDoNotClash() {
@@ -89,17 +95,29 @@ struct ShortcutConflictsTests {
             entry("Edit > Select", "S", .noCommand),
         ])
 
-        #expect(clashes == Array(repeating: [], count: 5))
+        #expect(clashes == Array(repeating: .none, count: 5))
     }
 
-    @Test func listsEveryOtherShortcutInInputOrder() {
+    @Test func listsOtherShortcutsInInputOrder() {
         let clashes = ShortcutConflicts.clashes(among: [
             entry("A > One", "K"),
             entry("B > Two", "K"),
             entry("C > Three", "K"),
         ])
 
-        #expect(clashes[1] == ["A > One", "C > Three"])
+        #expect(clashes[1] == all("A > One", "C > Three"))
+    }
+
+    /// Past the limit only a count is kept, so many rows on one key
+    /// combination never build a long list per row.
+    @Test func namesTheFirstClashesAndCountsTheRest() {
+        let entries = (0 ..< 2000).map { entry("Pack > Item \($0)", "K") }
+
+        let clashes = ShortcutConflicts.clashes(among: entries)
+
+        #expect(clashes[0] == Clashes(shown: ["Pack > Item 1", "Pack > Item 2", "Pack > Item 3"], total: 1999))
+        #expect(clashes[2] == Clashes(shown: ["Pack > Item 0", "Pack > Item 1", "Pack > Item 3"], total: 1999))
+        #expect(clashes.allSatisfy { $0.shown.count == ShortcutConflicts.shownLimit })
     }
 
     /// Two items with the same title are still two items; only an entry
@@ -107,7 +125,7 @@ struct ShortcutConflictsTests {
     @Test func sameTitledItemsClash() {
         let clashes = ShortcutConflicts.clashes(among: [entry("File > Close", "W"), entry("File > Close", "W")])
 
-        #expect(clashes == [["File > Close"], ["File > Close"]])
+        #expect(clashes == [all("File > Close"), all("File > Close")])
     }
 
     @Test func entriesWithoutAComboNeverClash() {
@@ -116,13 +134,31 @@ struct ShortcutConflictsTests {
             Entry(combo: nil, location: "B > Two"),
         ])
 
-        #expect(clashes == [[], []])
+        #expect(clashes == [.none, .none])
     }
 
     @Test func explainsWhatAShortcutClashesWith() {
-        #expect(ShortcutConflicts.explanation(for: []) == nil)
-        #expect(ShortcutConflicts.explanation(for: ["System > Lock Screen"]) == "Also used by System > Lock Screen")
-        #expect(ShortcutConflicts.explanation(for: ["A > One", "B > Two"]) == "Also used by A > One, B > Two")
+        #expect(ShortcutConflicts.explanation(for: .none) == nil)
+        #expect(ShortcutConflicts.explanation(for: all("System > Lock Screen")) == "Also used by System > Lock Screen")
+        #expect(ShortcutConflicts.explanation(for: all("A > One", "B > Two")) == "Also used by A > One, B > Two")
+    }
+
+    @Test func countsTheClashesItDoesNotName() {
+        let one = Clashes(shown: ["A", "B", "C"], total: 4)
+        let five = Clashes(shown: ["A", "B", "C"], total: 8)
+
+        #expect(ShortcutConflicts.explanation(for: one) == "Also used by A, B, C and 1 more")
+        #expect(ShortcutConflicts.explanation(for: five) == "Also used by A, B, C and 5 more")
+    }
+
+    @Test func shortensLongTitlesInALocation() {
+        let long = String(repeating: "x", count: 500)
+        let limit = ShortcutConflicts.titleLimit
+        let shortened = String(repeating: "x", count: limit - 1) + "…"
+
+        #expect(ShortcutConflicts.location(section: "File", title: "Close") == "File > Close")
+        #expect(ShortcutConflicts.location(section: long, title: "Close") == "\(shortened) > Close")
+        #expect(ShortcutConflicts.location(section: "File", title: long) == "File > \(shortened)")
     }
 }
 
@@ -168,6 +204,18 @@ struct OverlayContentConflictTests {
         let rows = OverlayContent(appName: "App", groups: groups).sections[0].rows
 
         #expect(rows.map(\.conflict) == ["Also used by File > Reload", "Also used by File > Revert"])
+    }
+
+    @Test func aLongSectionTitleIsShortenedInTheExplanation() {
+        let section = String(repeating: "S", count: 1000)
+        let items = [entry("A", key: "k", element: 1), entry("B", key: "k", element: 2)]
+        let groups = [MenuGroup(title: section, items: items)]
+
+        let rows = OverlayContent(appName: "App", groups: groups).sections[0].rows
+        let explanation = rows[0].conflict ?? ""
+
+        #expect(explanation.count < 100)
+        #expect(explanation.hasSuffix("… > B"))
     }
 
     @Test func aRowWithAConflictTakesTwoLines() {

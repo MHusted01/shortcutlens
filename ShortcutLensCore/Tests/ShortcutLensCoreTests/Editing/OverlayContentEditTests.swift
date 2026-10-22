@@ -26,15 +26,15 @@ struct OverlayContentEditTests {
         let find = KeyCombo(key: "F", modifiers: [])
         let lock = KeyCombo(key: "Q", modifiers: .control)
 
-        #expect(content.clashes(with: find, excludingSection: 0, row: 0) == ["Edit > Find"])
-        #expect(content.clashes(with: lock, excludingSection: 0, row: 0) == ["System > Lock Screen"])
+        #expect(content.clashes(with: find, excludingSection: 0, row: 0).shown == ["Edit > Find"])
+        #expect(content.clashes(with: lock, excludingSection: 0, row: 0).shown == ["System > Lock Screen"])
     }
 
     @Test func leavesOutTheEditedRow() {
         let save = KeyCombo(key: "S", modifiers: [])
 
         #expect(content.clashes(with: save, excludingSection: 0, row: 0).isEmpty)
-        #expect(content.clashes(with: save, excludingSection: 1, row: 0) == ["File > Save"])
+        #expect(content.clashes(with: save, excludingSection: 1, row: 0).shown == ["File > Save"])
     }
 
     /// System rows have no menu path, so only the edited position is left
@@ -48,7 +48,20 @@ struct OverlayContentEditTests {
             .appending(sectionTitle: "System", shortcuts: shortcuts)
         let keys = KeyCombo(key: "Q", modifiers: .control)
 
-        #expect(system.clashes(with: keys, excludingSection: section, row: 0) == expected)
+        #expect(system.clashes(with: keys, excludingSection: section, row: 0).shown == expected)
+    }
+
+    /// Only the first rows are named; the rest are counted.
+    @Test func namesTheFirstClashesAndCountsTheRest() {
+        let shortcuts = (1 ... 5).map { MenuShortcut(title: "Item \($0)", keyCharacter: "q", modifiers: .control) }
+        let system = OverlayContent<Int>(appName: "App", groups: [])
+            .appending(sectionTitle: "System", shortcuts: shortcuts)
+
+        let clashes = system.clashes(with: KeyCombo(key: "Q", modifiers: .control), excludingSection: 9, row: 0)
+
+        #expect(clashes == ShortcutConflicts.Clashes(
+            shown: ["System > Item 1", "System > Item 2", "System > Item 3"], total: 5
+        ))
     }
 
     @Test func freeKeysClashWithNothing() {
