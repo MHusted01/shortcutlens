@@ -5,20 +5,13 @@ import Testing
 /// Checks the string catalogs of Core and the app: every key has a Danish
 /// translation with the same placeholders as the English text.
 struct LocalizationTests {
-    /// The repository root, four levels above this file.
-    private static let root = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-
     static let catalogs = [
         "ShortcutLensCore/Sources/ShortcutLensCore/Localizable.xcstrings",
         "App/Resources/Localizable.xcstrings",
     ]
 
     private static func strings(in path: String) throws -> [String: Any] {
-        let data = try Data(contentsOf: root.appending(path: path))
+        let data = try Data(contentsOf: RepositoryFiles.url(path))
         let catalog = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
         #expect(catalog["sourceLanguage"] as? String == "en")
         return try #require(catalog["strings"] as? [String: Any])
@@ -114,9 +107,7 @@ struct LocalizationTests {
 
     @Test(arguments: usages) func everyLiteralInTheCodeIsACatalogKey(usage: Usage) throws {
         let keys = try Set(Self.strings(in: usage.catalog).keys.map(Self.withoutPlaceholders))
-        let files = try FileManager.default
-            .contentsOfDirectory(at: Self.root.appending(path: usage.sources), includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "swift" }
+        let files = RepositoryFiles.swiftFiles(in: usage.sources)
         #expect(!files.isEmpty)
         let missing = try files.flatMap { file in
             try Self.literalKeys(in: String(contentsOf: file, encoding: .utf8), calls: usage.calls)
