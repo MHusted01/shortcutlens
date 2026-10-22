@@ -101,14 +101,19 @@ final class OverlayController {
     /// Shows the panel as a palette that takes typed keys. Closes the palette
     /// again when there is nothing to show it for.
     func showPalette() {
-        guard let target, palette.show(content, makeView: { model in
+        guard let target else {
+            onClosePalette()
+            return
+        }
+        let shown = palette.show(content) { model in
             OverlayView(
                 appName: target.name, icon: target.icon, content: .loading, palette: model,
                 onSelect: { [weak self] row in self?.runFromPalette(row) },
                 onEdit: { [weak self] id, row in self?.edit(row, id: id) },
                 onFavourite: favouriteHandler
             )
-        }) else {
+        }
+        guard shown else {
             onClosePalette()
             return
         }
