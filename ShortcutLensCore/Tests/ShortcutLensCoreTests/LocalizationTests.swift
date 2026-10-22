@@ -107,7 +107,7 @@ struct LocalizationTests {
 
     @Test(arguments: usages) func everyLiteralInTheCodeIsACatalogKey(usage: Usage) throws {
         let keys = try Set(Self.strings(in: usage.catalog).keys.map(Self.withoutPlaceholders))
-        let files = RepositoryFiles.swiftFiles(in: usage.sources)
+        let files = try RepositoryFiles.swiftFiles(in: usage.sources)
         #expect(!files.isEmpty)
         let missing = try files.flatMap { file in
             try Self.literalKeys(in: String(contentsOf: file, encoding: .utf8), calls: usage.calls)
