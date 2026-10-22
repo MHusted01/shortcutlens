@@ -99,7 +99,7 @@ struct SymbolicHotKeyParserTests {
         ])
 
         #expect(hotKeys.count == 1)
-        #expect(hotKeys[7]?.isEnabled != nil)
+        #expect(hotKeys[7] != nil)
     }
 
     @Test func emptyDictionaryGivesNothing() {
