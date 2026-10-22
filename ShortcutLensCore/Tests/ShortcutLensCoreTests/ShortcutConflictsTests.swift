@@ -51,6 +51,13 @@ struct KeyComboTests {
         #expect(KeyCombo(packed) == KeyCombo(glyph))
     }
 
+    /// Combos keep the English word, whatever language the overlay shows it in.
+    @Test func theHelpGlyphAndAPackHelpKeyAreOneCombo() {
+        let menu = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: [], glyph: 0x67)
+
+        #expect(KeyCombo(menu) == KeyCombo(key: "Help", modifiers: []))
+    }
+
     @Test func isNilWithoutADisplayableKey() {
         #expect(KeyCombo(MenuShortcut(title: "None", keyCharacter: nil, modifiers: [])) == nil)
     }
@@ -71,37 +78,6 @@ struct ShortcutConflictsTests {
         ])
 
         #expect(clashes == [["Window > Close Tab"], ["File > Close"], []])
-    }
-
-    @Test func findsAnAppShortcutThatClashesWithASystemShortcut() {
-        let clashes = ShortcutConflicts.clashes(among: [
-            entry("Edit > Emoji", "Space"),
-            entry("System > Show Spotlight search", "Space"),
-        ])
-
-        #expect(clashes == [["System > Show Spotlight search"], ["Edit > Emoji"]])
-    }
-
-    /// Combos keep the English word, whatever language the overlay shows it in.
-    @Test func helpShortcutsFromMenuAndPackClash() {
-        let menu = MenuShortcut(title: "Help", keyCharacter: nil, modifiers: [], glyph: 0x67)
-        let clashes = ShortcutConflicts.clashes(among: [
-            Entry(combo: KeyCombo(menu), location: "Help > Help"),
-            entry("Pack > Help", "Help"),
-        ])
-
-        #expect(clashes == [["Pack > Help"], ["Help > Help"]])
-    }
-
-    /// Combos keep the arrow symbol, whatever style the overlay draws it in.
-    @Test func arrowShortcutsFromMenuAndPackClash() {
-        let menu = MenuShortcut(title: "Enclosing Folder", keyCharacter: nil, modifiers: [], glyph: 0x68)
-        let clashes = ShortcutConflicts.clashes(among: [
-            Entry(combo: KeyCombo(menu), location: "Go > Enclosing Folder"),
-            entry("Pack > Up", "↑"),
-        ])
-
-        #expect(clashes == [["Pack > Up"], ["Go > Enclosing Folder"]])
     }
 
     @Test func differentModifiersDoNotClash() {

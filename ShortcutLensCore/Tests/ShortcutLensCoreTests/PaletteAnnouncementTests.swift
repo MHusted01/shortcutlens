@@ -57,12 +57,10 @@ struct PaletteAnnouncementTests {
         #expect(PaletteAnnouncement.text(from: nil, to: State()) == nil)
     }
 
-    @Test func openingWithContentNamesTheAppAndCount() {
-        #expect(PaletteAnnouncement.text(from: nil, to: Self.loaded) == "TextEdit, 3 shortcuts")
-    }
-
-    @Test func finishedReadNamesTheAppAndCount() {
-        #expect(PaletteAnnouncement.text(from: State(), to: Self.loaded) == "TextEdit, 3 shortcuts")
+    /// Opening with the menus already read, or the read finishing while open.
+    @Test(arguments: [nil, State()])
+    func contentArrivingNamesTheAppAndCount(before: State?) {
+        #expect(PaletteAnnouncement.text(from: before, to: Self.loaded) == "TextEdit, 3 shortcuts")
     }
 
     @Test func movingSaysTheSelectedRow() {

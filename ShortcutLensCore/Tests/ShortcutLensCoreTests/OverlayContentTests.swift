@@ -139,8 +139,6 @@ struct OverlayContentTests {
                 combo: KeyCombo(key: "Space", modifiers: []), element: nil
             ),
         ])
-        #expect(!content.sections[1].rows[0].isRunnable)
-        #expect(content.sections[0].rows[0].isRunnable)
     }
 
     /// An app without menu shortcuts shows the System section instead of the
@@ -183,9 +181,10 @@ struct OverlayContentTests {
         #expect(content.sections[2].rows[0].conflict == "Also used by File > Save")
     }
 
-    @Test func disabledRowsAreNotRunnable() {
-        let row = OverlayRow(id: 0, title: "Revert", keys: "⌘R", isEnabled: false, element: 1)
+    @Test(arguments: [(true, 1 as Int?, true), (false, 1, false), (true, nil, false)])
+    func onlyEnabledRowsWithAnElementAreRunnable(isEnabled: Bool, element: Int?, runnable: Bool) {
+        let row = OverlayRow(id: 0, title: "Revert", keys: "⌘R", isEnabled: isEnabled, element: element)
 
-        #expect(!row.isRunnable)
+        #expect(row.isRunnable == runnable)
     }
 }

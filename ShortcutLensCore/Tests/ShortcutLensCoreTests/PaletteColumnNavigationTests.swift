@@ -32,6 +32,18 @@ struct PaletteColumnNavigationTests {
         })
     }
 
+    /// File: a b c with a conflict on a (heights 20 40 50); View: f g h i
+    /// (20 30 40 50) in a second column.
+    private static var conflictOnA: OverlayContent<Int> {
+        let file = section(id: 0, "File", ["a", "b", "c"])
+        let rows = file.rows.enumerated()
+            .map { $0.offset == 0 ? $0.element.with(conflict: "Also used by x") : $0.element }
+        return OverlayContent(appName: "App", sections: [
+            OverlaySection(id: 0, title: "File", rows: rows),
+            section(id: 2, "View", ["f", "g", "h", "i"]),
+        ])
+    }
+
     /// The state with `title` selected, reached with Down from the first row.
     private static func selected(_ title: String, query: String = "") -> State {
         var state = State().with(content: content).with(query: query)
@@ -97,18 +109,21 @@ struct PaletteColumnNavigationTests {
     /// A row with a conflict is two lines tall, so the rows below it sit one
     /// line lower: in File, b is at 40 instead of 30.
     @Test func rowsWithAConflictCountTwoLines() {
-        let file = Self.section(id: 0, "File", ["a", "b", "c"])
-        let rows = file.rows.enumerated()
-            .map { $0.offset == 0 ? $0.element.with(conflict: "Also used by x") : $0.element }
-        let content = OverlayContent(appName: "App", sections: [
-            OverlaySection(id: 0, title: "File", rows: rows),
-            Self.section(id: 2, "View", ["f", "g", "h", "i"]),
-        ])
-        let atB = State().with(content: content).movingSelection(by: 1)
+        let atB = State().with(content: Self.conflictOnA).movingSelection(by: 1)
 
         let moved = atB.movingSelection(columns: 1, in: [[0], [1]], metrics: Self.metrics)
 
         #expect(moved.selectedRow?.title == "h")
+    }
+
+    /// g at 30 is as near to a (20) as to b (40).
+    @Test func onATieTheUpperRowWins() {
+        let atG = State().with(content: Self.conflictOnA).movingSelection(by: 4)
+
+        let moved = atG.movingSelection(columns: -1, in: [[0], [1]], metrics: Self.metrics)
+
+        #expect(atG.selectedRow?.title == "g")
+        #expect(moved.selectedRow?.title == "a")
     }
 
     // MARK: - Defensive cases
