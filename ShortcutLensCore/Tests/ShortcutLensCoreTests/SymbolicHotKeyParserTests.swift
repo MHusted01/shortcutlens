@@ -91,6 +91,17 @@ struct SymbolicHotKeyParserTests {
         #expect(hotKeys[1]?.binding?.keyCode == 0)
     }
 
+    /// "7" and "07" name the same ID; which entry wins is not defined.
+    @Test func idsWithTheSameNumberKeepOneEntry() {
+        let hotKeys = SymbolicHotKeyParser.parse([
+            "7": ["enabled": true],
+            "07": ["enabled": false],
+        ])
+
+        #expect(hotKeys.count == 1)
+        #expect(hotKeys[7]?.isEnabled != nil)
+    }
+
     @Test func emptyDictionaryGivesNothing() {
         #expect(SymbolicHotKeyParser.parse([:]).isEmpty)
     }

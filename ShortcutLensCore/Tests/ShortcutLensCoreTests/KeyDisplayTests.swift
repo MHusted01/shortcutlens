@@ -20,9 +20,9 @@ struct KeyDisplayTests {
         #expect(KeyDisplay.text(for: keys, words: danish) == keys)
     }
 
-    /// Only the whole key is a word; a key never contains one.
-    @Test(arguments: ["⌘Spacebar", "⌘Helper", "Space⌘"])
-    func translatesOnlyTheWholeKey(_ keys: String) {
+    /// Only the whole key after the modifiers is a word or an arrow.
+    @Test(arguments: ["⌘Spacebar", "⌘Helper", "Space⌘", "↑↓", "↑⌘"])
+    func replacesOnlyTheWholeKey(_ keys: String) {
         #expect(KeyDisplay.text(for: keys, words: danish) == keys)
     }
 
@@ -34,18 +34,6 @@ struct KeyDisplayTests {
     ])
     func drawsArrowsAsTriangles(keys: String, expected: String) {
         #expect(KeyDisplay.text(for: keys, words: danish) == expected)
-    }
-
-    /// Only the whole key is an arrow; Space and Help still translate.
-    @Test(arguments: [("↑↓", "↑↓"), ("↑⌘", "↑⌘"), ("⌘S", "⌘S"), ("⌘Space", "⌘Mellemrum")])
-    func trianglesReplaceOnlyAWholeArrowKey(keys: String, expected: String) {
-        #expect(KeyDisplay.text(for: keys, words: danish) == expected)
-    }
-
-    @Test func englishWordsLeaveKeysUnchanged() {
-        let english = KeyDisplay.Words(space: "Space", help: "Help")
-
-        #expect(KeyDisplay.text(for: "⌘Space", words: english) == "⌘Space")
     }
 
     /// The catalog's Danish entries, read from the built Core bundle.

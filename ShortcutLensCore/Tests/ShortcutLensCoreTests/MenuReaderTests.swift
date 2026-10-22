@@ -47,10 +47,12 @@ struct MenuReaderTests {
         let file = client.addTopLevelMenu("File")
         client.addItem("Save As…", key: "S", modifiers: 1, to: file)
         client.addItem("Bare", key: "B", modifiers: 8, to: file)
+        client.addItem("Unreported", key: "U", to: file)
 
         let modifiers = read(client)[0].items.map(\.shortcut.modifiers)
 
-        #expect(modifiers == [.shift, .noCommand])
+        // A missing modifiers attribute means Command alone, like 0.
+        #expect(modifiers == [.shift, .noCommand, []])
     }
 
     @Test func flattensNestedSubmenusWithTheirPath() {
@@ -147,6 +149,29 @@ struct MenuReaderTests {
         let titles = read(client)[0].items.map(\.shortcut.title)
 
         #expect(titles == ["Open", "Inner"])
+    }
+
+    @Test func readsASubmenuListedTwiceOnce() {
+        let client = makeClient()
+        let file = client.addTopLevelMenu("File")
+        let export = client.addItem("Export", to: file)
+        let exportMenu = client.addSubmenu(to: export)
+        client.addItem("PDF", key: "P", to: exportMenu)
+        client.link(exportMenu, to: export)
+
+        #expect(read(client)[0].items.map(\.shortcut.title) == ["PDF"])
+    }
+
+    @Test func keepsAnUntitledItemWithAnEmptyTitle() {
+        let client = makeClient()
+        let file = client.addTopLevelMenu("File")
+        let item = client.addItem("", key: "U", to: file)
+        client.setAttributes(MenuItemAttributes(role: "AXMenuItem", keyCharacter: "U"), of: item)
+
+        let shortcut = read(client)[0].items[0].shortcut
+
+        #expect(shortcut.title.isEmpty)
+        #expect(shortcut.menuPath == ["File", ""])
     }
 
     @Test func ignoresUnreadableElements() {

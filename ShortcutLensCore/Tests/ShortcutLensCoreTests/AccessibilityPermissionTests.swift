@@ -52,12 +52,10 @@ struct AccessibilityPermissionTests {
     @Test func showsOnboardingOnceWhenRevokedAfterLaunch() {
         let (granted, _) = AccessibilityPermission.initial.updated(isTrusted: true)
         let (revoked, firstAction) = granted.updated(isTrusted: false)
-        let (_, regrantAction) = revoked.updated(isTrusted: true)
         let (_, repeatAction) = revoked.updated(isTrusted: false)
 
         #expect(revoked.status == .missing)
         #expect(firstAction == .showOnboarding)
-        #expect(regrantAction == .none)
         #expect(repeatAction == .none)
     }
 

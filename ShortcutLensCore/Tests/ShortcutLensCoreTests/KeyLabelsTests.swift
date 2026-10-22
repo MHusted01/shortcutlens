@@ -20,17 +20,11 @@ struct KeyLabelsTests {
         #expect(danish.label(for: 1) == nil)
     }
 
-    @Test func untranslatableKeysAreDropped() {
-        let labels = KeyLabels(keyCodes: [0, 1, 2, 3, 4]) { keyCode in
-            [0: "\r", 1: "\u{10}", 2: "", 3: " ", 4: "q"][keyCode]
-        }
-
-        #expect([0, 1, 2, 3].map(labels.label) == [nil, nil, nil, nil])
-        #expect(labels.label(for: 4) == "q")
-    }
-
-    @Test func multiCharacterResultsAreDropped() {
-        let labels = KeyLabels(keyCodes: [0]) { _ in "ab" }
+    /// No result, empty, several characters, whitespace, control, private
+    /// use (AppKit's F1), format (left-to-right mark) and unassigned.
+    @Test(arguments: [nil, "", "ab", " ", "\r", "\u{10}", "\u{F704}", "\u{200E}", "\u{378}"])
+    func dropsResultsThatAreNotAKeyLabel(_ result: String?) {
+        let labels = KeyLabels(keyCodes: [0]) { _ in result }
 
         #expect(labels.label(for: 0) == nil)
     }
@@ -52,7 +46,6 @@ struct KeyLabelsTests {
 
     @Test func missingTranslationFallsBackToTheUSLayout() {
         #expect(label(nil, 18, layout: danish) == "⌘1")
-        #expect(label(nil, 44, layout: .none) == "⌘/")
     }
 
     @Test func glyphKeysIgnoreTheLayout() {

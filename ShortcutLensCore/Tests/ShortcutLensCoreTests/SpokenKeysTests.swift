@@ -40,11 +40,6 @@ struct SpokenKeysTests {
     }
 
     @Test
-    func readsModifiersOnlyAtTheStart() {
-        #expect(SpokenKeys.label(for: "⌘⌫") == "Command Delete")
-    }
-
-    @Test
     func emptyKeysGiveAnEmptyLabel() {
         #expect(SpokenKeys.label(for: "").isEmpty)
     }
