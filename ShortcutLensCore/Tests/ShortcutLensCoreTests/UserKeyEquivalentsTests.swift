@@ -51,6 +51,13 @@ struct UserKeyEquivalentsTests {
         #expect(custom.isCustom(shortcut(["View", "Zoom"], key: nil, modifiers: [.control, .noCommand], glyph: glyph)))
     }
 
+    /// Insert (U+F727) has no menu symbol, so neither side has keys to compare.
+    @Test func entryWithoutADisplayableKeyMarksNothing() throws {
+        let custom = try UserKeyEquivalents(global: [], app: [entry("Insert", "@\u{F727}")])
+
+        #expect(!custom.isCustom(shortcut(["Edit", "Insert"], key: "\u{F727}")))
+    }
+
     @Test func globalEntriesApplyToEveryApp() throws {
         let custom = try UserKeyEquivalents(global: [entry("Save", "@k")], app: [])
 

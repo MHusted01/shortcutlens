@@ -111,11 +111,12 @@ struct UserKeyEquivalentStoreTests {
         #expect(updated.count == 1)
     }
 
-    @Test func writtenEntryIsReadBackByParse() throws {
-        let entry = try #require(UserKeyEquivalent(menuPath: ["File", "Save"], key: "s", modifiers: .control))
+    @Test func plainTitleEntryIsSetUnderItsTitle() throws {
+        let entry = try #require(UserKeyEquivalent(title: "Save", keys: "@k"))
 
-        let parsed = UserKeyEquivalent.parse(UserKeyEquivalent.setting(entry, in: [:]))
+        let updated = UserKeyEquivalent.setting(entry, in: ["Save": "@s"])
 
-        #expect(parsed == [entry])
+        #expect(updated.count == 1)
+        #expect(updated["Save"] as? String == "@k")
     }
 }

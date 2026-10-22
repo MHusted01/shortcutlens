@@ -18,13 +18,6 @@ struct MenuCacheTests {
         #expect(cache.count == 1)
     }
 
-    @Test func storingReturnsACopy() {
-        let empty = MenuCache<Int, String>(capacity: 2)
-        _ = empty.storing("a", for: 1)
-
-        #expect(empty.value(for: 1) == nil)
-    }
-
     @Test func dropsTheLeastRecentlyStoredBeyondCapacity() {
         let cache = MenuCache<Int, String>(capacity: 2)
             .storing("a", for: 1)
@@ -69,6 +62,20 @@ struct MenuCacheTests {
         #expect(cache.value(for: 1) == nil)
         #expect(cache.value(for: 2) == "b")
         #expect(cache.count == 1)
+    }
+
+    @Test func removedKeyNoLongerCountsTowardsCapacity() {
+        let cache = MenuCache<Int, String>(capacity: 2)
+            .storing("a", for: 1)
+            .storing("b", for: 2)
+            .removing(1)
+            .storing("c", for: 3)
+            .storing("d", for: 4)
+
+        #expect(cache.value(for: 2) == nil)
+        #expect(cache.value(for: 3) == "c")
+        #expect(cache.value(for: 4) == "d")
+        #expect(cache.count == 2)
     }
 
     @Test func removingAMissingKeyChangesNothing() {

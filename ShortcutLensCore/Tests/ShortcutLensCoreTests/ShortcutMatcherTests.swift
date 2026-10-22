@@ -30,6 +30,13 @@ struct ShortcutMatcherTests {
         #expect(titles(original, query: "co") == [["Copy", "Show Colors", "Unicode Text", "Close Window"]])
     }
 
+    /// "Unicode Converter" has "co" inside a word first, then at a word start.
+    @Test func laterWordStartBeatsAnEarlierSubstring() {
+        let original = content(section("Format", ["Unicode Text", "Unicode Converter"]))
+
+        #expect(titles(original, query: "co") == [["Unicode Converter", "Unicode Text"]])
+    }
+
     @Test func tiesKeepMenuOrder() {
         let original = content(section("File", ["Show", "Save", "Select All"]))
 
