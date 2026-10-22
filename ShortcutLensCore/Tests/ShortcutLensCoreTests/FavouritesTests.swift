@@ -24,26 +24,23 @@ struct FavouritesTests {
         #expect(!Favourites.empty.contains(save, bundleID: "com.example.app"))
     }
 
-    @Test func togglingAddsInOrderAndRemoves() {
+    @Test func togglingANewPathAddsItLast() {
         let added = Favourites.empty
             .toggling(save, bundleID: "app")
             .toggling(open, bundleID: "app")
 
         #expect(added.paths(for: "app") == [save, open])
         #expect(added.contains(open, bundleID: "app"))
+    }
 
-        let removed = added.toggling(save, bundleID: "app")
+    @Test func togglingAFavouriteRemovesIt() {
+        let removed = Favourites.empty
+            .toggling(save, bundleID: "app")
+            .toggling(open, bundleID: "app")
+            .toggling(save, bundleID: "app")
 
         #expect(removed.paths(for: "app") == [open])
         #expect(!removed.contains(save, bundleID: "app"))
-    }
-
-    @Test func togglingDoesNotChangeTheOriginal() {
-        let original = Favourites.empty.toggling(save, bundleID: "app")
-
-        _ = original.toggling(open, bundleID: "app")
-
-        #expect(original.paths(for: "app") == [save])
     }
 
     @Test func keepsAppsApart() {

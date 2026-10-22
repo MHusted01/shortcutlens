@@ -37,6 +37,20 @@ struct OverlayContentEditTests {
         #expect(content.clashes(with: save, excludingSection: 1, row: 0) == ["File > Save"])
     }
 
+    /// System rows have no menu path, so only the edited position is left
+    /// out; an unknown position leaves out nothing.
+    @Test(arguments: [(0, ["System > Log Out"]), (5, ["System > Lock Screen", "System > Log Out"])])
+    func rowsWithoutAPathAreLeftOutOnlyByPosition(section: Int, expected: [String]) {
+        let shortcuts = ["Lock Screen", "Log Out"].map { title in
+            MenuShortcut(title: title, keyCharacter: "q", modifiers: .control)
+        }
+        let system = OverlayContent<Int>(appName: "App", groups: [])
+            .appending(sectionTitle: "System", shortcuts: shortcuts)
+        let keys = KeyCombo(key: "Q", modifiers: .control)
+
+        #expect(system.clashes(with: keys, excludingSection: section, row: 0) == expected)
+    }
+
     @Test func freeKeysClashWithNothing() {
         #expect(content.clashes(with: KeyCombo(key: "K", modifiers: .option), excludingSection: 0, row: 1).isEmpty)
     }

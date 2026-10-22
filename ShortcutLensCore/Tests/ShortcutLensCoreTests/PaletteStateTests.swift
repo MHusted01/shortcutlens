@@ -65,7 +65,10 @@ struct PaletteStateTests {
         #expect(state.visible?.isEmpty == true)
         #expect(state.selection == nil)
         #expect(state.selectedRow == nil)
-        #expect(state.movingSelection(by: 1).selection == nil)
+    }
+
+    @Test func movingWithoutAVisibleRowChangesNothing() {
+        #expect(Self.loaded.with(query: "xyz").movingSelection(by: 1).selection == nil)
     }
 
     @Test func downMovesThroughSectionsInDisplayOrder() {
@@ -77,7 +80,7 @@ struct PaletteStateTests {
     @Test func movingWrapsBothWays() {
         #expect(Self.loaded.movingSelection(by: -1).selectedRow?.title == "Paste")
         #expect(Self.loaded.movingSelection(by: 5).selectedRow?.title == "Save")
-        #expect(Self.loaded.movingSelection(by: 4).movingSelection(by: 1).selectedRow?.title == "Save")
+        #expect(Self.loaded.movingSelection(by: -6).selectedRow?.title == "Paste")
     }
 
     @Test func movingWithinFilteredRows() {
@@ -87,11 +90,13 @@ struct PaletteStateTests {
         #expect(state.movingSelection(by: 2).selectedRow?.title == "Save")
     }
 
-    @Test func newContentKeepsQueryAndReselects() {
-        let state = Self.loaded.with(query: "open").with(content: Self.content)
+    @Test func newContentKeepsTheQueryAndSelectsTheFirstMatch() {
+        let moved = Self.loaded.with(query: "save").movingSelection(by: 1)
 
-        #expect(state.query == "open")
-        #expect(state.selectedRow?.element == 2)
+        let state = moved.with(content: Self.content)
+
+        #expect(state.query == "save")
+        #expect(state.selectedRow?.title == "Save")
     }
 
     @Test(arguments: ["pa", "  "])

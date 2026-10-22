@@ -109,6 +109,21 @@ struct OverlayContentFavouritesTests {
         #expect(pinned.sections[1].rows[1].conflict == nil)
     }
 
+    /// A pack can list a row under the same path as a menu item; the copy
+    /// shows the conflict of the menu row it was made from.
+    @Test func aCopyShowsTheConflictOfItsMenuRowWhenAPackRepeatsThePath() {
+        let clashing = OverlayContent(appName: "App", groups: [
+            MenuGroup(title: "File", items: [entry("File", "Save", key: "s", element: 1)]),
+            MenuGroup(title: "Edit", items: [entry("Edit", "Select", key: "s", element: 2)]),
+        ]).appending(sectionTitle: "File", shortcuts: [
+            MenuShortcut(title: "Save", keyCharacter: "k", modifiers: [], menuPath: ["File", "Save"]),
+        ])
+
+        let pinned = clashing.pinning([["File", "Save"]])
+
+        #expect(pinned.sections[0].rows.map(\.conflict) == ["Also used by Edit > Select"])
+    }
+
     @Test func appendingKeepsTheFavouritesSectionOutOfConflicts() {
         let pinned = content.pinning([["File", "Save"]])
             .appending(sectionTitle: "System", shortcuts: [
@@ -126,7 +141,7 @@ struct OverlayContentFavouritesTests {
     }
 
     @Test func editingAFavouriteCopyDoesNotClashWithItsOriginal() {
-        let pinned = content.pinning([["File", "Save"]])
+        let pinned = content.pinning([["File", "Save"], ["Edit", "Copy"]])
         let keys = KeyCombo(key: "S", modifiers: [])
 
         #expect(pinned.clashes(with: keys, excludingSection: 0, row: 0).isEmpty)

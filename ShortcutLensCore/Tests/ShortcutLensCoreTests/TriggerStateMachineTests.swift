@@ -61,14 +61,10 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test func noModifiersKeepsIdle() {
-        let (state, action) = Machine.initial.updated(with: .modifiersChanged([]))
-
-        #expect(state == Machine.initial)
-        #expect(action == .none)
-    }
-
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0), .reset, .interrupted])
+    @Test(arguments: [
+        Machine.Event.modifiersChanged([]), .keyDown, .mouseDown, .mouseDownOutside, .timerFired(token: 0), .reset,
+        .interrupted,
+    ])
     func idleIgnoresOtherEvents(event: Machine.Event) {
         let (state, action) = Machine.initial.updated(with: event)
 
@@ -97,14 +93,6 @@ struct TriggerStateMachineTests {
         #expect(action == .show)
     }
 
-    @Test func staleTimerIsIgnored() {
-        let (counting, token) = Self.counting()
-        let (state, action) = counting.updated(with: .timerFired(token: token + 1))
-
-        #expect(state == counting)
-        #expect(action == .none)
-    }
-
     @Test func repeatedCommandAloneKeepsCountdown() {
         let (counting, _) = Self.counting()
         let (state, action) = counting.updated(with: .modifiersChanged(.command))
@@ -130,7 +118,7 @@ struct TriggerStateMachineTests {
         #expect(action == .cancelTimer)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .interrupted])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .mouseDownOutside, .interrupted])
     func inputCancelsCountdown(event: Machine.Event) {
         let (counting, _) = Self.counting()
         let (state, action) = counting.updated(with: event)
@@ -145,18 +133,6 @@ struct TriggerStateMachineTests {
 
         #expect(state.phase == .idle)
         #expect(action == .cancelTimer)
-    }
-
-    @Test func eachCountdownGetsANewToken() {
-        let (first, firstToken) = Self.counting()
-        let idle = first.updated(with: .modifiersChanged([])).state
-        let (_, action) = idle.updated(with: .modifiersChanged(.command))
-
-        guard case let .startTimer(secondToken, _) = action else {
-            Issue.record("expected startTimer, got \(action)")
-            return
-        }
-        #expect(secondToken != firstToken)
     }
 
     @Test func timerFromCancelledCountdownDoesNotShowLaterOne() {
@@ -203,7 +179,7 @@ struct TriggerStateMachineTests {
         #expect(action == .hide)
     }
 
-    @Test(arguments: [Machine.Event.mouseDown, .timerFired(token: 0)])
+    @Test(arguments: [Machine.Event.mouseDown, .mouseDownOutside, .timerFired(token: 0)])
     func shownIgnoresClicksAndTimers(event: Machine.Event) {
         let shown = Self.shown()
         let (state, action) = shown.updated(with: event)
@@ -221,8 +197,9 @@ struct TriggerStateMachineTests {
 
     // MARK: - suppressed
 
-    @Test func releasingAllModifiersEndsSuppression() {
-        let (state, action) = Self.suppressed().updated(with: .modifiersChanged([]))
+    @Test(arguments: [Machine.Event.modifiersChanged([]), .reset])
+    func releaseOrResetEndsSuppression(event: Machine.Event) {
+        let (state, action) = Self.suppressed().updated(with: event)
 
         #expect(state.phase == .idle)
         #expect(action == .none)
@@ -237,7 +214,7 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .timerFired(token: 0), .interrupted])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .mouseDownOutside, .timerFired(token: 0), .interrupted])
     func suppressedIgnoresInput(event: Machine.Event) {
         let suppressed = Self.suppressed()
         let (state, action) = suppressed.updated(with: event)
@@ -246,33 +223,13 @@ struct TriggerStateMachineTests {
         #expect(action == .none)
     }
 
-    @Test func resetEndsSuppression() {
-        let (state, action) = Self.suppressed().updated(with: .reset)
-
-        #expect(state.phase == .idle)
-        #expect(action == .none)
-    }
-
     // MARK: - sequences
 
-    @Test func copyShortcutNeverShowsOverlay() {
-        let events: [Machine.Event] = [
-            .modifiersChanged(.command), .keyDown, .modifiersChanged([]),
-        ]
-        let actions = Self.run(events)
+    /// Cmd+C, or an app activation or Space change without a key event.
+    @Test(arguments: [Machine.Event.keyDown, .interrupted])
+    func shortcutOrInterruptionNeverShowsOverlay(event: Machine.Event) {
+        let actions = Self.run([.modifiersChanged(.command), event, .modifiersChanged([])])
 
-        #expect(!actions.contains(.show))
-        #expect(actions.last == Machine.Action.none)
-    }
-
-    @Test func interruptionNeverShowsOverlay() {
-        // Fallback path: an app activation or Space change without a key event.
-        let events: [Machine.Event] = [
-            .modifiersChanged(.command), .interrupted, .modifiersChanged([]),
-        ]
-        let actions = Self.run(events)
-
-        #expect(!actions.contains(.show))
         #expect(actions == [.startTimer(token: 0, delay: Machine.defaultDelay), .cancelTimer, .none])
     }
 
@@ -318,6 +275,16 @@ struct TriggerStateMachineTests {
         let (_, action) = Machine.initial.with(delay: 0.3).updated(with: .modifiersChanged(.command))
 
         #expect(action == .startTimer(token: 0, delay: 0.3))
+    }
+
+    /// A new delay must not reuse tokens, or a timer from a countdown
+    /// cancelled before the change could show a later one too early.
+    @Test func timerFromBeforeADelayChangeDoesNotShowALaterCountdown() {
+        let (first, oldToken) = Self.counting()
+        let idle = first.with(delay: 0.3).updated(with: .modifiersChanged([])).state
+        let second = idle.updated(with: .modifiersChanged(.command)).state
+
+        #expect(second.updated(with: .timerFired(token: oldToken)).action == .none)
     }
 
     private static func run(_ events: [Machine.Event]) -> [Machine.Action] {

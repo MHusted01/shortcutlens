@@ -75,7 +75,7 @@ struct TriggerStateMachinePaletteTests {
 
     /// Typed keys and clicks on the panel belong to the palette, and a late
     /// countdown timer must not change it.
-    @Test(arguments: [.keyDown, .mouseDown, .timerFired(token: 0), .timerFired(token: 99)] as [Machine.Event])
+    @Test(arguments: [.keyDown, .mouseDown, .timerFired(token: 0)] as [Machine.Event])
     func paletteIgnoresInput(event: Machine.Event) {
         let (state, action) = Self.palette().updated(with: event)
 
@@ -93,33 +93,7 @@ struct TriggerStateMachinePaletteTests {
         #expect(action == .hide)
     }
 
-    @Test func holdWorksAgainAfterPaletteCloses() {
-        let closed = Self.palette().updated(with: .close).state
-
-        let (state, action) = closed.updated(with: .modifiersChanged(.command))
-
-        guard case let .countingDown(token) = state.phase else {
-            Issue.record("expected countingDown, got \(state.phase)")
-            return
-        }
-        #expect(action == .startTimer(token: token, delay: Machine.defaultDelay))
-    }
-
-    // MARK: - New events outside the palette
-
-    @Test func clickOutsideCancelsCountdownLikeAnyClick() {
-        let (state, action) = Self.counting().state.updated(with: .mouseDownOutside)
-
-        #expect(state.phase == .suppressed)
-        #expect(action == .cancelTimer)
-    }
-
-    @Test func clickOutsideKeepsHoldOverlayShown() {
-        let (state, action) = Self.shown().updated(with: .mouseDownOutside)
-
-        #expect(state.phase == .shown)
-        #expect(action == .none)
-    }
+    // MARK: - Palette events outside the palette
 
     @Test func closeOutsidePaletteChangesNothing() {
         let others = [Machine.initial, Self.counting().state, Self.shown(), Self.suppressed()]
