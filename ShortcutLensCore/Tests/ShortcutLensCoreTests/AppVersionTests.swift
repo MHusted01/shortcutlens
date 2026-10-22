@@ -12,19 +12,14 @@ struct AppVersionTests {
         #expect(version.displayString == "0.1.0 (12)")
     }
 
-    @Test func fallsBackWhenKeysAreMissing() {
-        let version = AppVersion(infoDictionary: [:])
-
-        #expect(version.marketing == AppVersion.unknownMarketing)
-        #expect(version.build == AppVersion.unknownBuild)
-    }
-
-    @Test func fallsBackWhenValuesAreEmptyOrWrongType() {
-        let version = AppVersion(infoDictionary: [
+    @Test func fallsBackWhenValuesAreMissingEmptyOrWrongType() {
+        let unknown = AppVersion(marketing: AppVersion.unknownMarketing, build: AppVersion.unknownBuild)
+        let wrong = AppVersion(infoDictionary: [
             "CFBundleShortVersionString": "",
             "CFBundleVersion": 12,
         ])
 
-        #expect(version == AppVersion(marketing: AppVersion.unknownMarketing, build: AppVersion.unknownBuild))
+        #expect(AppVersion(infoDictionary: [:]) == unknown)
+        #expect(wrong == unknown)
     }
 }

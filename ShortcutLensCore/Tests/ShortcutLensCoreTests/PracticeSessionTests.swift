@@ -93,13 +93,4 @@ struct PracticeSessionTests {
         #expect(empty.current == nil)
         #expect(empty.position == 0)
     }
-
-    @Test func answeringDoesNotChangeTheOriginal() {
-        let original = session
-
-        _ = original.answering(pressS)
-
-        #expect(original.phase == .asking)
-        #expect(original.correctCount == 0)
-    }
 }

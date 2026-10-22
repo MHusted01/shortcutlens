@@ -26,16 +26,20 @@ struct OnboardingStepTests {
         #expect(OnboardingStep.allCases.map(\.showsBack) == [false, true, true])
     }
 
-    @Test func primaryButtonContinuesUntilTheLastStep() {
-        #expect(OnboardingStep.welcome.primaryButton(isGranted: false) == .continue)
-        #expect(OnboardingStep.howToUse.primaryButton(isGranted: false) == .continue)
-        #expect(OnboardingStep.welcome.primaryButton(isGranted: true) == .continue)
-        #expect(OnboardingStep.howToUse.primaryButton(isGranted: true) == .continue)
-    }
-
-    @Test func lastStepOpensSettingsUntilGranted() {
-        #expect(OnboardingStep.accessibility.primaryButton(isGranted: false) == .openSettings)
-        #expect(OnboardingStep.accessibility.primaryButton(isGranted: true) == .done)
+    /// Continue until the last step, which opens System Settings until the
+    /// permission is granted.
+    @Test(arguments: [
+        (OnboardingStep.welcome, false, OnboardingStep.PrimaryButton.continue),
+        (.welcome, true, .continue),
+        (.howToUse, false, .continue),
+        (.howToUse, true, .continue),
+        (.accessibility, false, .openSettings),
+        (.accessibility, true, .done),
+    ])
+    func primaryButtonFollowsTheStepAndPermission(
+        step: OnboardingStep, isGranted: Bool, expected: OnboardingStep.PrimaryButton
+    ) {
+        #expect(step.primaryButton(isGranted: isGranted) == expected)
     }
 
     @Test func counterIsEnglishByDefault() {

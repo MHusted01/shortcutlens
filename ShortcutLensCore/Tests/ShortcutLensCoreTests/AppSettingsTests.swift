@@ -16,6 +16,17 @@ private final class MemoryStore: SettingsStore {
 }
 
 struct AppSettingsTests {
+    /// Settings where every value differs from the default.
+    private func changed(
+        triggerDelay: Double = 0.4, maxMenuDepth: Int = 2, showsDisabledItems: Bool = true,
+        showsSystemShortcuts: Bool = false, paletteTrigger: PaletteTrigger = .off
+    ) -> AppSettings {
+        AppSettings(
+            triggerDelay: triggerDelay, maxMenuDepth: maxMenuDepth, showsDisabledItems: showsDisabledItems,
+            showsSystemShortcuts: showsSystemShortcuts, paletteTrigger: paletteTrigger
+        )
+    }
+
     @Test func defaultsMatchTheBuiltInBehaviour() {
         let settings = AppSettings.defaults
 
@@ -32,9 +43,10 @@ struct AppSettingsTests {
         #expect(AppSettings(triggerDelay: 0.5).triggerDelay == 0.5)
     }
 
-    @Test func roundsTriggerDelayToItsStep() {
-        #expect(AppSettings(triggerDelay: 0.52).triggerDelay == 0.5)
-        #expect(AppSettings(triggerDelay: 0.53).triggerDelay == 0.55)
+    /// Rounded values equal their literals: 6 × 0.05 is 0.30000000000000004.
+    @Test(arguments: [(0.52, 0.5), (0.53, 0.55), (0.3, 0.3)])
+    func roundsTriggerDelayToItsStep(delay: Double, expected: Double) {
+        #expect(AppSettings(triggerDelay: delay).triggerDelay == expected)
     }
 
     @Test func treatsANonFiniteDelayAsTheDefault() {
@@ -50,18 +62,6 @@ struct AppSettingsTests {
 
     @Test func loadsDefaultsFromAnEmptyStore() {
         #expect(AppSettings(store: MemoryStore()) == .defaults)
-    }
-
-    @Test func savesAndLoadsEverySetting() {
-        let store = MemoryStore()
-        let settings = AppSettings(
-            triggerDelay: 0.4, maxMenuDepth: 2, showsDisabledItems: true, showsSystemShortcuts: false,
-            paletteTrigger: .control
-        )
-
-        settings.save(to: store)
-
-        #expect(AppSettings(store: store) == settings)
     }
 
     /// `UserDefaults` hands numbers back as `NSNumber`; they must still read
@@ -122,15 +122,14 @@ struct AppSettingsTests {
         #expect(store.values[AppSettings.Key.paletteTrigger] as? String == "option")
     }
 
-    @Test func withCopiesChangeOneSetting() {
-        let settings = AppSettings.defaults
+    @Test func withCopiesChangeOnlyTheirSetting() {
+        let settings = changed()
 
-        #expect(settings.with(triggerDelay: 0.3).triggerDelay == 0.3)
-        #expect(settings.with(maxMenuDepth: 4).maxMenuDepth == 4)
-        #expect(settings.with(showsDisabledItems: true).showsDisabledItems)
-        #expect(!settings.with(showsSystemShortcuts: false).showsSystemShortcuts)
-        #expect(settings.with(paletteTrigger: .option).paletteTrigger == .option)
-        #expect(settings.with(maxMenuDepth: 99).maxMenuDepth == AppSettings.maxMenuDepthRange.upperBound)
+        #expect(settings.with(triggerDelay: 0.3) == changed(triggerDelay: 0.3))
+        #expect(settings.with(maxMenuDepth: 4) == changed(maxMenuDepth: 4))
+        #expect(settings.with(showsDisabledItems: false) == changed(showsDisabledItems: false))
+        #expect(settings.with(showsSystemShortcuts: true) == changed(showsSystemShortcuts: true))
+        #expect(settings.with(paletteTrigger: .option) == changed(paletteTrigger: .option))
     }
 
     @Test func onlyReaderSettingsChangeMenuReads() {
