@@ -181,10 +181,7 @@ struct ShortcutPackParserTests {
     }
 
     @Test func bundledExamplePackLoads() throws {
-        let repository = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let url = repository.appending(path: "App/Resources/Packs/com.apple.finder.json")
+        let url = try RepositoryFiles.url("App/Resources/Packs/com.apple.finder.json")
 
         let pack = try ShortcutPackParser.parse(Data(contentsOf: url)).get()
 
