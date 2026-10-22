@@ -1,3 +1,4 @@
+import ShortcutLensCore
 import SwiftUI
 
 /// The palette's search field in its rounded container: a leading magnifying
