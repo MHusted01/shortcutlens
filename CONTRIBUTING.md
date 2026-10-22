@@ -36,7 +36,8 @@ changes to the menu reader or the AX layer.
 
 - No telemetry, network code or third-party runtime dependencies (see PRIVACY.md).
 - Core logic lives in `ShortcutLensCore` and is developed test-first.
-  Line coverage must stay at or above 80%.
+  Line coverage must stay at or above 80%. [docs/architecture.md](docs/architecture.md)
+  describes the two layers, the main flows and which area new code belongs to.
 - Code must pass `make lint` (SwiftLint and SwiftFormat).
 
 ## Translations
