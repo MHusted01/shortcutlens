@@ -40,9 +40,10 @@ reads it through the real AX API (`make integration`, local only).
    `TriggerController.onArm` calls `OverlayController.prepare()`. Any other
    key, modifier, click or app switch cancels it. `MissedKeyDown` catches
    system hotkeys that the monitors never see.
-3. `prepare()` shows the cached content from `MenuCache` at once, then
-   starts `OverlayController.readContent` (`OverlayController+Read.swift`)
-   in a detached task:
+3. `prepare()` asks `OverlayContentLoader` for the app. It returns the
+   cached content from `MenuCache` at once, then starts
+   `AppContentReader.read` in a detached task, or reuses the read already
+   running for that app:
    - `MenuReader` walks the menu bar through `DeadlineAXClient`, which wraps
      `SystemAXClient` with a 3 second budget. Each item becomes a
      `MenuShortcut` (`ModifierMask`, `MenuGlyph`) in a `MenuGroup`.
@@ -54,13 +55,15 @@ reads it through the real AX API (`make integration`, local only).
      formatted by `ShortcutFormatter`. It then appends the pack sections,
      disambiguates titles (`+Paths`) and marks conflicts (`+Conflicts`,
      `ShortcutConflicts`).
-4. `finishRead` stores the result in `MenuCache` (`MenuCache+Read`) and
-   decorates it: the System section goes last, and `pinning(_:)`
-   (`OverlayContent+Favourites`, `Favourites`) puts the Favourites section
-   first. A read that finishes during the countdown lays the panel out ahead
-   of time (`render(prepareOnly:)`).
-5. When the timer fires, `onShow` calls `show()`, which calls `render()`
-   (`OverlayController+Layout.swift`). `PanelLayout` and `ColumnLayout`
+4. When the read finishes, `MenuReadTracker` decides whether it is still
+   current (same settings and keyboard layout) and for the latest
+   `prepare()`. The loader stores a current read in `MenuCache`
+   (`MenuCache+Read`), appends the System section and hands it to the
+   controller, which pins the Favourites section first with `pinning(_:)`
+   (`OverlayContent+Favourites`, `Favourites`). A read that finishes during
+   the countdown lays the panel out ahead of time (`render(prepareOnly:)`).
+5. When the timer fires, `onShow` calls `show()`, which calls `render()`.
+   `OverlayLayout` picks the body, `PanelLayout` and `ColumnLayout`
    choose the columns and size, and `ScreenPicker` picks the screen under
    the pointer. `OverlayPanel` shows `OverlayView` without activating
    ShortcutLens.
@@ -74,15 +77,17 @@ reads it through the real AX API (`make integration`, local only).
 1. `TriggerController` passes the same events to `DoubleTapDetector`, set
    to the `PaletteTrigger` from settings. A double tap goes to
    `TriggerStateMachine` as `.doubleTap`, which answers `showPalette`.
-2. `OverlayController.showPalette()` wraps the current content in
-   `PaletteState` and presents the panel as key. The header shows
+2. `OverlayController.showPalette()` hands the current content to
+   `PaletteController`, which wraps it in `PaletteState` and presents the
+   panel as key. The header shows
    `SearchBox` / `SearchField`, and `PaletteModel` (in `OverlayView.swift`)
    carries the query, selection and body.
 3. Typing calls `PaletteState.with(query:)`, which filters with
-   `ShortcutMatcher`. Arrow keys come in as `SearchCommand`s and move the
-   selection, across columns with `PaletteState+Columns`. Return runs the
-   row like a click. `OverlayController+Accessibility.swift` announces each
-   change with `PaletteAnnouncement` and `SpokenKeys`.
+   `ShortcutMatcher`. Arrow keys, Return and Escape come in as
+   `SearchCommand`s, and `PaletteState+Commands` answers each one: move the
+   selection (across columns with `PaletteState+Columns`), run the row like
+   a click, beep, or close. `PaletteController` announces each change with
+   `PaletteAnnouncement` and `SpokenKeys`.
 4. Every way of closing the palette goes through `onClosePalette`, which
    becomes `TriggerController.closePalette()`, so the state machine always
    knows.
@@ -116,7 +121,7 @@ load.
 ### Practice
 
 The menu bar item calls `PracticeController.start()` for the
-`FrontmostApp`. It runs `OverlayController.readContent` with system
+`FrontmostApp`. It runs `AppContentReader.read` with system
 shortcuts on. `PracticeDeck` builds `PracticeCard`s and picks the
 questions, weakest first, using `PracticeProgress` (Leitner boxes in
 `UserDefaults`) and favourites. `PracticeView` takes each answer with
@@ -127,7 +132,7 @@ answer.
 ### Export
 
 The menu bar items call `CheatSheetExporter`. It runs the same
-`OverlayController.readContent` for the `FrontmostApp`, without the
+`AppContentReader.read` for the `FrontmostApp`, without the
 overlay's favourites, and appends the System section. `CheatSheetMarkdown`
 renders the Markdown file written through a save panel. `CheatSheetDocument`
 lays out the printed sheet, with `CheatSheetLayout` for the keys column.
@@ -166,11 +171,11 @@ every area and stay at the top of the test target:
 
 | Area | Core | App |
 | --- | --- | --- |
-| Menu | `AXClient`, `DeadlineAXClient`, `MenuReader`, `MenuGroup`, `MenuShortcut`, `MenuGlyph`, `ModifierMask`, `MenuItemRunner`, `MenuCache`, `MenuCache+Read` | `SystemAXClient`, `UncheckedSendable` |
+| Menu | `AXClient`, `DeadlineAXClient`, `MenuReader`, `MenuGroup`, `MenuShortcut`, `MenuGlyph`, `ModifierMask`, `MenuItemRunner`, `MenuCache`, `MenuCache+Read`, `MenuReadTracker` | `SystemAXClient`, `AppContentReader`, `UncheckedSendable` |
 | Keys | `KeyCombo`, `KeyDisplay`, `KeyLabels`, `KeyCodes`, `NamedKeys`, `ShortcutFormatter`, `SpokenKeys`, `ShortcutConflicts`, `SymbolicHotKey`, `SystemHotKeyCatalog`, `UserKeyEquivalent`, `UserKeyEquivalent+Store`, `UserKeyEquivalents` | `KeyboardLayout`, `SystemHotKeySource`, `UserKeyEquivalentSource` |
 | Trigger | `TriggerStateMachine`, `HeldModifiers`, `DoubleTapDetector`, `PaletteTrigger`, `MissedKeyDown` | `TriggerController` |
-| Overlay | `OverlayContent`, `OverlayContent+Paths`, `OverlayContent+Conflicts`, `OverlayContent+Favourites`, `Favourites`, `PanelLayout`, `ColumnLayout`, `ScreenPicker` | `OverlayController`, `OverlayController+Read`, `+Layout`, `+Run`, `+Favourites`, `+Edit`, `+Signposts`, `OverlayPanel`, `OverlayView`, `OverlayBackground` |
-| Palette | `PaletteState`, `PaletteState+Columns`, `ShortcutMatcher`, `PaletteAnnouncement` | `OverlayController+Accessibility`, `SearchBox`, `SearchField` |
+| Overlay | `OverlayContent`, `OverlayContent+Paths`, `OverlayContent+Conflicts`, `OverlayContent+Favourites`, `Favourites`, `PanelLayout`, `ColumnLayout`, `ScreenPicker` | `OverlayController`, `OverlayController+Run`, `+Favourites`, `+Edit`, `OverlayContentLoader`, `OverlayLayout`, `OverlayLog`, `OverlayPanel`, `OverlayView`, `OverlayBackground` |
+| Palette | `PaletteState`, `PaletteState+Columns`, `PaletteState+Commands`, `SearchCommand`, `ShortcutMatcher`, `PaletteAnnouncement` | `PaletteController`, `SearchBox`, `SearchField` |
 | Editing | `ShortcutRecording`, `OverlayContent+Edit` | `ShortcutEditor`, `ShortcutEditorView`, `KeyRecorder`, `UserKeyEquivalentWriter`, `AppRelauncher`, `AppSandbox` |
 | Packs | `ShortcutPack`, `ShortcutPackParser`, `PackKeys`, `PackLibrary` | `PackSource`, `PackSettings` |
 | Practice | `PracticeDeck`, `PracticePress`, `PracticeProgress`, `PracticeSession` | `PracticeController`, `PracticeView` |
@@ -188,8 +193,11 @@ Notes on the less obvious choices:
 - `ShortcutLensApp` (menu bar menu and `AppDelegate`), `FrontmostApp` and
   `AppVersion` are app-wide. They sit in Settings because the menu bar is
   the app's own settings surface. Do not add a catch-all folder for them.
-- `OverlayController+Read` holds the read that Practice and Export call too.
-  It moves out of the overlay when `OverlayController` is split up in v1.5.0.
+- `AppContentReader` is in Menu, not Overlay, because Practice and Export
+  read through it too.
+- `OverlayController` keeps `+Run`, `+Favourites` and `+Edit` as extension
+  files: each is one action on the controller's state, with no state of its
+  own (see Naming).
 
 ## Naming
 

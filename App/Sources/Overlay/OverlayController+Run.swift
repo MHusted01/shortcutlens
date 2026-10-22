@@ -19,10 +19,10 @@ extension OverlayController {
             // A fixed outcome string only, never the menu title.
             let description = outcome.logDescription
             guard outcome != .pressed else {
-                Self.log.notice("menu item \(description, privacy: .public)")
+                OverlayLog.logger.notice("menu item \(description, privacy: .public)")
                 return
             }
-            Self.log.error("menu item not run: \(description, privacy: .public)")
+            OverlayLog.logger.error("menu item not run: \(description, privacy: .public)")
             // The panel is already hidden, so the beep is the only sign the click did nothing.
             await MainActor.run { NSSound.beep() }
         }

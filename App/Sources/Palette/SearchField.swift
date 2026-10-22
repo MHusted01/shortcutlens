@@ -1,15 +1,6 @@
 import AppKit
+import ShortcutLensCore
 import SwiftUI
-
-/// A key the search field handles itself instead of editing the text.
-enum SearchCommand {
-    case moveUp
-    case moveDown
-    case moveLeft
-    case moveRight
-    case submit
-    case cancel
-}
 
 /// The palette's search field. It is an AppKit text field, so arrow keys,
 /// Return and Escape arrive as editing commands before the field acts on
