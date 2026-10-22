@@ -21,7 +21,7 @@ extension OverlayController {
             row: id,
             content: content
         )
-        if isPaletteOpen {
+        if palette.isOpen {
             onClosePalette()
         } else {
             hide()

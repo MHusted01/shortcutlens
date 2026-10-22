@@ -87,7 +87,7 @@ final class PracticeController {
         let layout = KeyboardLayout.current()
         Task { [weak self] in
             let read = await Task.detached(priority: .userInitiated) {
-                OverlayController.readContent(
+                AppContentReader.read(
                     pid: target.pid, bundleID: target.bundleID, appName: target.name, settings: settings,
                     layout: layout
                 )

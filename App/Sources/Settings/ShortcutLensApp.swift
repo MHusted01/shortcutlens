@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let start = ContinuousClock.now
             overlay.show()
             let elapsed = start.duration(to: .now)
-            OverlayController.log.debug("shown in \(String(describing: elapsed), privacy: .public)")
+            OverlayLog.logger.debug("shown in \(String(describing: elapsed), privacy: .public)")
         }
         // Releasing Command or Escape fades the overlay out; a row click hides it at once.
         trigger.onHide = { [overlay] in overlay.hide(animated: true) }
