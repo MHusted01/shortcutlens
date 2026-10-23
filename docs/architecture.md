@@ -198,6 +198,12 @@ Notes on the less obvious choices:
 - `OverlayController` keeps `+Run`, `+Favourites` and `+Edit` as extension
   files: each is one action on the controller's state, with no state of its
   own (see Naming).
+- Core keeps its extension files for the same reason: each returns a copy
+  or answers a question from the type's own state. `OverlayContent` has
+  `+Paths`, `+Conflicts`, `+Favourites` and `+Edit` (the conflict rules
+  themselves live in `ShortcutConflicts`); `PaletteState` has `+Columns`
+  and `+Commands` (`CommandResponse` is a return value, not stored state);
+  `MenuCache` has `+Read` and `UserKeyEquivalent` has `+Store`.
 
 ## Naming
 
