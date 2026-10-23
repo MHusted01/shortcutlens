@@ -6,6 +6,11 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Smaller download: the app binary no longer ships debug symbols
+  ([#162](https://github.com/MHusted01/shortcutlens/issues/162)).
+
 ## [1.5.0] - 2026-10-23
 
 ### Changed

@@ -42,8 +42,15 @@ release: generate
 		-derivedDataPath $(DERIVED) MARKETING_VERSION=$(VERSION) \
 		CURRENT_PROJECT_VERSION=$(BUILD_NUMBER) build
 	codesign --verify --deep --strict $(DERIVED)/Build/Products/Release/$(SCHEME).app
+	# Stripped binary: only __mh_execute_header stays defined (#162).
+	for arch in arm64 x86_64; do \
+		nm -U -arch $$arch $(DERIVED)/Build/Products/Release/$(SCHEME).app/Contents/MacOS/$(SCHEME) > $(DERIVED)/syms.txt && \
+		test "$$(wc -l < $(DERIVED)/syms.txt)" -eq 1 || exit 1; \
+	done
 	mkdir -p dist
 	ditto -c -k --keepParent $(DERIVED)/Build/Products/Release/$(SCHEME).app dist/$(SCHEME)-$(VERSION).zip
+	# Symbols for crash reports; release.yml publishes every dist/*.zip.
+	ditto -c -k --keepParent $(DERIVED)/Build/Products/Release/$(SCHEME).app.dSYM dist/$(SCHEME)-$(VERSION).dSYM.zip
 	cd dist && shasum -a 256 $(SCHEME)-$(VERSION).zip > $(SCHEME)-$(VERSION).zip.sha256
 
 clean:
