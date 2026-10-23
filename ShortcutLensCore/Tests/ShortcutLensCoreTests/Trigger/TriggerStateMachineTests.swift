@@ -118,13 +118,28 @@ struct TriggerStateMachineTests {
         #expect(action == .cancelTimer)
     }
 
-    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .mouseDownOutside, .interrupted])
+    @Test(arguments: [Machine.Event.keyDown, .mouseDown, .mouseDownOutside])
     func inputCancelsCountdown(event: Machine.Event) {
         let (counting, _) = Self.counting()
         let (state, action) = counting.updated(with: event)
 
         #expect(state.phase == .suppressed)
         #expect(action == .cancelTimer)
+    }
+
+    /// macOS reports a Space change only after the swipe ends, often after
+    /// the user started holding Command; the countdown starts over instead.
+    @Test func interruptionRestartsCountdown() {
+        let (counting, token) = Self.counting()
+        let (state, action) = counting.updated(with: .interrupted)
+
+        guard case let .countingDown(newToken) = state.phase else {
+            Issue.record("expected countingDown, got \(state.phase)")
+            return
+        }
+        #expect(newToken != token)
+        #expect(action == .startTimer(token: newToken, delay: Machine.defaultDelay))
+        #expect(state.updated(with: .timerFired(token: token)).action == .none)
     }
 
     @Test func resetCancelsCountdown() {
@@ -225,12 +240,21 @@ struct TriggerStateMachineTests {
 
     // MARK: - sequences
 
-    /// Cmd+C, or an app activation or Space change without a key event.
-    @Test(arguments: [Machine.Event.keyDown, .interrupted])
-    func shortcutOrInterruptionNeverShowsOverlay(event: Machine.Event) {
-        let actions = Self.run([.modifiersChanged(.command), event, .modifiersChanged([])])
+    /// Cmd+C.
+    @Test func shortcutNeverShowsOverlay() {
+        let actions = Self.run([.modifiersChanged(.command), .keyDown, .modifiersChanged([])])
 
         #expect(actions == [.startTimer(token: 0, delay: Machine.defaultDelay), .cancelTimer, .none])
+    }
+
+    /// An app activation or Space change, then Command released before the new countdown ends.
+    @Test func interruptionThenReleaseNeverShowsOverlay() {
+        let actions = Self.run([.modifiersChanged(.command), .interrupted, .modifiersChanged([])])
+
+        #expect(actions == [
+            .startTimer(token: 0, delay: Machine.defaultDelay), .startTimer(token: 1, delay: Machine.defaultDelay),
+            .cancelTimer,
+        ])
     }
 
     @Test func commandShiftThenShiftReleasedDoesNotRestart() {
@@ -313,5 +337,19 @@ struct TriggerPhaseTests {
         let phases: [TriggerStateMachine.Phase] = [.idle, .countingDown(token: 1), .shown, .suppressed, .palette]
 
         #expect(phases.map(\.isCountingDown) == [false, true, false, false, false])
+    }
+}
+
+struct TriggerHideFadeTests {
+    @Test func anInterruptionHidesWithoutAFade() {
+        #expect(!TriggerStateMachine.Event.interrupted.hideFades)
+    }
+
+    @Test func otherHidesFade() {
+        let events: [TriggerStateMachine.Event] = [
+            .modifiersChanged([]), .modifiersChanged(.shift), .keyDown, .mouseDownOutside, .close, .reset,
+        ]
+
+        #expect(events.map(\.hideFades) == Array(repeating: true, count: events.count))
     }
 }

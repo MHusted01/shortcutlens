@@ -36,7 +36,7 @@ final class OverlayController {
     /// during it lays the panel out ahead of time, so showing it is quick.
     var isCountingDown: () -> Bool = { false }
 
-    let panel = OverlayPanel()
+    let panels = OverlayPanelHost()
     let palette: PaletteController
     private let loader = OverlayContentLoader()
     private(set) var target: Target?
@@ -46,8 +46,8 @@ final class OverlayController {
     var favourites = Favourites(store: UserDefaults.standard)
 
     init() {
-        palette = PaletteController(panel: panel)
-        panel.onResignKey = { [weak self] in self?.onClosePalette() }
+        palette = PaletteController(panels: panels)
+        panels.onResignKey = { [weak self] in self?.onClosePalette() }
         palette.onClose = { [weak self] in self?.onClosePalette() }
         palette.onRun = { [weak self] row in self?.runFromPalette(row) }
         loader.onContent = { [weak self] content in
@@ -123,7 +123,7 @@ final class OverlayController {
     func hide(animated: Bool = false) {
         isShown = false
         palette.close()
-        panel.dismiss(animated: animated)
+        panels.panel.dismiss(animated: animated)
     }
 
     private func runFromPalette(_ row: OverlayRow<AXUIElement>) {
@@ -161,9 +161,9 @@ final class OverlayController {
             )
             let frame = ScreenPicker.centeredFrame(size: size, in: visible)
             if prepareOnly {
-                panel.prepare(view, frame: frame)
+                panels.panel.prepare(view, frame: frame)
             } else {
-                panel.present(view, frame: frame)
+                panels.present(view, frame: frame)
             }
         }
     }
