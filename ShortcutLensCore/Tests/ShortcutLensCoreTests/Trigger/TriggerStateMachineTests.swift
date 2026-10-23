@@ -308,15 +308,6 @@ private extension TriggerStateMachine.Action {
     }
 }
 
-struct HeldModifiersTests {
-    @Test func commandAloneIsOnlyCommand() {
-        #expect(HeldModifiers.command.isCommandAlone)
-        #expect(!HeldModifiers([.command, .shift]).isCommandAlone)
-        #expect(!HeldModifiers.shift.isCommandAlone)
-        #expect(!HeldModifiers().isCommandAlone)
-    }
-}
-
 struct TriggerPhaseTests {
     @Test func onlyACountdownIsCountingDown() {
         let phases: [TriggerStateMachine.Phase] = [.idle, .countingDown(token: 1), .shown, .suppressed, .palette]

@@ -2,9 +2,9 @@ import AppKit
 import os
 import ShortcutLensCore
 
-/// Feeds modifier, key and mouse events into `TriggerStateMachine` and runs
-/// its timer. The same events go to `DoubleTapDetector`, whose double tap of
-/// the chosen `PaletteTrigger` opens the palette.
+/// Connects event monitors, timers and workspace notifications to
+/// `TriggerCoordinator`, which makes every trigger decision, and carries out
+/// its effects.
 ///
 /// Uses `NSEvent` monitors, not a `CGEventTap`: a global monitor sees events
 /// sent to other apps (key events only with the Accessibility permission), a
@@ -14,13 +14,9 @@ import ShortcutLensCore
 /// Key presses are the main way a countdown is cancelled (Tab in Cmd+Tab does
 /// reach the global monitor). As a best-effort fallback, another app
 /// activating or a Space change also counts as an interruption, for changes
-/// that arrive without a key event.
-///
-/// System hotkeys (Cmd+Space, screenshots, input-source switching) never
-/// reach the monitors. To catch them, the controller reads the time since the
-/// last hardware key press (`CGEventSource`, no extra permission) when the
-/// countdown ends and every 0.1 s while the overlay is shown. The palette
-/// takes typed keys itself, so it is not polled.
+/// that arrive without a key event. System hotkeys never reach the monitors;
+/// every input carries a `KeyClock` reading (`CGEventSource`, no extra
+/// permission) so the coordinator can spot them.
 ///
 /// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
 /// before dropping it, or the monitors stay installed.
@@ -42,9 +38,7 @@ final class TriggerController {
     /// Called when a double tap of the palette trigger opens the palette.
     var onShowPalette: () -> Void = { TriggerController.log.notice("show palette") }
 
-    private var machine = TriggerStateMachine.initial
-    private var paletteTrigger = PaletteTrigger.command
-    private var doubleTap = DoubleTapDetector.initial
+    private var coordinator = TriggerCoordinator.initial
     private var monitors: [Any] = []
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
@@ -52,7 +46,7 @@ final class TriggerController {
 
     /// True while Command is held and the overlay may still show.
     var isCountingDown: Bool {
-        machine.phase.isCountingDown
+        coordinator.isCountingDown
     }
 
     /// Installs or removes the event monitors.
@@ -68,40 +62,33 @@ final class TriggerController {
             monitors = []
             observers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
             observers = []
-            handle(.reset)
-            doubleTap = DoubleTapDetector(trigger: paletteTrigger)
+            send(.reset)
         }
     }
 
     /// Seconds Command must be held, from the next countdown on.
     func setDelay(_ delay: TimeInterval) {
-        machine = machine.with(delay: delay)
+        coordinator = coordinator.with(delay: delay)
     }
 
-    /// The modifier to double-tap for the palette. A tap in progress is dropped.
+    /// The modifier to double-tap for the palette.
     func setPaletteTrigger(_ trigger: PaletteTrigger) {
-        guard trigger != paletteTrigger else {
-            return
-        }
-        paletteTrigger = trigger
-        doubleTap = DoubleTapDetector(trigger: trigger)
+        coordinator = coordinator.with(paletteTrigger: trigger)
     }
 
     /// Closes the palette, for example after Escape or running an item.
     /// Does nothing when the palette is not open.
     func closePalette() {
-        handle(.close)
+        send(.closePalette)
     }
 
     private func installMonitors() {
         // AppKit calls both monitors on the main thread. The global monitor
         // sees only events sent to other apps, so its clicks are outside the panel.
         let deliver: (NSEvent, Bool) -> Void = { [weak self] event, isOutside in
-            let triggerEvent = Self.triggerEvent(for: event, isOutside: isOutside)
-            let tapEvent = Self.tapEvent(for: event)
+            let input = Self.input(for: event, isOutside: isOutside)
             MainActor.assumeIsolated {
-                self?.handle(triggerEvent)
-                self?.detectDoubleTap(tapEvent)
+                self?.send(input)
             }
         }
         let global = NSEvent.addGlobalMonitorForEvents(matching: Self.monitoredEvents) { event in
@@ -126,81 +113,55 @@ final class TriggerController {
                 return
             }
             MainActor.assumeIsolated {
-                self?.interrupt()
+                self?.send(.interrupted)
             }
         }
         let space = center.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.interrupt()
+                self?.send(.interrupted)
             }
         }
         observers = [activation, space]
     }
 
-    private func handle(_ event: TriggerStateMachine.Event) {
-        let (state, action) = machine.updated(with: event)
-        machine = state
-        if state.phase != .shown {
-            stopShownPoll()
-        }
-        switch action {
-        case let .startTimer(token, delay):
+    private func send(_ input: TriggerCoordinator.Input) {
+        let (state, effects) = coordinator.updated(with: input, clock: Self.clock())
+        coordinator = state
+        effects.forEach(perform)
+    }
+
+    private func perform(_ effect: TriggerCoordinator.Effect) {
+        switch effect {
+        case let .startCountdown(token, delay):
             startTimer(token: token, delay: delay)
             onArm()
-        case .cancelTimer:
+        case .cancelCountdown:
             cancelTimer()
-        case .show:
+        case .startShownPoll:
             startShownPoll()
+        case .stopShownPoll:
+            stopShownPoll()
+        case .show:
             onShow()
         case .showPalette:
             onShowPalette()
-        case .hide:
+        case let .hide(event):
             // Event kinds only, never key characters.
             Self.log.notice("hide after \(String(describing: event), privacy: .public)")
             onHide()
-        case .none:
-            break
+        case let .missedKeyPress(moment):
+            Self.log.notice("missed key press during \(moment.rawValue, privacy: .public)")
         }
-    }
-
-    /// Focus moved without a key event the monitors saw; this also breaks a
-    /// double tap in progress.
-    private func interrupt() {
-        handle(.interrupted)
-        detectDoubleTap(.otherInput)
-    }
-
-    /// Runs after the state machine has seen the same event, so the second
-    /// release has already ended the countdown when the double tap arrives.
-    /// A double tap with a key press the monitors missed (Cmd+Space twice)
-    /// is dropped.
-    private func detectDoubleTap(_ event: DoubleTapDetector.Event) {
-        let (state, startedAt) = doubleTap.updated(with: event)
-        doubleTap = state
-        guard let startedAt else {
-            return
-        }
-        guard !Self.keyWentDown(since: MissedKeyDown(armedAt: startedAt)) else {
-            Self.log.notice("missed key press during double tap")
-            return
-        }
-        handle(.doubleTap)
     }
 
     private func startTimer(token: Int, delay: TimeInterval) {
         cancelTimer()
-        let watch = MissedKeyDown(armedAt: Self.now())
         let timer = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
-                // Re-read the keys in case a release was missed while counting down.
-                self?.handle(.modifiersChanged(Self.heldModifiers(NSEvent.modifierFlags)))
-                if Self.keyWentDown(since: watch) {
-                    Self.log.notice("missed key press during countdown")
-                    self?.handle(.keyDown)
-                }
-                self?.handle(.timerFired(token: token))
+                let held = HeldModifiers(eventFlags: NSEvent.modifierFlags.rawValue)
+                self?.send(.countdownEnded(token: token, held: held))
             }
         }
         // `.common` keeps the timer firing while a menu is open.
@@ -213,18 +174,11 @@ final class TriggerController {
         timer = nil
     }
 
-    /// Hides the overlay when a key goes down that the monitors did not see.
-    /// A click may already have hidden the panel; the extra hide is a no-op.
     private func startShownPoll() {
         stopShownPoll()
-        let watch = MissedKeyDown(armedAt: Self.now())
         let poll = Timer(timeInterval: Self.shownPollInterval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
-                guard Self.keyWentDown(since: watch) else {
-                    return
-                }
-                Self.log.notice("missed key press while shown")
-                self?.handle(.keyDown)
+                self?.send(.shownPollTick)
             }
         }
         RunLoop.main.add(poll, forMode: .common)
@@ -236,43 +190,21 @@ final class TriggerController {
         shownPoll = nil
     }
 
-    /// Seconds on the same clock as the `CGEventSource` reading and
+    /// System uptime is the clock of both the `CGEventSource` reading and
     /// `NSEvent.timestamp`.
-    private static func now() -> Double {
-        ProcessInfo.processInfo.systemUptime
-    }
-
-    private static func keyWentDown(since watch: MissedKeyDown) -> Bool {
+    private static func clock() -> KeyClock {
         let seconds = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: .keyDown)
-        return watch.keyWentDown(now: now(), secondsSinceLastKeyDown: seconds)
+        return KeyClock(now: ProcessInfo.processInfo.systemUptime, secondsSinceLastKeyDown: seconds)
     }
 
-    private nonisolated static func triggerEvent(for event: NSEvent, isOutside: Bool) -> TriggerStateMachine.Event {
+    private nonisolated static func input(for event: NSEvent, isOutside: Bool) -> TriggerCoordinator.Input {
         switch event.type {
         case .flagsChanged:
-            .modifiersChanged(heldModifiers(event.modifierFlags))
+            .modifiersChanged(HeldModifiers(eventFlags: event.modifierFlags.rawValue), time: event.timestamp)
         case .keyDown:
             .keyDown
         default:
-            isOutside ? .mouseDownOutside : .mouseDown
-        }
-    }
-
-    /// `NSEvent.timestamp` is seconds since system start, a monotonic clock.
-    private nonisolated static func tapEvent(for event: NSEvent) -> DoubleTapDetector.Event {
-        event.type == .flagsChanged
-            ? .modifiersChanged(heldModifiers(event.modifierFlags), time: event.timestamp)
-            : .otherInput
-    }
-
-    private nonisolated static func heldModifiers(_ flags: NSEvent.ModifierFlags) -> HeldModifiers {
-        let pairs: [(NSEvent.ModifierFlags, HeldModifiers)] = [
-            (.command, .command), (.shift, .shift), (.option, .option), (.control, .control),
-        ]
-        return pairs.reduce(into: HeldModifiers()) { held, pair in
-            if flags.contains(pair.0) {
-                held.insert(pair.1)
-            }
+            .mouseDown(outside: isOutside)
         }
     }
 }

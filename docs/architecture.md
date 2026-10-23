@@ -34,12 +34,16 @@ reads it through the real AX API (`make integration`, local only).
 
 1. `TriggerController` installs global and local `NSEvent` monitors once
    `PermissionController` reports the Accessibility permission. Each
-   modifier, key or click event goes to `TriggerStateMachine`, with
-   `HeldModifiers` as the input.
-2. Command pressed alone starts a countdown (`startTimer`), and
+   modifier, key or click event, timer tick and app or Space switch goes to
+   `TriggerCoordinator` as an `Input`, with a `KeyClock` reading. The
+   coordinator makes every decision and answers with effects that the
+   controller only carries out. Inside, the events go to
+   `TriggerStateMachine`, with `HeldModifiers` as the input.
+2. Command pressed alone starts a countdown (`startCountdown`), and
    `TriggerController.onArm` calls `OverlayController.prepare()`. Any other
    key, modifier, click or app switch cancels it. `MissedKeyDown` catches
-   system hotkeys that the monitors never see.
+   system hotkeys that the monitors never see, when the countdown ends and
+   on every poll tick while the overlay is shown.
 3. `prepare()` asks `OverlayContentLoader` for the app. It returns the
    cached content from `MenuCache` at once, then starts
    `AppContentReader.read` in a detached task, or reuses the read already
@@ -74,9 +78,10 @@ reads it through the real AX API (`make integration`, local only).
 
 ### Double tap: palette
 
-1. `TriggerController` passes the same events to `DoubleTapDetector`, set
-   to the `PaletteTrigger` from settings. A double tap goes to
-   `TriggerStateMachine` as `.doubleTap`, which answers `showPalette`.
+1. `TriggerCoordinator` passes the same events to `DoubleTapDetector`, set
+   to the `PaletteTrigger` from settings. A double tap without a missed key
+   press goes to `TriggerStateMachine` as `.doubleTap`, which answers
+   `showPalette`.
 2. `OverlayController.showPalette()` hands the current content to
    `PaletteController`, which wraps it in `PaletteState` and presents the
    panel as key. The header shows
@@ -173,7 +178,7 @@ every area and stay at the top of the test target:
 | --- | --- | --- |
 | Menu | `AXClient`, `DeadlineAXClient`, `MenuReader`, `MenuGroup`, `MenuShortcut`, `MenuGlyph`, `ModifierMask`, `MenuItemRunner`, `MenuCache`, `MenuCache+Read`, `MenuReadTracker` | `SystemAXClient`, `AppContentReader`, `UncheckedSendable` |
 | Keys | `KeyCombo`, `KeyDisplay`, `KeyLabels`, `KeyCodes`, `NamedKeys`, `ShortcutFormatter`, `SpokenKeys`, `ShortcutConflicts`, `SymbolicHotKey`, `SystemHotKeyCatalog`, `UserKeyEquivalent`, `UserKeyEquivalent+Store`, `UserKeyEquivalents` | `KeyboardLayout`, `SystemHotKeySource`, `UserKeyEquivalentSource` |
-| Trigger | `TriggerStateMachine`, `HeldModifiers`, `DoubleTapDetector`, `PaletteTrigger`, `MissedKeyDown` | `TriggerController` |
+| Trigger | `TriggerCoordinator`, `TriggerStateMachine`, `HeldModifiers`, `DoubleTapDetector`, `PaletteTrigger`, `MissedKeyDown`, `KeyClock` | `TriggerController` |
 | Overlay | `OverlayContent`, `OverlayContent+Paths`, `OverlayContent+Conflicts`, `OverlayContent+Favourites`, `Favourites`, `PanelLayout`, `ColumnLayout`, `ScreenPicker` | `OverlayController`, `OverlayController+Run`, `+Favourites`, `+Edit`, `OverlayContentLoader`, `OverlayLayout`, `OverlayLog`, `OverlayPanel`, `OverlayView`, `OverlayBackground` |
 | Palette | `PaletteState`, `PaletteState+Columns`, `PaletteState+Commands`, `SearchCommand`, `ShortcutMatcher`, `PaletteAnnouncement` | `PaletteController`, `SearchBox`, `SearchField` |
 | Editing | `ShortcutRecording`, `OverlayContent+Edit` | `ShortcutEditor`, `ShortcutEditorView`, `KeyRecorder`, `UserKeyEquivalentWriter`, `AppRelauncher`, `AppSandbox` |
