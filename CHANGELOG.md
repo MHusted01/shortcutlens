@@ -6,6 +6,8 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-10-23
+
 ### Changed
 
 - Smaller download: the app binary no longer ships debug symbols
@@ -198,7 +200,8 @@ Screenshots are from macOS 26.
 - The overlay closes on system shortcuts such as Cmd+Space instead of staying
   open. (#42)
 
-[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/MHusted01/shortcutlens/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MHusted01/shortcutlens/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MHusted01/shortcutlens/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...v1.3.0
