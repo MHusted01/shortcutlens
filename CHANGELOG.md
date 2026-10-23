@@ -6,6 +6,14 @@ All notable changes to ShortcutLens are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-23
+
+### Changed
+
+- Internal restructuring with no change in behaviour: Core and App sources
+  grouped by feature, trigger decisions moved into Core, and an audited test
+  suite ([#137](https://github.com/MHusted01/shortcutlens/issues/137), [#141](https://github.com/MHusted01/shortcutlens/issues/141), [#147](https://github.com/MHusted01/shortcutlens/issues/147)).
+
 ### Fixed
 
 - The "Also used by" line under a conflicting shortcut names at most three
@@ -185,7 +193,8 @@ Screenshots are from macOS 26.
 - The overlay closes on system shortcuts such as Cmd+Space instead of staying
   open. (#42)
 
-[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/MHusted01/shortcutlens/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/MHusted01/shortcutlens/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MHusted01/shortcutlens/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MHusted01/shortcutlens/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MHusted01/shortcutlens/compare/v1.1.0...v1.2.0
