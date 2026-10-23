@@ -34,12 +34,19 @@ struct TriggerCoordinatorTests {
         #expect(effects == [.startShownPoll, .show])
     }
 
-    @Test(arguments: [Coordinator.Input.keyDown, .mouseDown(outside: true), .mouseDown(outside: false), .interrupted])
+    @Test(arguments: [Coordinator.Input.keyDown, .mouseDown(outside: true), .mouseDown(outside: false)])
     func otherInputCancelsCountdown(input: Coordinator.Input) {
         let (state, effects) = Coordinator.countingDown().updated(with: input, clock: .at(0.5))
 
         #expect(state.phase == .suppressed)
         #expect(effects == [.cancelCountdown])
+    }
+
+    @Test func interruptionRestartsCountdown() {
+        let (state, effects) = Coordinator.countingDown().updated(with: .interrupted, clock: .at(0.5))
+
+        #expect(state.phase == .countingDown(token: 1))
+        #expect(effects == [.startCountdown(token: 1, delay: TriggerStateMachine.defaultDelay)])
     }
 
     /// A release the monitors missed is caught by re-reading the modifiers.

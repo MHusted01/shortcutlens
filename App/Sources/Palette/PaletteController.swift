@@ -27,7 +27,7 @@ final class PaletteController {
     /// Called with the row Return chose.
     var onRun: (OverlayRow<AXUIElement>) -> Void = { _ in }
 
-    private let panel: OverlayPanel
+    private let panels: OverlayPanelHost
     private var open: OpenPalette? {
         didSet { announce(from: oldValue?.state, to: open?.state) }
     }
@@ -36,8 +36,8 @@ final class PaletteController {
         open != nil
     }
 
-    init(panel: OverlayPanel) {
-        self.panel = panel
+    init(panels: OverlayPanelHost) {
+        self.panels = panels
     }
 
     /// Presents `content` (nil while the read runs) as a palette, in the view
@@ -54,7 +54,7 @@ final class PaletteController {
         let state = content.map { PaletteState().with(content: $0) } ?? PaletteState()
         open = OpenPalette(state: state, model: model, screen: screen)
         let size = refresh()
-        panel.present(makeView(model), frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
+        panels.present(makeView(model), frame: ScreenPicker.centeredFrame(size: size, in: screen), takesKeyboard: true)
         OverlayLog.logger.notice("palette shown")
         return true
     }
@@ -66,7 +66,7 @@ final class PaletteController {
         }
         self.open = open.with(open.state.with(content: content))
         let size = refresh()
-        panel.setFrame(ScreenPicker.centeredFrame(size: size, in: open.screen), display: true)
+        panels.panel.setFrame(ScreenPicker.centeredFrame(size: size, in: open.screen), display: true)
     }
 
     /// Forgets the palette; the caller hides the panel.

@@ -80,8 +80,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let elapsed = start.duration(to: .now)
             OverlayLog.logger.debug("shown in \(String(describing: elapsed), privacy: .public)")
         }
-        // Releasing Command or Escape fades the overlay out; a row click hides it at once.
-        trigger.onHide = { [overlay] in overlay.hide(animated: true) }
+        // Releasing Command or Escape fades the overlay out; a row click or a
+        // Space change hides it at once.
+        trigger.onHide = { [overlay] in overlay.hide(animated: $0) }
         trigger.onShowPalette = { [overlay] in overlay.showPalette() }
         overlay.onClosePalette = { [trigger] in trigger.closePalette() }
         overlay.onEditShortcut = { [editor] in editor.show($0) }

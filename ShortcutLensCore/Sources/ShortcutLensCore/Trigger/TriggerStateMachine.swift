@@ -1,7 +1,10 @@
 /// Decides when the overlay shows: Command held alone for `delay` seconds.
 ///
-/// Any other modifier, key press, click or interruption during the countdown cancels it, so
-/// normal shortcuts such as Cmd+C never show the overlay. After a cancel the
+/// Any other modifier, key press or click during the countdown cancels it, so
+/// normal shortcuts such as Cmd+C never show the overlay. An interruption
+/// starts the countdown over instead: macOS reports a Space change only after
+/// the swipe ends, often after the user started holding Command, and the
+/// overlay should then be for the app on the new Space. After a cancel the
 /// trigger stays suppressed until every modifier is released; going from
 /// Cmd+Shift back to Cmd does not start a new countdown.
 ///
@@ -39,7 +42,8 @@ public struct TriggerStateMachine: Equatable, Sendable {
         case mouseDownOutside
         case timerFired(token: Int)
         /// Focus moved without a key event the monitors saw, such as another
-        /// app activating or a Space change. Treated like a key press.
+        /// app activating or a Space change. Restarts a countdown and hides
+        /// the overlay like a key press.
         case interrupted
         /// Monitoring stopped (for example the permission was revoked).
         case reset
@@ -48,6 +52,13 @@ public struct TriggerStateMachine: Equatable, Sendable {
         /// The palette asked to close: Escape on an empty query, an item was
         /// run, or the panel lost key status.
         case close
+
+        /// Whether a hide this event causes may fade out. An interruption
+        /// hides at once: after a Space change the fade would play on the
+        /// new Space, over another app.
+        public var hideFades: Bool {
+            self != .interrupted
+        }
     }
 
     /// What the app should do after an event.
@@ -118,6 +129,10 @@ public struct TriggerStateMachine: Equatable, Sendable {
         guard modifiers.isCommandAlone else {
             return (with(.suppressed), .none)
         }
+        return startingCountdown()
+    }
+
+    private func startingCountdown() -> (state: Self, action: Action) {
         let token = nextToken
         let state = Self(phase: .countingDown(token: token), delay: delay, nextToken: token &+ 1)
         return (state, .startTimer(token: token, delay: delay))
@@ -130,8 +145,10 @@ public struct TriggerStateMachine: Equatable, Sendable {
                 return (self, .none)
             }
             return (with(modifiers.isEmpty ? .idle : .suppressed), .cancelTimer)
-        case .keyDown, .mouseDown, .mouseDownOutside, .interrupted:
+        case .keyDown, .mouseDown, .mouseDownOutside:
             return (with(.suppressed), .cancelTimer)
+        case .interrupted:
+            return startingCountdown()
         case let .timerFired(firedToken):
             return firedToken == token ? (with(.shown), .show) : (self, .none)
         case .reset:

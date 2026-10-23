@@ -12,6 +12,13 @@ All notable changes to ShortcutLens are listed here. The format follows
   other entries and counts the rest, and shortens long titles. Before, every
   entry on the same keys was listed, which made the line unreadable and slow
   to build when many shortcuts shared keys ([#156](https://github.com/MHusted01/shortcutlens/issues/156)).
+- The overlay and the palette always appear on the Space you are looking at.
+  After they were used over a fullscreen app, holding Command on the desktop
+  that app came from showed them on the fullscreen Space instead, so nothing
+  seemed to happen. When you switch Spaces, an open overlay or palette slides
+  away with its Space and closes without a fade over the new one, and holding
+  Command right after the switch shows the shortcuts of the app in front
+  instead of needing a second try ([#146](https://github.com/MHusted01/shortcutlens/issues/146)).
 
 ## [1.4.0] - 2026-10-20
 

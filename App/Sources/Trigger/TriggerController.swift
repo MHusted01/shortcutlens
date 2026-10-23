@@ -12,11 +12,11 @@ import ShortcutLensCore
 /// while the permission is granted.
 ///
 /// Key presses are the main way a countdown is cancelled (Tab in Cmd+Tab does
-/// reach the global monitor). As a best-effort fallback, another app
-/// activating or a Space change also counts as an interruption, for changes
-/// that arrive without a key event. System hotkeys never reach the monitors;
-/// every input carries a `KeyClock` reading (`CGEventSource`, no extra
-/// permission) so the coordinator can spot them.
+/// reach the global monitor). Another app activating or a Space change counts
+/// as an interruption: it hides the overlay at once and starts a running
+/// countdown over, for the app now in front. System hotkeys never reach the
+/// monitors; every input carries a `KeyClock` reading (`CGEventSource`, no
+/// extra permission) so the coordinator can spot them.
 ///
 /// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
 /// before dropping it, or the monitors stay installed.
@@ -32,9 +32,10 @@ final class TriggerController {
     /// Called when a countdown starts, so the overlay can read the menus
     /// before it is shown. The countdown may still be cancelled.
     var onArm: () -> Void = {}
-    /// Called when the overlay should appear or disappear.
+    /// Called when the overlay should appear or disappear. `onHide` gets
+    /// whether the hide may fade out.
     var onShow: () -> Void = { TriggerController.log.notice("show overlay") }
-    var onHide: () -> Void = { TriggerController.log.notice("hide overlay") }
+    var onHide: (Bool) -> Void = { _ in TriggerController.log.notice("hide overlay") }
     /// Called when a double tap of the palette trigger opens the palette.
     var onShowPalette: () -> Void = { TriggerController.log.notice("show palette") }
 
@@ -150,7 +151,7 @@ final class TriggerController {
         case let .hide(event):
             // Event kinds only, never key characters.
             Self.log.notice("hide after \(String(describing: event), privacy: .public)")
-            onHide()
+            onHide(event.hideFades)
         case let .missedKeyPress(moment):
             Self.log.notice("missed key press during \(moment.rawValue, privacy: .public)")
         }

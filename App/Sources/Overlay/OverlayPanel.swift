@@ -51,7 +51,10 @@ final class OverlayPanel: NSPanel {
         )
         isFloatingPanel = true
         level = .statusBar
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        // Each show moves the panel to the active Space, so during a Space
+        // swipe it slides away with its Space instead of staying on top of
+        // both (#146).
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         hidesOnDeactivate = false
         isReleasedWhenClosed = false
         isOpaque = false
