@@ -68,6 +68,14 @@ targets:
         # together with Developer ID signing if that is added later.
         # The Accessibility API is unavailable inside the App Sandbox.
         ENABLE_APP_SANDBOX: NO
+      configs:
+        # `xcodebuild build` only strips with deployment postprocessing on;
+        # without it the symbol table more than doubles the binary.
+        Release:
+          DEPLOYMENT_POSTPROCESSING: YES
+          STRIP_INSTALLED_PRODUCT: YES
+          STRIP_STYLE: all
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
 
   # Local integration testing only (`make integration`); never shipped.
   MenuFixture:
