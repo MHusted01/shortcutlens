@@ -8,8 +8,21 @@ public struct HeldModifiers: OptionSet, Hashable, Sendable {
 
     public let rawValue: Int
 
+    /// Device-independent flag bits, shared by `NSEvent.ModifierFlags` and
+    /// `CGEventFlags`, for each tracked modifier.
+    private static let eventFlagBits: [(bit: UInt, modifier: HeldModifiers)] = [
+        (1 << 17, .shift), (1 << 18, .control), (1 << 19, .option), (1 << 20, .command),
+    ]
+
     public init(rawValue: Int) {
         self.rawValue = rawValue
+    }
+
+    /// The tracked modifiers in an event's modifier flags, such as
+    /// `NSEvent.ModifierFlags.rawValue`. Other bits are ignored.
+    public init(eventFlags: UInt) {
+        let held = Self.eventFlagBits.filter { eventFlags & $0.bit != 0 }.map(\.modifier)
+        self = HeldModifiers(held)
     }
 
     /// Whether Command is held and no other tracked modifier is.
