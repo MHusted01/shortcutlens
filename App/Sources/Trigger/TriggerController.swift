@@ -14,9 +14,9 @@ import ShortcutLensCore
 /// Key presses are the main way a countdown is cancelled (Tab in Cmd+Tab does
 /// reach the global monitor). Another app activating or a Space change counts
 /// as an interruption: it hides the overlay at once and starts a running
-/// countdown over, for the app now in front. System hotkeys never reach the monitors;
-/// every input carries a `KeyClock` reading (`CGEventSource`, no extra
-/// permission) so the coordinator can spot them.
+/// countdown over, for the app now in front. System hotkeys never reach the
+/// monitors; every input carries a `KeyClock` reading (`CGEventSource`, no
+/// extra permission) so the coordinator can spot them.
 ///
 /// Lives as long as the app (owned by `AppDelegate`); call `setEnabled(false)`
 /// before dropping it, or the monitors stay installed.
